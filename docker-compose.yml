@@ -1,0 +1,41 @@
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+  nextcloud:
+    driver: bridge
+    internal: true
+    ipam:
+      driver: default
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+    networks:
+      - default
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+      - ./mosquitto/pwfile:/mosquitto/pwfile
+
+  serial_mqtt_bridge:
+    build: ./serial_mqtt_bridge
+    container_name: serial_mqtt_bridge
+    depends_on:
+      - mosquitto
+    devices:
+      - "/dev/ttyACM0:/dev/ttyACM0"
+    environment:
+      - SERIAL_PORT=/dev/ttyACM0
+      - MQTT_BROKER=mosquitto
+    privileged: true
+    links:
+      - mosquitto
