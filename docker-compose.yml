@@ -39,3 +39,36 @@ services:
     privileged: true
     links:
       - mosquitto
+
+  influxdb:
+    image: influxdb:2.0
+    container_name: influxdb
+    restart: unless-stopped
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=myorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=mybucket
+
+  mqtt_to_influx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mqtt_to_influx
+    depends_on:
+      - influxdb
+      - mosquitto
+    environment:
+      - MQTT_BROKER=mosquitto
+      - INFLUXDB_HOST=influxdb
+    volumes:
+      - ./mqtt_to_influx:/mqtt_to_influx
+    command: python /mqtt_to_influx/mqtt_to_influx.py
+    links:
+      - influxdb
+      - mosquitto
