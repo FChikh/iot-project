@@ -1,5 +1,6 @@
 import paho.mqtt.client as mqtt
 from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
 import os
 import json
 
@@ -12,7 +13,7 @@ INFLUXDB_TOKEN = "admin123"
 
 # Set up InfluxDB client
 client = InfluxDBClient(url=f"http://{INFLUXDB_HOST}:8086", token=INFLUXDB_TOKEN, org=INFLUXDB_ORG)
-write_api = client.write_api(write_options=WritePrecision.NS)
+write_api = client.write_api(write_options=SYNCHRONOUS)
 
 # Function to handle writing static room facilities data to InfluxDB
 def write_static_room_data(room_data):
