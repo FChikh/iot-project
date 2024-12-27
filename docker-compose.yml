@@ -88,3 +88,20 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
     networks:
       - default
+
+
+  sensor_simulation:
+      build: ./sensor_simulation
+      container_name: sensor_simulation
+      depends_on:
+        - influxdb
+      environment:
+        - INFLUXDB_URL=http://influxdb:8086  # Use the service name 'influxdb'
+        - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+        - INFLUXDB_ORG=myorg
+        - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
+      volumes:
+        - ./sensor_simulation:/app
+      networks:
+        - default
+      restart: always

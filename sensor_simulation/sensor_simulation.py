@@ -1,0 +1,46 @@
+import os
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
+from datetime import datetime
+import random
+import time
+
+# Get configuration from environment variables
+url = os.getenv('INFLUXDB_URL', 'http://localhost:8086')
+token = os.getenv('INFLUXDB_TOKEN')
+org = os.getenv('INFLUXDB_ORG', 'myorg')
+bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+# Create the client
+client = InfluxDBClient(url=url, token=token)
+write_api = client.write_api(write_options=SYNCHRONOUS)
+
+# Room IDs
+rooms = ["MSA1000", "MSA2000", "MSA3500", "MSA3110"]
+
+# Continuously send data
+while True:
+    current_time = datetime.now()
+    for room in rooms:
+        # Generate random sensor values
+        humidity = round(random.uniform(30.0, 60.0), 2)
+        co2 = round(random.uniform(300.0, 600.0), 2)
+        temperature = round(random.uniform(18.0, 25.0), 2)
+        
+        # Create a point
+        point = (
+            Point("room_data")
+            .tag("room_id", room)
+            .field("humidity", humidity)
+            .field("co2", co2)
+            .field("temperature", temperature)
+            .time(int(current_time.timestamp() * 1e9))
+        )
+        
+        # Write data to InfluxDB
+        write_api.write(bucket=bucket, org=org, record=point)
+    print(f"Data written to InfluxDB at {current_time}")
+    time.sleep(10)
+
+# Close the client (although this will never be reached in this infinite loop)
+client.close()
