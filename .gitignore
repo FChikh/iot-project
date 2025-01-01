@@ -3,3 +3,5 @@ influxdb/*
 mosquitto/data/*
 mosquitto/log/*
 mosquitto/pwfile/*
+!env/
+env/*
