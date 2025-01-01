@@ -105,3 +105,18 @@ services:
       networks:
         - default
       restart: always
+
+
+  restapi_rooms:
+    build:
+      context: ./restapi_rooms  # Replace with the path to your service's Dockerfile
+      dockerfile: Dockerfile
+    container_name: restapi_rooms
+    depends_on:
+      - influxdb
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./env/creds.json:/usr/src/app/creds.json:ro  # Read-only access to creds.json
+    networks:
+      - default
