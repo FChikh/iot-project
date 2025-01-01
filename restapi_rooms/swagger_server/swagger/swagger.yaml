@@ -1,0 +1,335 @@
+openapi: 3.0.0
+info:
+  title: Room Sensors API
+  description: API for retrieving sensor data from different rooms
+  version: 1.0.0
+servers:
+- url: http://localhost:8087
+  description: Room Sensors
+paths:
+  /rooms:
+    get:
+      summary: Get sensor data for all rooms
+      description: Retrieve all sensor data (temperature and air quality) for all
+        rooms
+      operationId: rooms_get
+      responses:
+        "200":
+          description: A JSON array of rooms with their sensor data captured the öast
+            2 Weeks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomData'
+                x-content-type: application/json
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /room/{room_id}:
+    get:
+      summary: Get sensor data for a specific room
+      description: Retrieve all sensor data for a specific room
+      operationId: room_room_id_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomData'
+        "404":
+          description: Room not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /rooms/air-quality:
+    get:
+      summary: Get air quality data for all rooms
+      description: Retrieve air quality measurements for all rooms
+      operationId: rooms_air_quality_get
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomAirQuality'
+                x-content-type: application/json
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /rooms/temperature:
+    get:
+      summary: Get temperature data for all rooms
+      description: Retrieve temperature measurements for all rooms
+      operationId: rooms_temperature_get
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomTemperature'
+                x-content-type: application/json
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /room/{room_id}/air-quality:
+    get:
+      summary: Get air quality data for a specific room
+      description: Retrieve air quality measurements for a specific room
+      operationId: room_room_id_air_quality_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomAirQuality'
+        "404":
+          description: Room not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /room/{room_id}/temperature:
+    get:
+      summary: Get temperature data for a specific room
+      description: Retrieve temperature measurements for a specific room
+      operationId: room_room_id_temperature_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomTemperature'
+        "404":
+          description: Room not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /rooms/bookings:
+    get:
+      summary: Get bookings for all rooms
+      description: Retrieve booking timestamps for all rooms within a specified time
+        interval
+      operationId: rooms_bookings_get
+      parameters:
+      - name: startDate
+        in: query
+        description: Start date for the booking period (YYYY-MM-DD)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: days
+        in: query
+        description: Number of days to retrieve bookings for
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Successfully retrieved bookings for all rooms
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                    format: date-time
+                example:
+                  room001:
+                  - 2024-12-01 17:30:00
+                  - 2024-12-01 16:00:00
+                  room002:
+                  - 2024-12-02 17:30:00
+                x-content-type: application/json
+        "400":
+          description: Invalid date format or days parameter
+        "500":
+          description: Internal server error
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /room/{room_id}/bookings:
+    get:
+      summary: Get bookings for specific room
+      description: Retrieve booking timestamps for a specific room within a specified
+        time interval
+      operationId: room_room_id_bookings_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: startDate
+        in: query
+        description: Start date for the booking period (YYYY-MM-DD)
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: days
+        in: query
+        description: Number of days to retrieve bookings for
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Successfully retrieved bookings for the specified room
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "400":
+          description: Invalid date format or days parameter
+        "404":
+          description: Room not found
+        "500":
+          description: Internal server error
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+components:
+  schemas:
+    RoomData:
+      type: object
+      properties:
+        room:
+          type: string
+          description: Room identifier
+        temperature:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemperatureReading'
+        air_quality:
+          type: array
+          items:
+            $ref: '#/components/schemas/AirQualityReading'
+      example:
+        temperature:
+        - value: 0.8008282
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - value: 0.8008282
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        air_quality:
+        - pm2_5: 6.02745618307040320615897144307382404804229736328125
+          pm10: 1.46581298050294517310021547018550336360931396484375
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - pm2_5: 6.02745618307040320615897144307382404804229736328125
+          pm10: 1.46581298050294517310021547018550336360931396484375
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        room: room
+    RoomTemperature:
+      type: object
+      properties:
+        room:
+          type: string
+          description: Room identifier
+        temperature:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemperatureReading'
+      example:
+        temperature:
+        - value: 0.8008282
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - value: 0.8008282
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        room: room
+    RoomAirQuality:
+      type: object
+      properties:
+        room:
+          type: string
+          description: Room identifier
+        air_quality:
+          type: array
+          items:
+            $ref: '#/components/schemas/AirQualityReading'
+      example:
+        air_quality:
+        - pm2_5: 6.02745618307040320615897144307382404804229736328125
+          pm10: 1.46581298050294517310021547018550336360931396484375
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - pm2_5: 6.02745618307040320615897144307382404804229736328125
+          pm10: 1.46581298050294517310021547018550336360931396484375
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        room: room
+    TemperatureReading:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          description: Time of the temperature reading
+          format: date-time
+        value:
+          type: number
+          description: Temperature value in Celsius
+          format: float
+      example:
+        value: 0.8008282
+        timestamp: 2000-01-23T04:56:07.000+00:00
+    AirQualityReading:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          description: Time of the air quality reading
+          format: date-time
+        pm2_5:
+          type: number
+          description: PM2.5 concentration in μg/m³
+        pm10:
+          type: number
+          description: PM10 concentration in μg/m³
+      example:
+        pm2_5: 6.02745618307040320615897144307382404804229736328125
+        pm10: 1.46581298050294517310021547018550336360931396484375
+        timestamp: 2000-01-23T04:56:07.000+00:00
+    inline_response_200:
+      type: object
+      properties:
+        room_id:
+          type: array
+          items:
+            type: string
+            format: date-time
+      example:
+        room001:
+        - 2024-12-01 17:30:00
+        - 2024-12-01 16:00:00
+
