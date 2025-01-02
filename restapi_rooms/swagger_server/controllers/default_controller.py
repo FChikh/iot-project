@@ -1,7 +1,8 @@
 import connexion
 import six
-from flask import abort
+from flask import abort, jsonify
 from dateutil import parser
+import os
 
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
 from swagger_server.models.room_air_quality import RoomAirQuality  # noqa: E501
@@ -9,10 +10,15 @@ from swagger_server.models.room_data import RoomData  # noqa: E501
 from swagger_server.models.room_temperature import RoomTemperature  # noqa: E501
 from swagger_server import util
 
-from .authenticate import get_calendar_service
+from .authenticate import get_calendar_service, get_influx_client
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+from influxdb_client import InfluxDBClient
+from influxdb_client.client.query_api import QueryApi
+
+
 
 
 
@@ -27,7 +33,56 @@ def room_room_id_air_quality_get(room_id):  # noqa: E501
 
     :rtype: RoomAirQuality
     """
-    return 'do some magic!'
+
+     # Configuration
+
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+
+    try:
+        # Get the Query API
+        query_api: QueryApi = client.query_api()
+
+        # Flux query to retrieve data for the specific room
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -20d)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "co2")
+          |> filter(fn: (r) => r["room_id"] == "{room_id}")
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+
+        # Execute the query
+        result = query_api.query(org=org, query=flux_query)
+
+        
+        # Prepare the air quality data in the desired format
+        air_quality_data = []
+        for table in result:
+            for record in table.records:
+                # Assuming the field is "co2_level"
+                air_quality_data.append({
+                    'timestamp': record.get_time().isoformat(),
+                    'co2_level': record.get_value()
+                })
+
+        if not air_quality_data:
+            return jsonify({"error": "No air quality data found for the given room"}), 404
+
+        # Return the data in the desired format
+        return jsonify({
+            "room": room_id,
+            "air_quality": air_quality_data
+        })
+
+    finally:
+        # Close the client
+        client.close()
+
 
 
 def room_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E501
@@ -82,7 +137,6 @@ def room_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E50
         abort(500, f"Internal server error: {str(error)}")
 
 
-    return 'do some magic!'
 
 
 def room_room_id_get(room_id):  # noqa: E501
@@ -108,7 +162,56 @@ def room_room_id_temperature_get(room_id):  # noqa: E501
 
     :rtype: RoomTemperature
     """
-    return 'do some magic!'
+         # Configuration
+
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+
+    try:
+        # Get the Query API
+        query_api: QueryApi = client.query_api()
+
+        # Flux query to retrieve data for the specific room
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -20d)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "temperature")
+          |> filter(fn: (r) => r["room_id"] == "{room_id}")
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+
+        # Execute the query
+        result = query_api.query(org=org, query=flux_query)
+
+        
+        # Prepare the air quality data in the desired format
+        temp_data = []
+        for table in result:
+            for record in table.records:
+                # Assuming the field is "co2_level"
+                temp_data.append({
+                    'timestamp': record.get_time().isoformat(),
+                    'temperature': record.get_value()
+                })
+
+        if not temp_data:
+            return jsonify({"error": "No air quality data found for the given room"}), 404
+
+        # Return the data in the desired format
+        return jsonify({
+            "room": room_id,
+            "temperature": temp_data
+        })
+
+    finally:
+        # Close the client
+        client.close()
+
+
 
 
 def rooms_air_quality_get():  # noqa: E501
