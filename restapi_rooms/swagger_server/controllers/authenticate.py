@@ -1,6 +1,8 @@
 import os
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from influxdb_client import InfluxDBClient, Point
+
 
 
 
@@ -23,3 +25,17 @@ def get_calendar_service():
     credentials = authenticate()
     service = build('calendar', 'v3', credentials=credentials)
     return service
+
+
+def get_influx_client():
+
+    url = os.getenv('INFLUXDB_URL', 'http://localhost:8086')
+    token = os.getenv('INFLUXDB_TOKEN')
+
+    client = InfluxDBClient(url=url, token=token)
+
+    return client
+
+    
+
+
