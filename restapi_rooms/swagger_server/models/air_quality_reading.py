@@ -14,30 +14,25 @@ class AirQualityReading(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, timestamp: datetime=None, pm2_5: float=None, pm10: float=None):  # noqa: E501
+    def __init__(self, timestamp: datetime=None, co2: float=None):  # noqa: E501
         """AirQualityReading - a model defined in Swagger
 
         :param timestamp: The timestamp of this AirQualityReading.  # noqa: E501
         :type timestamp: datetime
-        :param pm2_5: The pm2_5 of this AirQualityReading.  # noqa: E501
-        :type pm2_5: float
-        :param pm10: The pm10 of this AirQualityReading.  # noqa: E501
-        :type pm10: float
+        :param co2: The co2 of this AirQualityReading.  # noqa: E501
+        :type co2: float
         """
         self.swagger_types = {
             'timestamp': datetime,
-            'pm2_5': float,
-            'pm10': float
+            'co2': float
         }
 
         self.attribute_map = {
             'timestamp': 'timestamp',
-            'pm2_5': 'pm2_5',
-            'pm10': 'pm10'
+            'co2': 'co2'
         }
         self._timestamp = timestamp
-        self._pm2_5 = pm2_5
-        self._pm10 = pm10
+        self._co2 = co2
 
     @classmethod
     def from_dict(cls, dikt) -> 'AirQualityReading':
@@ -74,47 +69,24 @@ class AirQualityReading(Model):
         self._timestamp = timestamp
 
     @property
-    def pm2_5(self) -> float:
-        """Gets the pm2_5 of this AirQualityReading.
+    def co2(self) -> float:
+        """Gets the co2 of this AirQualityReading.
 
-        PM2.5 concentration in μg/m³  # noqa: E501
+        Concentration of CO2 in percentage %  # noqa: E501
 
-        :return: The pm2_5 of this AirQualityReading.
+        :return: The co2 of this AirQualityReading.
         :rtype: float
         """
-        return self._pm2_5
+        return self._co2
 
-    @pm2_5.setter
-    def pm2_5(self, pm2_5: float):
-        """Sets the pm2_5 of this AirQualityReading.
+    @co2.setter
+    def co2(self, co2: float):
+        """Sets the co2 of this AirQualityReading.
 
-        PM2.5 concentration in μg/m³  # noqa: E501
+        Concentration of CO2 in percentage %  # noqa: E501
 
-        :param pm2_5: The pm2_5 of this AirQualityReading.
-        :type pm2_5: float
+        :param co2: The co2 of this AirQualityReading.
+        :type co2: float
         """
 
-        self._pm2_5 = pm2_5
-
-    @property
-    def pm10(self) -> float:
-        """Gets the pm10 of this AirQualityReading.
-
-        PM10 concentration in μg/m³  # noqa: E501
-
-        :return: The pm10 of this AirQualityReading.
-        :rtype: float
-        """
-        return self._pm10
-
-    @pm10.setter
-    def pm10(self, pm10: float):
-        """Sets the pm10 of this AirQualityReading.
-
-        PM10 concentration in μg/m³  # noqa: E501
-
-        :param pm10: The pm10 of this AirQualityReading.
-        :type pm10: float
-        """
-
-        self._pm10 = pm10
+        self._co2 = co2
