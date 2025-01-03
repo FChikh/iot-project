@@ -14,25 +14,25 @@ class AirQualityReading(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, timestamp: datetime=None, co2: float=None):  # noqa: E501
+    def __init__(self, timestamp: datetime=None, value: float=None):  # noqa: E501
         """AirQualityReading - a model defined in Swagger
 
         :param timestamp: The timestamp of this AirQualityReading.  # noqa: E501
         :type timestamp: datetime
-        :param co2: The co2 of this AirQualityReading.  # noqa: E501
-        :type co2: float
+        :param value: The value of this AirQualityReading.  # noqa: E501
+        :type value: float
         """
         self.swagger_types = {
             'timestamp': datetime,
-            'co2': float
+            'value': float
         }
 
         self.attribute_map = {
             'timestamp': 'timestamp',
-            'co2': 'co2'
+            'value': 'value'
         }
         self._timestamp = timestamp
-        self._co2 = co2
+        self._value = value
 
     @classmethod
     def from_dict(cls, dikt) -> 'AirQualityReading':
@@ -69,24 +69,24 @@ class AirQualityReading(Model):
         self._timestamp = timestamp
 
     @property
-    def co2(self) -> float:
-        """Gets the co2 of this AirQualityReading.
+    def value(self) -> float:
+        """Gets the value of this AirQualityReading.
 
         Concentration of CO2 in percentage %  # noqa: E501
 
-        :return: The co2 of this AirQualityReading.
+        :return: The value of this AirQualityReading.
         :rtype: float
         """
-        return self._co2
+        return self._value
 
-    @co2.setter
-    def co2(self, co2: float):
-        """Sets the co2 of this AirQualityReading.
+    @value.setter
+    def value(self, value: float):
+        """Sets the value of this AirQualityReading.
 
         Concentration of CO2 in percentage %  # noqa: E501
 
-        :param co2: The co2 of this AirQualityReading.
-        :type co2: float
+        :param value: The value of this AirQualityReading.
+        :type value: float
         """
 
-        self._co2 = co2
+        self._value = value

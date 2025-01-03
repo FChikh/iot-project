@@ -314,7 +314,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TemperatureReading'
-        air_quality:
+        airquality:
           type: array
           items:
             $ref: '#/components/schemas/AirQualityReading'
@@ -332,24 +332,24 @@ components:
             $ref: '#/components/schemas/Booking'
       example:
         light:
-        - lumen: 1.4658129805029452
+        - value: 1.4658129805029452
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - lumen: 1.4658129805029452
+        - value: 1.4658129805029452
           timestamp: 2000-01-23T04:56:07.000+00:00
         temperature:
         - value: 0.8008282
           timestamp: 2000-01-23T04:56:07.000+00:00
         - value: 0.8008282
           timestamp: 2000-01-23T04:56:07.000+00:00
+        airquality:
+        - value: 6.027456183070403
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - value: 6.027456183070403
+          timestamp: 2000-01-23T04:56:07.000+00:00
         humidity:
-        - lumen: 5.962133916683182
+        - value: 5.962133916683182
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - lumen: 5.962133916683182
-          timestamp: 2000-01-23T04:56:07.000+00:00
-        air_quality:
-        - co2: 6.027456183070403
-          timestamp: 2000-01-23T04:56:07.000+00:00
-        - co2: 6.027456183070403
+        - value: 5.962133916683182
           timestamp: 2000-01-23T04:56:07.000+00:00
         bookings:
         - 2000-01-23T04:56:07.000+00:00
@@ -378,15 +378,15 @@ components:
         room:
           type: string
           description: Room identifier
-        air_quality:
+        airquality:
           type: array
           items:
             $ref: '#/components/schemas/AirQualityReading'
       example:
-        air_quality:
-        - co2: 6.027456183070403
+        airquality:
+        - value: 6.027456183070403
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - co2: 6.027456183070403
+        - value: 6.027456183070403
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     RoomLight:
@@ -401,9 +401,9 @@ components:
             $ref: '#/components/schemas/LightReading'
       example:
         light:
-        - lumen: 1.4658129805029452
+        - value: 1.4658129805029452
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - lumen: 1.4658129805029452
+        - value: 1.4658129805029452
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     RoomHumidity:
@@ -418,9 +418,9 @@ components:
             $ref: '#/components/schemas/HumidityReading'
       example:
         humidity:
-        - lumen: 5.962133916683182
+        - value: 5.962133916683182
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - lumen: 5.962133916683182
+        - value: 5.962133916683182
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     TemperatureReading:
@@ -444,11 +444,11 @@ components:
           type: string
           description: Time of the air quality reading
           format: date-time
-        co2:
+        value:
           type: number
           description: Concentration of CO2 in percentage %
       example:
-        co2: 6.027456183070403
+        value: 6.027456183070403
         timestamp: 2000-01-23T04:56:07.000+00:00
     LightReading:
       type: object
@@ -457,11 +457,11 @@ components:
           type: string
           description: Time of the light reading
           format: date-time
-        lumen:
+        value:
           type: number
           description: Amount of light falling on a surface in lux = lumen/m2
       example:
-        lumen: 1.4658129805029452
+        value: 1.4658129805029452
         timestamp: 2000-01-23T04:56:07.000+00:00
     HumidityReading:
       type: object
@@ -470,12 +470,12 @@ components:
           type: string
           description: Time of the humidity reading
           format: date-time
-        lumen:
+        value:
           type: number
           description: amount of water vapor in the air relative to the maximum amount
             the air can hold at a given temperature in percent %
       example:
-        lumen: 5.962133916683182
+        value: 5.962133916683182
         timestamp: 2000-01-23T04:56:07.000+00:00
     Booking:
       type: string

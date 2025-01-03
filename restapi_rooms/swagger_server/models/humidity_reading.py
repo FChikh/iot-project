@@ -14,25 +14,25 @@ class HumidityReading(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, timestamp: datetime=None, lumen: float=None):  # noqa: E501
+    def __init__(self, timestamp: datetime=None, value: float=None):  # noqa: E501
         """HumidityReading - a model defined in Swagger
 
         :param timestamp: The timestamp of this HumidityReading.  # noqa: E501
         :type timestamp: datetime
-        :param lumen: The lumen of this HumidityReading.  # noqa: E501
-        :type lumen: float
+        :param value: The value of this HumidityReading.  # noqa: E501
+        :type value: float
         """
         self.swagger_types = {
             'timestamp': datetime,
-            'lumen': float
+            'value': float
         }
 
         self.attribute_map = {
             'timestamp': 'timestamp',
-            'lumen': 'lumen'
+            'value': 'value'
         }
         self._timestamp = timestamp
-        self._lumen = lumen
+        self._value = value
 
     @classmethod
     def from_dict(cls, dikt) -> 'HumidityReading':
@@ -69,24 +69,24 @@ class HumidityReading(Model):
         self._timestamp = timestamp
 
     @property
-    def lumen(self) -> float:
-        """Gets the lumen of this HumidityReading.
+    def value(self) -> float:
+        """Gets the value of this HumidityReading.
 
         amount of water vapor in the air relative to the maximum amount the air can hold at a given temperature in percent %  # noqa: E501
 
-        :return: The lumen of this HumidityReading.
+        :return: The value of this HumidityReading.
         :rtype: float
         """
-        return self._lumen
+        return self._value
 
-    @lumen.setter
-    def lumen(self, lumen: float):
-        """Sets the lumen of this HumidityReading.
+    @value.setter
+    def value(self, value: float):
+        """Sets the value of this HumidityReading.
 
         amount of water vapor in the air relative to the maximum amount the air can hold at a given temperature in percent %  # noqa: E501
 
-        :param lumen: The lumen of this HumidityReading.
-        :type lumen: float
+        :param value: The value of this HumidityReading.
+        :type value: float
         """
 
-        self._lumen = lumen
+        self._value = value

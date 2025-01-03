@@ -14,25 +14,25 @@ class LightReading(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, timestamp: datetime=None, lumen: float=None):  # noqa: E501
+    def __init__(self, timestamp: datetime=None, value: float=None):  # noqa: E501
         """LightReading - a model defined in Swagger
 
         :param timestamp: The timestamp of this LightReading.  # noqa: E501
         :type timestamp: datetime
-        :param lumen: The lumen of this LightReading.  # noqa: E501
-        :type lumen: float
+        :param value: The value of this LightReading.  # noqa: E501
+        :type value: float
         """
         self.swagger_types = {
             'timestamp': datetime,
-            'lumen': float
+            'value': float
         }
 
         self.attribute_map = {
             'timestamp': 'timestamp',
-            'lumen': 'lumen'
+            'value': 'value'
         }
         self._timestamp = timestamp
-        self._lumen = lumen
+        self._value = value
 
     @classmethod
     def from_dict(cls, dikt) -> 'LightReading':
@@ -69,24 +69,24 @@ class LightReading(Model):
         self._timestamp = timestamp
 
     @property
-    def lumen(self) -> float:
-        """Gets the lumen of this LightReading.
+    def value(self) -> float:
+        """Gets the value of this LightReading.
 
         Amount of light falling on a surface in lux = lumen/m2  # noqa: E501
 
-        :return: The lumen of this LightReading.
+        :return: The value of this LightReading.
         :rtype: float
         """
-        return self._lumen
+        return self._value
 
-    @lumen.setter
-    def lumen(self, lumen: float):
-        """Sets the lumen of this LightReading.
+    @value.setter
+    def value(self, value: float):
+        """Sets the value of this LightReading.
 
         Amount of light falling on a surface in lux = lumen/m2  # noqa: E501
 
-        :param lumen: The lumen of this LightReading.
-        :type lumen: float
+        :param value: The value of this LightReading.
+        :type value: float
         """
 
-        self._lumen = lumen
+        self._value = value

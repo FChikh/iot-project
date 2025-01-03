@@ -15,25 +15,25 @@ class RoomAirQuality(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, room: str=None, air_quality: List[AirQualityReading]=None):  # noqa: E501
+    def __init__(self, room: str=None, airquality: List[AirQualityReading]=None):  # noqa: E501
         """RoomAirQuality - a model defined in Swagger
 
         :param room: The room of this RoomAirQuality.  # noqa: E501
         :type room: str
-        :param air_quality: The air_quality of this RoomAirQuality.  # noqa: E501
-        :type air_quality: List[AirQualityReading]
+        :param airquality: The airquality of this RoomAirQuality.  # noqa: E501
+        :type airquality: List[AirQualityReading]
         """
         self.swagger_types = {
             'room': str,
-            'air_quality': List[AirQualityReading]
+            'airquality': List[AirQualityReading]
         }
 
         self.attribute_map = {
             'room': 'room',
-            'air_quality': 'air_quality'
+            'airquality': 'airquality'
         }
         self._room = room
-        self._air_quality = air_quality
+        self._airquality = airquality
 
     @classmethod
     def from_dict(cls, dikt) -> 'RoomAirQuality':
@@ -70,22 +70,22 @@ class RoomAirQuality(Model):
         self._room = room
 
     @property
-    def air_quality(self) -> List[AirQualityReading]:
-        """Gets the air_quality of this RoomAirQuality.
+    def airquality(self) -> List[AirQualityReading]:
+        """Gets the airquality of this RoomAirQuality.
 
 
-        :return: The air_quality of this RoomAirQuality.
+        :return: The airquality of this RoomAirQuality.
         :rtype: List[AirQualityReading]
         """
-        return self._air_quality
+        return self._airquality
 
-    @air_quality.setter
-    def air_quality(self, air_quality: List[AirQualityReading]):
-        """Sets the air_quality of this RoomAirQuality.
+    @airquality.setter
+    def airquality(self, airquality: List[AirQualityReading]):
+        """Sets the airquality of this RoomAirQuality.
 
 
-        :param air_quality: The air_quality of this RoomAirQuality.
-        :type air_quality: List[AirQualityReading]
+        :param airquality: The airquality of this RoomAirQuality.
+        :type airquality: List[AirQualityReading]
         """
 
-        self._air_quality = air_quality
+        self._airquality = airquality

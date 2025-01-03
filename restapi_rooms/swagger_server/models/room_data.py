@@ -19,15 +19,15 @@ class RoomData(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, room: str=None, temperature: List[TemperatureReading]=None, air_quality: List[AirQualityReading]=None, light: List[LightReading]=None, humidity: List[HumidityReading]=None, bookings: List[Booking]=None):  # noqa: E501
+    def __init__(self, room: str=None, temperature: List[TemperatureReading]=None, airquality: List[AirQualityReading]=None, light: List[LightReading]=None, humidity: List[HumidityReading]=None, bookings: List[Booking]=None):  # noqa: E501
         """RoomData - a model defined in Swagger
 
         :param room: The room of this RoomData.  # noqa: E501
         :type room: str
         :param temperature: The temperature of this RoomData.  # noqa: E501
         :type temperature: List[TemperatureReading]
-        :param air_quality: The air_quality of this RoomData.  # noqa: E501
-        :type air_quality: List[AirQualityReading]
+        :param airquality: The airquality of this RoomData.  # noqa: E501
+        :type airquality: List[AirQualityReading]
         :param light: The light of this RoomData.  # noqa: E501
         :type light: List[LightReading]
         :param humidity: The humidity of this RoomData.  # noqa: E501
@@ -38,7 +38,7 @@ class RoomData(Model):
         self.swagger_types = {
             'room': str,
             'temperature': List[TemperatureReading],
-            'air_quality': List[AirQualityReading],
+            'airquality': List[AirQualityReading],
             'light': List[LightReading],
             'humidity': List[HumidityReading],
             'bookings': List[Booking]
@@ -47,14 +47,14 @@ class RoomData(Model):
         self.attribute_map = {
             'room': 'room',
             'temperature': 'temperature',
-            'air_quality': 'air_quality',
+            'airquality': 'airquality',
             'light': 'light',
             'humidity': 'humidity',
             'bookings': 'bookings'
         }
         self._room = room
         self._temperature = temperature
-        self._air_quality = air_quality
+        self._airquality = airquality
         self._light = light
         self._humidity = humidity
         self._bookings = bookings
@@ -115,25 +115,25 @@ class RoomData(Model):
         self._temperature = temperature
 
     @property
-    def air_quality(self) -> List[AirQualityReading]:
-        """Gets the air_quality of this RoomData.
+    def airquality(self) -> List[AirQualityReading]:
+        """Gets the airquality of this RoomData.
 
 
-        :return: The air_quality of this RoomData.
+        :return: The airquality of this RoomData.
         :rtype: List[AirQualityReading]
         """
-        return self._air_quality
+        return self._airquality
 
-    @air_quality.setter
-    def air_quality(self, air_quality: List[AirQualityReading]):
-        """Sets the air_quality of this RoomData.
+    @airquality.setter
+    def airquality(self, airquality: List[AirQualityReading]):
+        """Sets the airquality of this RoomData.
 
 
-        :param air_quality: The air_quality of this RoomData.
-        :type air_quality: List[AirQualityReading]
+        :param airquality: The airquality of this RoomData.
+        :type airquality: List[AirQualityReading]
         """
 
-        self._air_quality = air_quality
+        self._airquality = airquality
 
     @property
     def light(self) -> List[LightReading]:
