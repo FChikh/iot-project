@@ -181,7 +181,7 @@ def room_id_humidity_get(room_id):  # noqa: E501
                 })
 
         if not humidity_data:
-            return jsonify({"error": "No air quality data found for the given room"}), 404
+            return jsonify({"error": "No humidity data found for the given room"}), 404
 
         # Return the data in the desired format
         return jsonify({
@@ -242,7 +242,7 @@ def room_id_light_get(room_id):  # noqa: E501
                 })
 
         if not light_data:
-            return jsonify({"error": "No air quality data found for the given room"}), 404
+            return jsonify({"error": "No light data found for the given room"}), 404
 
         # Return the data in the desired format
         return jsonify({
@@ -302,7 +302,7 @@ def room_id_temperature_get(room_id):  # noqa: E501
                 })
 
         if not temperature_data:
-            return jsonify({"error": "No air quality data found for the given room"}), 404
+            return jsonify({"error": "No temperature data found for the given room"}), 404
 
         # Return the data in the desired format
         return jsonify({
