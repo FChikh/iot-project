@@ -14,7 +14,7 @@ Prerequisites:
 2. create Google Calendar and enable the Google Calendar API
 3. create service account for your Google Calendar API
 4. Add service account with rights of making changes to the Google Calendar
-5. create `env` folder and input the json file representing the credential of your service account on the Google Calendar API
+5. create `env` folder and input the json file representing the credential of your service account on the Google Calendar API. The json credentials file need to be named `creds.json`
 
 
 
