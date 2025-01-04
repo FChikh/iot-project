@@ -14,6 +14,10 @@ from swagger_server.models.room_light import RoomLight  # noqa: E501
 from swagger_server.models.room_temperature import RoomTemperature  # noqa: E501
 from swagger_server import util
 
+from .get_funcs.get_sensor_data import get_spec_room_spec_sensor, get_all_room_spec_sensor
+from .get_funcs.get_sensor_data import get_spec_room_all_sensor, get_all_room_all_sensor
+from .get_funcs.get_booking import get_spec_room_bookings, get_all_room_bookings
+
 
 def book_room_id_post(body, room_id):  # noqa: E501
     """Book a specific room
@@ -42,7 +46,7 @@ def room_id_airquality_get(room_id):  # noqa: E501
 
     :rtype: RoomAirQuality
     """
-    return 'do some magic!'
+    return get_spec_room_spec_sensor("airquality", room_id, 14)
 
 
 def room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E501
@@ -59,8 +63,7 @@ def room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E501
 
     :rtype: InlineResponse2001
     """
-    start_date = util.deserialize_date(start_date)
-    return 'do some magic!'
+    return get_spec_room_bookings(room_id, start_date, days)
 
 
 def room_id_humidity_get(room_id):  # noqa: E501
@@ -73,7 +76,8 @@ def room_id_humidity_get(room_id):  # noqa: E501
 
     :rtype: RoomHumidity
     """
-    return 'do some magic!'
+    return get_spec_room_spec_sensor("humidity", room_id, 14)
+
 
 
 def room_id_light_get(room_id):  # noqa: E501
@@ -86,7 +90,7 @@ def room_id_light_get(room_id):  # noqa: E501
 
     :rtype: RoomLight
     """
-    return 'do some magic!'
+    return get_spec_room_spec_sensor("light", room_id, 14)
 
 
 def room_id_temperature_get(room_id):  # noqa: E501
@@ -99,7 +103,7 @@ def room_id_temperature_get(room_id):  # noqa: E501
 
     :rtype: RoomTemperature
     """
-    return 'do some magic!'
+    return get_spec_room_spec_sensor("temperature", room_id, 14)
 
 
 def rooms_airquality_get():  # noqa: E501
@@ -110,7 +114,7 @@ def rooms_airquality_get():  # noqa: E501
 
     :rtype: List[RoomAirQuality]
     """
-    return 'do some magic!'
+    return get_all_room_spec_sensor("airquality", 14)
 
 
 def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
@@ -125,8 +129,7 @@ def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
 
     :rtype: Dict[str, List[Booking]]
     """
-    start_date = util.deserialize_date(start_date)
-    return 'do some magic!'
+    return get_all_room_bookings(start_date, days)
 
 
 def rooms_humidity_get():  # noqa: E501
@@ -137,7 +140,7 @@ def rooms_humidity_get():  # noqa: E501
 
     :rtype: List[RoomHumidity]
     """
-    return 'do some magic!'
+    return get_all_room_spec_sensor("humidity", 14)
 
 
 def rooms_light_get():  # noqa: E501
@@ -148,7 +151,7 @@ def rooms_light_get():  # noqa: E501
 
     :rtype: List[RoomLight]
     """
-    return 'do some magic!'
+    return get_all_room_spec_sensor("light", 14)
 
 
 def rooms_temperature_get():  # noqa: E501
@@ -159,7 +162,7 @@ def rooms_temperature_get():  # noqa: E501
 
     :rtype: List[RoomTemperature]
     """
-    return 'do some magic!'
+    return get_all_room_spec_sensor("temperature", 14)
 
 
 def sensor_room_id_get(room_id):  # noqa: E501
@@ -172,7 +175,7 @@ def sensor_room_id_get(room_id):  # noqa: E501
 
     :rtype: RoomData
     """
-    return 'do some magic!'
+    return get_spec_room_all_sensor(room_id, 14)
 
 
 def sensor_rooms_get():  # noqa: E501
@@ -183,4 +186,4 @@ def sensor_rooms_get():  # noqa: E501
 
     :rtype: List[RoomData]
     """
-    return 'do some magic!'
+    return get_all_room_all_sensor(14)
