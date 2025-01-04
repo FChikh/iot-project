@@ -1,37 +1,37 @@
 import pandas as pd
+import requests
 import json
 
-
-def load_json_to_dataframe(file_path: str, sensor_name: str) -> pd.DataFrame:
+def download_sensor_data(api_url: str, sensor_name: str) -> pd.DataFrame:
     """
-    Opens a JSON file and loads the content of a specific sensor into a pandas DataFrame.
+    Fetches a JSON file from a REST API and loads the content of a specific sensor into a pandas DataFrame.
 
     Args:
-        file_path (str): The path to the JSON file.
-        sensor_name (str): The key in the JSON file corresponding to the desired sensor data.
+        api_url (str): The URL of the REST API endpoint returning JSON data.
+        sensor_name (str): The key in the JSON data corresponding to the desired sensor data.
 
     Returns:
         pd.DataFrame: A pandas DataFrame containing the JSON data, or an empty DataFrame if an error occurs.
     """
     try:
-        with open(file_path, 'r') as file:
-            json_data = json.load(file)  # Load the JSON content
-            
-            # Convert the relevant part of the JSON into a DataFrame
-            df = pd.DataFrame(json_data[sensor_name])
+        # Fetch the JSON data from the REST API
+        response = requests.get(api_url)
+        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+        
+        json_data = response.json()  # Parse the JSON content
+        
+        # Convert the relevant part of the JSON into a DataFrame
+        df = pd.DataFrame(json_data[sensor_name])
 
         return df
-    except FileNotFoundError:
-        print(f"File not found: {file_path}")
-        return pd.DataFrame()  # Return an empty DataFrame on error
-    except json.JSONDecodeError:
-        print(f"Error decoding JSON in file: {file_path}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data from API: {e}")
         return pd.DataFrame()  # Return an empty DataFrame on error
     except KeyError:
-        print(f"Key '{sensor_name}' not found in JSON file: {file_path}")
+        print(f"Key '{sensor_name}' not found in JSON data from API: {api_url}")
         return pd.DataFrame()  # Return an empty DataFrame if the key is missing
+    except ValueError:
+        print("Error decoding JSON data from API response.")
+        return pd.DataFrame()  # Return an empty DataFrame on JSON decoding error
 
-
-def download_sensor_data(room, sensor_name, start, end):
-    pass
 
