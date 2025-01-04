@@ -17,6 +17,7 @@ from swagger_server import util
 from .get_funcs.get_sensor_data import get_spec_room_spec_sensor, get_all_room_spec_sensor
 from .get_funcs.get_sensor_data import get_spec_room_all_sensor, get_all_room_all_sensor
 from .get_funcs.get_booking import get_spec_room_bookings, get_all_room_bookings
+from .post_funcs.post_book_room import post_book_room_id
 
 
 def book_room_id_post(body, room_id):  # noqa: E501
@@ -31,9 +32,17 @@ def book_room_id_post(body, room_id):  # noqa: E501
 
     :rtype: InlineResponse200
     """
+
+    """Book a specific room"""
+    print("Starting booking process...")  # Debug log
+    print(f"Received body: {body}")      # Debug log
+    print(f"Room ID: {room_id}")         # Debug log
+
     if connexion.request.is_json:
-        body = BookRoomIdBody.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
+            body = BookRoomIdBody.from_dict(connexion.request.get_json())
+            print(f"Parsed body: {body}") # Debug log
+
+    return post_book_room_id(body, room_id)
 
 
 def room_id_airquality_get(room_id):  # noqa: E501
