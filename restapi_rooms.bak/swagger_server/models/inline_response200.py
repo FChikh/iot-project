@@ -6,6 +6,7 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from swagger_server.models.base_model_ import Model
+from swagger_server.models.booking import Booking  # noqa: F401,E501
 from swagger_server import util
 
 
@@ -14,14 +15,14 @@ class InlineResponse200(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, room_id: List[datetime]=None):  # noqa: E501
+    def __init__(self, room_id: List[Booking]=None):  # noqa: E501
         """InlineResponse200 - a model defined in Swagger
 
         :param room_id: The room_id of this InlineResponse200.  # noqa: E501
-        :type room_id: List[datetime]
+        :type room_id: List[Booking]
         """
         self.swagger_types = {
-            'room_id': List[datetime]
+            'room_id': List[Booking]
         }
 
         self.attribute_map = {
@@ -41,22 +42,22 @@ class InlineResponse200(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def room_id(self) -> List[datetime]:
+    def room_id(self) -> List[Booking]:
         """Gets the room_id of this InlineResponse200.
 
 
         :return: The room_id of this InlineResponse200.
-        :rtype: List[datetime]
+        :rtype: List[Booking]
         """
         return self._room_id
 
     @room_id.setter
-    def room_id(self, room_id: List[datetime]):
+    def room_id(self, room_id: List[Booking]):
         """Sets the room_id of this InlineResponse200.
 
 
         :param room_id: The room_id of this InlineResponse200.
-        :type room_id: List[datetime]
+        :type room_id: List[Booking]
         """
 
         self._room_id = room_id

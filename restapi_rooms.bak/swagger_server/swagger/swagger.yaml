@@ -7,15 +7,15 @@ servers:
 - url: http://localhost:8087
   description: Room Sensors
 paths:
-  /rooms:
+  /sensor/rooms:
     get:
       summary: Get sensor data for all rooms
       description: Retrieve all sensor data (temperature and air quality) for all
         rooms
-      operationId: rooms_get
+      operationId: sensor_rooms_get
       responses:
         "200":
-          description: A JSON array of rooms with their sensor data captured the öast
+          description: A JSON array of rooms with their sensor data captured the past
             2 Weeks
           content:
             application/json:
@@ -25,11 +25,11 @@ paths:
                   $ref: '#/components/schemas/RoomData'
                 x-content-type: application/json
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /room/{room_id}:
+  /sensor/{room_id}:
     get:
       summary: Get sensor data for a specific room
       description: Retrieve all sensor data for a specific room
-      operationId: room_room_id_get
+      operationId: sensor_room_id_get
       parameters:
       - name: room_id
         in: path
@@ -49,11 +49,11 @@ paths:
         "404":
           description: Room not found
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /rooms/air-quality:
+  /rooms/airquality:
     get:
       summary: Get air quality data for all rooms
       description: Retrieve air quality measurements for all rooms
-      operationId: rooms_air_quality_get
+      operationId: rooms_airquality_get
       responses:
         "200":
           description: Successful response
@@ -81,53 +81,37 @@ paths:
                   $ref: '#/components/schemas/RoomTemperature'
                 x-content-type: application/json
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /room/{room_id}/air-quality:
+  /rooms/light:
     get:
-      summary: Get air quality data for a specific room
-      description: Retrieve air quality measurements for a specific room
-      operationId: room_room_id_air_quality_get
-      parameters:
-      - name: room_id
-        in: path
-        description: Unique identifier for the room
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+      summary: Get light data for all rooms
+      description: Retrieve light measurements for all rooms
+      operationId: rooms_light_get
       responses:
         "200":
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoomAirQuality'
-        "404":
-          description: Room not found
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomLight'
+                x-content-type: application/json
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /room/{room_id}/temperature:
+  /rooms/humidity:
     get:
-      summary: Get temperature data for a specific room
-      description: Retrieve temperature measurements for a specific room
-      operationId: room_room_id_temperature_get
-      parameters:
-      - name: room_id
-        in: path
-        description: Unique identifier for the room
-        required: true
-        style: simple
-        explode: false
-        schema:
-          type: string
+      summary: Get humidity data for all rooms
+      description: Retrieve humidity measurements for all rooms
+      operationId: rooms_humidity_get
       responses:
         "200":
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RoomTemperature'
-        "404":
-          description: Room not found
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomHumidity'
+                x-content-type: application/json
       x-openapi-router-controller: swagger_server.controllers.default_controller
   /rooms/bookings:
     get:
@@ -163,8 +147,7 @@ paths:
                 additionalProperties:
                   type: array
                   items:
-                    type: string
-                    format: date-time
+                    $ref: '#/components/schemas/Booking'
                 example:
                   room001:
                   - 2024-12-01 17:30:00
@@ -177,12 +160,108 @@ paths:
         "500":
           description: Internal server error
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /room/{room_id}/bookings:
+  /{room_id}/airquality:
+    get:
+      summary: Get air quality data for a specific room
+      description: Retrieve air quality measurements for a specific room
+      operationId: room_id_airquality_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomAirQuality'
+        "404":
+          description: Room not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /{room_id}/temperature:
+    get:
+      summary: Get temperature data for a specific room
+      description: Retrieve temperature measurements for a specific room
+      operationId: room_id_temperature_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomTemperature'
+        "404":
+          description: Room not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /{room_id}/humidity:
+    get:
+      summary: Get humidity data for a specific room
+      description: Retrieve humidity measurements for a specific room
+      operationId: room_id_humidity_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomHumidity'
+        "404":
+          description: Room not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /{room_id}/light:
+    get:
+      summary: Get light data for a specific room
+      description: Retrieve light measurements for a specific room
+      operationId: room_id_light_get
+      parameters:
+      - name: room_id
+        in: path
+        description: Unique identifier for the room
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomLight'
+        "404":
+          description: Room not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /{room_id}/bookings:
     get:
       summary: Get bookings for specific room
       description: Retrieve booking timestamps for a specific room within a specified
         time interval
-      operationId: room_room_id_bookings_get
+      operationId: room_id_bookings_get
       parameters:
       - name: room_id
         in: path
@@ -235,23 +314,46 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TemperatureReading'
-        air_quality:
+        airquality:
           type: array
           items:
             $ref: '#/components/schemas/AirQualityReading'
+        light:
+          type: array
+          items:
+            $ref: '#/components/schemas/LightReading'
+        humidity:
+          type: array
+          items:
+            $ref: '#/components/schemas/HumidityReading'
+        bookings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Booking'
       example:
+        light:
+        - value: 1.4658129805029452
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - value: 1.4658129805029452
+          timestamp: 2000-01-23T04:56:07.000+00:00
         temperature:
         - value: 0.8008282
           timestamp: 2000-01-23T04:56:07.000+00:00
         - value: 0.8008282
           timestamp: 2000-01-23T04:56:07.000+00:00
-        air_quality:
-        - pm2_5: 6.02745618307040320615897144307382404804229736328125
-          pm10: 1.46581298050294517310021547018550336360931396484375
+        airquality:
+        - value: 6.027456183070403
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - pm2_5: 6.02745618307040320615897144307382404804229736328125
-          pm10: 1.46581298050294517310021547018550336360931396484375
+        - value: 6.027456183070403
           timestamp: 2000-01-23T04:56:07.000+00:00
+        humidity:
+        - value: 5.962133916683182
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - value: 5.962133916683182
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        bookings:
+        - 2000-01-23T04:56:07.000+00:00
+        - 2000-01-23T04:56:07.000+00:00
         room: room
     RoomTemperature:
       type: object
@@ -276,17 +378,49 @@ components:
         room:
           type: string
           description: Room identifier
-        air_quality:
+        airquality:
           type: array
           items:
             $ref: '#/components/schemas/AirQualityReading'
       example:
-        air_quality:
-        - pm2_5: 6.02745618307040320615897144307382404804229736328125
-          pm10: 1.46581298050294517310021547018550336360931396484375
+        airquality:
+        - value: 6.027456183070403
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - pm2_5: 6.02745618307040320615897144307382404804229736328125
-          pm10: 1.46581298050294517310021547018550336360931396484375
+        - value: 6.027456183070403
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        room: room
+    RoomLight:
+      type: object
+      properties:
+        room:
+          type: string
+          description: Room identifier
+        light:
+          type: array
+          items:
+            $ref: '#/components/schemas/LightReading'
+      example:
+        light:
+        - value: 1.4658129805029452
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - value: 1.4658129805029452
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        room: room
+    RoomHumidity:
+      type: object
+      properties:
+        room:
+          type: string
+          description: Room identifier
+        humidity:
+          type: array
+          items:
+            $ref: '#/components/schemas/HumidityReading'
+      example:
+        humidity:
+        - value: 5.962133916683182
+          timestamp: 2000-01-23T04:56:07.000+00:00
+        - value: 5.962133916683182
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     TemperatureReading:
@@ -310,24 +444,49 @@ components:
           type: string
           description: Time of the air quality reading
           format: date-time
-        pm2_5:
+        value:
           type: number
-          description: PM2.5 concentration in μg/m³
-        pm10:
-          type: number
-          description: PM10 concentration in μg/m³
+          description: Concentration of CO2 in percentage %
       example:
-        pm2_5: 6.02745618307040320615897144307382404804229736328125
-        pm10: 1.46581298050294517310021547018550336360931396484375
+        value: 6.027456183070403
         timestamp: 2000-01-23T04:56:07.000+00:00
+    LightReading:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          description: Time of the light reading
+          format: date-time
+        value:
+          type: number
+          description: Amount of light falling on a surface in lux = lumen/m2
+      example:
+        value: 1.4658129805029452
+        timestamp: 2000-01-23T04:56:07.000+00:00
+    HumidityReading:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          description: Time of the humidity reading
+          format: date-time
+        value:
+          type: number
+          description: amount of water vapor in the air relative to the maximum amount
+            the air can hold at a given temperature in percent %
+      example:
+        value: 5.962133916683182
+        timestamp: 2000-01-23T04:56:07.000+00:00
+    Booking:
+      type: string
+      format: date-time
     inline_response_200:
       type: object
       properties:
         room_id:
           type: array
           items:
-            type: string
-            format: date-time
+            $ref: '#/components/schemas/Booking'
       example:
         room001:
         - 2024-12-01 17:30:00

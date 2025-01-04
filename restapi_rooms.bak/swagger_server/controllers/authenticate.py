@@ -4,9 +4,6 @@ from googleapiclient.discovery import build
 from influxdb_client import InfluxDBClient, Point
 
 
-
-
-
 def authenticate():
     """ Authentication with service account
     """
@@ -20,6 +17,7 @@ def authenticate():
     )
     
     return credentials
+
 
 def get_calendar_service():
     credentials = authenticate()
@@ -37,5 +35,4 @@ def get_influx_client():
     return client
 
     
-
 

@@ -1,29 +1,27 @@
-import connexion
-import six
+import connexion, six, os
 from flask import abort, jsonify
 from dateutil import parser
-import os
+from datetime import datetime, timedelta
 
 from swagger_server.models.inline_response200 import InlineResponse200  # noqa: E501
 from swagger_server.models.room_air_quality import RoomAirQuality  # noqa: E501
 from swagger_server.models.room_data import RoomData  # noqa: E501
+from swagger_server.models.room_humidity import RoomHumidity  # noqa: E501
+from swagger_server.models.room_light import RoomLight  # noqa: E501
 from swagger_server.models.room_temperature import RoomTemperature  # noqa: E501
 from swagger_server import util
 
-from .authenticate import get_calendar_service, get_influx_client
-from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.query_api import QueryApi
 
+from .authenticate import get_calendar_service, get_influx_client
 
 
 
-
-
-def room_room_id_air_quality_get(room_id):  # noqa: E501
+def room_id_airquality_get(room_id):  # noqa: E501
     """Get air quality data for a specific room
 
     Retrieve air quality measurements for a specific room # noqa: E501
@@ -33,8 +31,6 @@ def room_room_id_air_quality_get(room_id):  # noqa: E501
 
     :rtype: RoomAirQuality
     """
-
-     # Configuration
 
     client = get_influx_client()
     org = os.getenv('INFLUXDB_ORG', 'myorg')
@@ -67,7 +63,7 @@ def room_room_id_air_quality_get(room_id):  # noqa: E501
                 # Assuming the field is "co2_level"
                 air_quality_data.append({
                     'timestamp': record.get_time().isoformat(),
-                    'co2_level': record.get_value()
+                    'value': record.get_value()
                 })
 
         if not air_quality_data:
@@ -85,7 +81,8 @@ def room_room_id_air_quality_get(room_id):  # noqa: E501
 
 
 
-def room_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E501
+
+def room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E501
     """Get bookings for specific room
 
     Retrieve booking timestamps for a specific room within a specified time interval # noqa: E501
@@ -104,7 +101,7 @@ def room_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E50
         end_date = start_date + timedelta(days=days)
         
         service = get_calendar_service()
-        calendar_id = "7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com"
+        calendar_id = os.getenv('GOOGLE_CAL_ID')
         
         events = service.events().list(
             calendarId=calendar_id,
@@ -118,7 +115,6 @@ def room_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E50
         for event in events:
             room = event["location"]
             temp1 = event["start"].get("dateTime")
-            # start_time = datetime.fromisoformat(temp1)
             start_time = parser.parse(temp1).strftime('%Y-%m-%d %H:%M:%S')
 
             
@@ -131,7 +127,7 @@ def room_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E50
 
     except HttpError as error:
         print(error)
-        abort(500, f"Google Calendar API error: {str(error)}")
+        abort(400, f"Google Calendar API error: {str(error)}")
     except Exception as error:
         print(error)
         abort(500, f"Internal server error: {str(error)}")
@@ -139,20 +135,129 @@ def room_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E50
 
 
 
-def room_room_id_get(room_id):  # noqa: E501
-    """Get sensor data for a specific room
+def room_id_humidity_get(room_id):  # noqa: E501
+    """Get humidity data for a specific room
 
-    Retrieve all sensor data for a specific room # noqa: E501
+    Retrieve humidity measurements for a specific room # noqa: E501
 
     :param room_id: Unique identifier for the room
     :type room_id: str
 
-    :rtype: RoomData
+    :rtype: RoomHumidity
     """
-    return 'do some magic!'
+
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
 
 
-def room_room_id_temperature_get(room_id):  # noqa: E501
+    try:
+        # Get the Query API
+        query_api: QueryApi = client.query_api()
+
+        # Flux query to retrieve data for the specific room
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -20d)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "humidity")
+          |> filter(fn: (r) => r["room_id"] == "{room_id}")
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+
+        # Execute the query
+        result = query_api.query(org=org, query=flux_query)
+
+        
+        # Prepare the air quality data in the desired format
+        humidity_data = []
+        for table in result:
+            for record in table.records:
+                # Assuming the field is "co2_level"
+                humidity_data.append({
+                    'timestamp': record.get_time().isoformat(),
+                    'value': record.get_value()
+                })
+
+        if not humidity_data:
+            return jsonify({"error": "No humidity data found for the given room"}), 404
+
+        # Return the data in the desired format
+        return jsonify({
+            "room": room_id,
+            "humidity": humidity_data
+        })
+
+    finally:
+        # Close the client
+        client.close()
+
+
+
+
+def room_id_light_get(room_id):  # noqa: E501
+    """Get light data for a specific room
+
+    Retrieve light measurements for a specific room # noqa: E501
+
+    :param room_id: Unique identifier for the room
+    :type room_id: str
+
+    :rtype: RoomLight
+    """
+    
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+
+    try:
+        # Get the Query API
+        query_api: QueryApi = client.query_api()
+
+        # Flux query to retrieve data for the specific room
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: -20d)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "light")
+          |> filter(fn: (r) => r["room_id"] == "{room_id}")
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+
+        # Execute the query
+        result = query_api.query(org=org, query=flux_query)
+
+        
+        # Prepare the air quality data in the desired format
+        light_data = []
+        for table in result:
+            for record in table.records:
+                # Assuming the field is "co2_level"
+                light_data.append({
+                    'timestamp': record.get_time().isoformat(),
+                    'value': record.get_value()
+                })
+
+        if not light_data:
+            return jsonify({"error": "No light data found for the given room"}), 404
+
+        # Return the data in the desired format
+        return jsonify({
+            "room": room_id,
+            "light": light_data
+        })
+
+    finally:
+        # Close the client
+        client.close()
+
+
+
+
+def room_id_temperature_get(room_id):  # noqa: E501
     """Get temperature data for a specific room
 
     Retrieve temperature measurements for a specific room # noqa: E501
@@ -162,8 +267,6 @@ def room_room_id_temperature_get(room_id):  # noqa: E501
 
     :rtype: RoomTemperature
     """
-         # Configuration
-
     client = get_influx_client()
     org = os.getenv('INFLUXDB_ORG', 'myorg')
     bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
@@ -189,22 +292,22 @@ def room_room_id_temperature_get(room_id):  # noqa: E501
 
         
         # Prepare the air quality data in the desired format
-        temp_data = []
+        temperature_data = []
         for table in result:
             for record in table.records:
                 # Assuming the field is "co2_level"
-                temp_data.append({
+                temperature_data.append({
                     'timestamp': record.get_time().isoformat(),
-                    'temperature': record.get_value()
+                    'value': record.get_value()
                 })
 
-        if not temp_data:
-            return jsonify({"error": "No air quality data found for the given room"}), 404
+        if not temperature_data:
+            return jsonify({"error": "No temperature data found for the given room"}), 404
 
         # Return the data in the desired format
         return jsonify({
             "room": room_id,
-            "temperature": temp_data
+            "temperature": temperature_data
         })
 
     finally:
@@ -213,8 +316,7 @@ def room_room_id_temperature_get(room_id):  # noqa: E501
 
 
 
-
-def rooms_air_quality_get():  # noqa: E501
+def rooms_airquality_get():  # noqa: E501
     """Get air quality data for all rooms
 
     Retrieve air quality measurements for all rooms # noqa: E501
@@ -222,7 +324,57 @@ def rooms_air_quality_get():  # noqa: E501
 
     :rtype: List[RoomAirQuality]
     """
-    return 'do some magic!'
+
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+    try:
+        query_api: QueryApi = client.query_api()
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "co2")
+          |> group(columns: ["room_id"])
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+        
+        result = query_api.query(org=org, query=flux_query)
+        
+        # Dictionary to store data for each room
+        rooms_data = {}
+        
+        # Process the results
+        for table in result:
+            for record in table.records:
+                room_id = record.values.get("room_id")
+                
+                # Initialize room data if not exists
+                if room_id not in rooms_data:
+                    rooms_data[room_id] = {
+                        "room_id": room_id,
+                        "airquality": []
+                    }
+                
+                # Add light measurement
+                rooms_data[room_id]["airquality"].append({
+                    'timestamp': record.get_time().isoformat(),
+                    'value': record.get_value()
+                })
+        
+        if not rooms_data:
+            return jsonify({"error": "No airquality data found for any rooms"}), 404
+            
+        # Convert dictionary to list for response
+        response_data = list(rooms_data.values())
+        
+        return jsonify(response_data)
+        
+    finally:
+        client.close()
+
 
 
 def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
@@ -235,7 +387,7 @@ def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
     :param days: Number of days to retrieve bookings for
     :type days: int
 
-    :rtype: Dict[str, List[datetime]]
+    :rtype: Dict[str, List[Booking]]
     """
 
     try:
@@ -246,9 +398,8 @@ def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
         end_date = start_date + timedelta(days=days)
         print(end_date)
         
-        # service = build("calendar", "v3", credentials=creds)
         service = get_calendar_service()
-        calendar_id = "7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com"
+        calendar_id = os.getenv('GOOGLE_CAL_ID')
         
         events = service.events().list(
             calendarId=calendar_id,
@@ -262,7 +413,6 @@ def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
         for event in events:
             room = event["location"]
             temp1 = event["start"].get("dateTime")
-            # start_time = datetime.fromisoformat(temp1)
             start_time = parser.parse(temp1).strftime('%Y-%m-%d %H:%M:%S')
             print(start_time)
 
@@ -275,24 +425,136 @@ def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
 
     except HttpError as error:
         print(error)
-        abort(500, f"Google Calendar API error: {str(error)}")
+        abort(400, f"Google Calendar API error: {str(error)}")
     except Exception as error:
         print(error)
         abort(500, f"Internal server error: {str(error)}")
 
 
-    # start_date = util.deserialize_date(start_date)
+
+def rooms_humidity_get():  # noqa: E501
+    """Get humidity data for all rooms
+
+    Retrieve humidity measurements for all rooms # noqa: E501
 
 
-def rooms_get():  # noqa: E501
-    """Get sensor data for all rooms
-
-    Retrieve all sensor data (temperature and air quality) for all rooms # noqa: E501
-
-
-    :rtype: List[RoomData]
+    :rtype: List[RoomHumidity]
     """
-    return 'do some magic!'
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+    try:
+        query_api: QueryApi = client.query_api()
+        # Modified Flux query to group by room_id
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "humidity")
+          |> group(columns: ["room_id"])
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+        
+        result = query_api.query(org=org, query=flux_query)
+        
+        # Dictionary to store data for each room
+        rooms_data = {}
+        
+        # Process the results
+        for table in result:
+            for record in table.records:
+                room_id = record.values.get("room_id")
+                
+                # Initialize room data if not exists
+                if room_id not in rooms_data:
+                    rooms_data[room_id] = {
+                        "room_id": room_id,
+                        "humidity": []
+                    }
+                
+                # Add light measurement
+                rooms_data[room_id]["humidity"].append({
+                    'timestamp': record.get_time().isoformat(),
+                    'value': record.get_value()
+                })
+        
+        if not rooms_data:
+            return jsonify({"error": "No humidity data found for any rooms"}), 404
+            
+        # Convert dictionary to list for response
+        response_data = list(rooms_data.values())
+        
+        return jsonify(response_data)
+        
+    finally:
+        client.close()
+
+   
+
+
+
+def rooms_light_get():  # noqa: E501
+    """Get light data for all rooms
+
+    Retrieve light measurements for all rooms # noqa: E501
+
+
+    :rtype: List[RoomLight]
+    """
+
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+    try:
+        query_api: QueryApi = client.query_api()
+        # Modified Flux query to group by room_id
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "light")
+          |> group(columns: ["room_id"])
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+        
+        result = query_api.query(org=org, query=flux_query)
+        
+        # Dictionary to store data for each room
+        rooms_data = {}
+        
+        # Process the results
+        for table in result:
+            for record in table.records:
+                room_id = record.values.get("room_id")
+                
+                # Initialize room data if not exists
+                if room_id not in rooms_data:
+                    rooms_data[room_id] = {
+                        "room_id": room_id,
+                        "light": []
+                    }
+                
+                # Add light measurement
+                rooms_data[room_id]["light"].append({
+                    'timestamp': record.get_time().isoformat(),
+                    'value': record.get_value()
+                })
+        
+        if not rooms_data:
+            return jsonify({"error": "No light data found for any rooms"}), 404
+            
+        # Convert dictionary to list for response
+        response_data = list(rooms_data.values())
+        
+        return jsonify(response_data)
+        
+    finally:
+        client.close()
+
 
 
 def rooms_temperature_get():  # noqa: E501
@@ -303,4 +565,215 @@ def rooms_temperature_get():  # noqa: E501
 
     :rtype: List[RoomTemperature]
     """
-    return 'do some magic!'
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+
+    try:
+        query_api: QueryApi = client.query_api()
+        # Modified Flux query to group by room_id
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["_field"] == "temperature")
+          |> group(columns: ["room_id"])
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+        
+        result = query_api.query(org=org, query=flux_query)
+        
+        # Dictionary to store data for each room
+        rooms_data = {}
+        
+        # Process the results
+        for table in result:
+            for record in table.records:
+                room_id = record.values.get("room_id")
+                
+                # Initialize room data if not exists
+                if room_id not in rooms_data:
+                    rooms_data[room_id] = {
+                        "room_id": room_id,
+                        "temperature": []
+                    }
+                
+                # Add temperature measurement
+                rooms_data[room_id]["temperature"].append({
+                    'timestamp': record.get_time().isoformat(),
+                    'value': record.get_value()
+                })
+        
+        if not rooms_data:
+            return jsonify({"error": "No temperature data found for any rooms"}), 404
+            
+        # Convert dictionary to list for response
+        response_data = list(rooms_data.values())
+        
+        return jsonify(response_data)
+        
+    finally:
+        client.close()
+
+
+def sensor_room_id_get(room_id):  # noqa: E501
+    """Get sensor data for a specific room
+
+    Retrieve all sensor data for a specific room # noqa: E501
+
+    :param room_id: Unique identifier for the room
+    :type room_id: str
+
+    :rtype: RoomData
+    """
+
+    
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+    
+    try:
+        query_api: QueryApi = client.query_api()
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> filter(fn: (r) => r["room_id"] == "{room_id}")
+          |> group(columns: ["room_id", "_field"])
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+        
+        result = query_api.query(org=org, query=flux_query)
+        
+        # Dictionary to store data for each room
+        rooms_data = {}
+        
+        # Process the results
+        for table in result:
+            for record in table.records:
+                roomid = record.values.get("room_id")
+                sensor_type = record.get_field()
+                
+                # Initialize room data if not exists
+                if room_id not in rooms_data:
+                    rooms_data[roomid] = {
+                        "room": roomid,
+                        "temperature": [],
+                        "airquality": [],
+                        "light": [],
+                        "humidity": []
+                    }
+                
+                # Map _field names to your response format names if needed
+                sensor_mapping = {
+                    "temperature": "temperature",
+                    "co2": "airquality",
+                    "light": "light",
+                    "humidity": "humidity"
+                }
+                
+                mapped_sensor = sensor_mapping.get(sensor_type)
+                if mapped_sensor:
+                    rooms_data[room_id][mapped_sensor].append({
+                        'timestamp': record.get_time().isoformat(),
+                        'value': record.get_value()
+                    })
+        
+        if not rooms_data:
+            return jsonify({"error": f"No sensor data found for room {room_id}"}), 404
+            
+        # Convert dictionary to list for response
+        response_data = list(rooms_data.values())
+        
+        return jsonify(response_data)
+        
+    finally:
+        client.close()
+
+
+
+def sensor_rooms_get():  # noqa: E501
+    """Get sensor data for all rooms
+
+    Retrieve all sensor data (temperature, air quality, etc.) for all rooms # noqa: E501
+
+
+    :rtype: List[RoomData]
+    """
+
+    client = get_influx_client()
+    org = os.getenv('INFLUXDB_ORG', 'myorg')
+    bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
+    
+    try:
+        query_api: QueryApi = client.query_api()
+        flux_query = f'''
+        from(bucket: "{bucket}")
+          |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+          |> filter(fn: (r) => r["_measurement"] == "room_data")
+          |> group(columns: ["room_id", "_field"])
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> yield(name: "mean")
+        '''
+        
+        result = query_api.query(org=org, query=flux_query)
+        
+        # Dictionary to store data for each room
+        rooms_data = {}
+        
+        # Process the results
+        for table in result:
+            for record in table.records:
+                room_id = record.values.get("room_id")
+                sensor_type = record.get_field()
+                
+                # Initialize room data if not exists
+                if room_id not in rooms_data:
+                    rooms_data[room_id] = {
+                        "room": room_id,
+                        "temperature": [],
+                        "airquality": [],
+                        "light": [],
+                        "humidity": []
+                    }
+                
+                # Map _field names to your response format names if needed
+                sensor_mapping = {
+                    "temperature": "temperature",
+                    "co2": "airquality",
+                    "light": "light",
+                    "humidity": "humidity"
+                }
+                
+                mapped_sensor = sensor_mapping.get(sensor_type)
+                if mapped_sensor:
+                    rooms_data[room_id][mapped_sensor].append({
+                        'timestamp': record.get_time().isoformat(),
+                        'value': record.get_value()
+                    })
+        
+        if not rooms_data:
+            return jsonify({"error": "No sensor data found for any rooms"}), 404
+            
+        # Convert dictionary to list for response
+        response_data = list(rooms_data.values())
+        
+        return jsonify(response_data)
+        
+    finally:
+        client.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
