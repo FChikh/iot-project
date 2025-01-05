@@ -20,16 +20,16 @@ def check_compliance_co2(df: pd.DataFrame):
             - 'exceeded_1500_ppm': Boolean indicating if levels exceeded 1500 ppm.
             - 'compliant': Boolean indicating if the room meets EU regulations.
     """
-    # Calculate key statistics
+
     max_co2_level = df['co2_level'].max()
     avg_co2_level = df['co2_level'].mean()
     below_1000_ppm = (df['co2_level'] < 1000).mean() * 100
     exceeded_1500_ppm = (df['co2_level'] > 1500).any()
     
-    # Determine compliance
-    compliant = not exceeded_1500_ppm and below_1000_ppm > 50  # At least 50% below 1000 ppm
+
+    compliant = not exceeded_1500_ppm and below_1000_ppm > 50 
     
-    # Return summary
+
     return {
         'max_co2_level': max_co2_level,
         'avg_co2_level': avg_co2_level,
