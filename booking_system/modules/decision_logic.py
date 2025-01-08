@@ -1,9 +1,6 @@
 import pandas as pd
 import numpy as np
 
-import pandas as pd
-import numpy as np
-
 def topsis_decision_logic(room_data, user_pref, weights=None, lower_better_cols=[]):
     """
     Perform TOPSIS (Technique for Order Preference by Similarity to Ideal Solution)
@@ -51,4 +48,3 @@ def topsis_decision_logic(room_data, user_pref, weights=None, lower_better_cols=
     result['Rank'] = closeness.rank(ascending=False)
     
     return result.sort_values('Rank')
-
