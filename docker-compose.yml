@@ -126,3 +126,14 @@ services:
       - ./env/creds.json:/usr/src/app/creds.json:ro  # Read-only access to creds.json
     networks:
       - default
+  
+
+  static_data:
+    build: ./static_data
+    container_name: static_data
+    volumes:
+      - ./static_data/rooms.db:/app/rooms.db  # Persist database file
+      - ./static_data:/app                   # Mount code for flexibility
+    command: python init_db.py               # Initialize database on startup
+    networks:
+      - default
