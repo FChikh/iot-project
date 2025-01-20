@@ -41,21 +41,11 @@ services:
       - mosquitto
     tty: true
 
-  simulator:
-    build: ./simulator
-    container_name: simulator
-    depends_on:
-      - mosquitto
-    environment:
-      - MQTT_BROKER=mosquitto
-      - MQTT_PORT=1883
-
   dashboard:
     build: ./dashboard
     container_name: dashboard
     depends_on:
       - mosquitto
-      - simulator
     ports:
       - "8501:8501"
     environment:
@@ -81,8 +71,9 @@ services:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
       - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
       - DOCKER_INFLUXDB_INIT_ORG=myorg
-      - DOCKER_INFLUXDB_INIT_BUCKET=mybucket
+      - DOCKER_INFLUXDB_INIT_BUCKET=room_sensors  # Match your script's bucket name
 
 
   mqtt_to_influx:
@@ -94,6 +85,11 @@ services:
     environment:
       - MQTT_BROKER=mosquitto
       - INFLUXDB_HOST=influxdb
+      - INFLUXDB_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - INFLUXDB_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=myorg
+      - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
     volumes:
       - ./mqtt_to_influx:/mqtt_to_influx
     command: python /mqtt_to_influx/mqtt_to_influx.py
@@ -117,21 +113,21 @@ services:
       - default
 
 
-  sensor_simulation:
-      build: ./sensor_simulation
-      container_name: sensor_simulation
-      depends_on:
-        - influxdb
-      environment:
-        - INFLUXDB_URL=http://influxdb:8086  # Use the service name 'influxdb'
-        - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
-        - INFLUXDB_ORG=myorg
-        - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
-      volumes:
-        - ./sensor_simulation:/app
-      networks:
-        - default
-      restart: always
+  # sensor_simulation:
+  #     build: ./sensor_simulation
+  #     container_name: sensor_simulation
+  #     depends_on:
+  #       - influxdb
+  #     environment:
+  #       - INFLUXDB_URL=http://influxdb:8086  # Use the service name 'influxdb'
+  #       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+  #       - INFLUXDB_ORG=myorg
+  #       - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
+  #     volumes:
+  #       - ./sensor_simulation:/app
+  #     networks:
+  #       - default
+  #     restart: always
 
 
   restapi_rooms:

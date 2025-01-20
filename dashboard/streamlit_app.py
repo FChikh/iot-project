@@ -2,13 +2,11 @@
 
 import streamlit as st
 import pandas as pd
-import paho.mqtt.publish as publish
 import paho.mqtt.client as mqtt
 import json
 import os
 import logging
 import threading
-from queue import Queue
 import time
 import random
 import re
@@ -20,7 +18,6 @@ logger = logging.getLogger(__name__)
 # MQTT settings
 MQTT_BROKER = os.getenv('MQTT_BROKER', 'mosquitto')
 MQTT_PORT = int(os.getenv('MQTT_PORT', '1883'))
-CONTROL_TOPIC = 'control/simulator'
 
 # Initialize session state
 if 'active_simulators' not in st.session_state:
@@ -31,84 +28,42 @@ if 'sensor_data' not in st.session_state:
 
 if 'simulator_threads' not in st.session_state:
     st.session_state.simulator_threads = {}
+    
+# Initialize rolling data for visualization
+if 'rolling_data' not in st.session_state:
+    st.session_state.rolling_data = {}
 
-# Initialize a Queue for thread-safe communication (if needed)
-message_queue = Queue()
-
-# Function to publish control messages (if still needed)
-
-
-def publish_control(action, room, temp_range=None, light_range=None):
-    message = {'action': action, 'room': room}
-    if temp_range:
-        message['temp_range'] = temp_range
-    if light_range:
-        message['light_range'] = light_range
-    payload = json.dumps(message)
-    topic = f"{CONTROL_TOPIC}/{action}"
-    try:
-        publish.single(topic, payload=payload,
-                       hostname=MQTT_BROKER, port=MQTT_PORT)
-        logger.info(f"Published to {topic}: {payload}")
-    except Exception as e:
-        logger.error(f"Failed to publish to {topic}: {e}")
-        st.error(f"Failed to publish control message: {e}")
-
-# MQTT Client to listen to sensor data
+# Update rolling data with new values
 
 
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        logger.info("Connected to MQTT broker.")
-        # Subscribe to all temp and light topics
-        client.subscribe("+/temp")
-        client.subscribe("+/light")
-    else:
-        logger.error(f"Failed to connect to MQTT broker, return code {rc}")
-        st.error("Failed to connect to MQTT broker.")
+def update_rolling_data(room, parameter, value, window_size=100):
+    if room not in st.session_state.rolling_data:
+        st.session_state.rolling_data[room] = {}
+    if parameter not in st.session_state.rolling_data[room]:
+        st.session_state.rolling_data[room][parameter] = []
+    # Append new value
+    st.session_state.rolling_data[room][parameter].append(value)
+    # Trim to the rolling window size
+    if len(st.session_state.rolling_data[room][parameter]) > window_size:
+        st.session_state.rolling_data[room][parameter] = st.session_state.rolling_data[room][parameter][-window_size:]
 
-
-def on_message(client, userdata, msg):
-    topic = msg.topic
-    payload = msg.payload.decode('utf-8')
-    logger.debug(f"Received message on {topic}: {payload}")
-    try:
-        room = topic.split('/')[0]
-        sensor_type = topic.split('/')[1]
-        value = float(payload) if sensor_type == 'temp' else int(payload)
-
-        # Update active simulators
-        st.session_state.active_simulators.add(room)
-
-        # Update sensor data
-        if room not in st.session_state.sensor_data:
-            st.session_state.sensor_data[room] = {'temp': [], 'light': []}
-        st.session_state.sensor_data[room][sensor_type].append(value)
-
-        # Keep only the latest N data points to prevent memory issues
-        N = 100
-        if len(st.session_state.sensor_data[room][sensor_type]) > N:
-            st.session_state.sensor_data[room][sensor_type] = st.session_state.sensor_data[room][sensor_type][-N:]
-    except Exception as e:
-        logger.error(f"Error processing message on {topic}: {e}")
-
-
-# Initialize MQTT client for publishing simulated data
+# MQTT Publisher Client
 publisher_client = mqtt.Client()
 
 
 def connect_publisher_mqtt():
+    """Connect the publisher MQTT client to the broker."""
     try:
         publisher_client.connect(MQTT_BROKER, MQTT_PORT, 60)
         logger.info(f"Publisher connected to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}")
     except Exception as e:
-        logger.error(f"Failed to connect publisher to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}: {e}")
+        logger.error(f"Failed to connect publisher to MQTT broker: {e}")
         st.error("Failed to connect publisher to MQTT broker.")
 
 
 connect_publisher_mqtt()
 
-# Start publisher loop in a separate thread
+# Start MQTT client loop in a separate thread
 
 
 def run_publisher():
@@ -118,46 +73,52 @@ def run_publisher():
 publisher_thread = threading.Thread(target=run_publisher, daemon=True)
 publisher_thread.start()
 
-# Function to run MQTT client in a separate thread for subscribing
-
-
-def run_mqtt():
-    client = mqtt.Client()
-    client.on_connect = on_connect
-    client.on_message = on_message
-
-    try:
-        client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    except Exception as e:
-        logger.error(f"Could not connect to MQTT Broker: {e}")
-        st.error("Could not connect to MQTT Broker.")
-        return
-
-    client.loop_forever()
-
-
-# Start MQTT client in a separate thread for subscribing
-mqtt_thread = threading.Thread(target=run_mqtt, daemon=True)
-mqtt_thread.start()
-
 # Simulator function
 
 
-def simulator(room, temp_range, light_range, stop_event):
-    """Simulate sensor data for a given room and publish to MQTT."""
+def simulator(room, ranges_ref, stop_event):
+    """Simulate sensor data for a given room with user-adjustable ranges and realistic distribution."""
     while not stop_event.is_set():
-        temp = round(random.uniform(temp_range[0], temp_range[1]), 2)
-        light = random.randint(light_range[0], light_range[1])
+        current_time = time.localtime()
+        logger.info(f"Simulating data for {room} at {time.strftime('%H:%M:%S', current_time)}")
+        hour = current_time.tm_hour
+        ranges = ranges_ref['ranges']
+        logger.info("Ranges are: " + str(ranges))
 
-        # Publish to MQTT topics
-        temp_topic = f"{room}/temp"
-        light_topic = f"{room}/light"
+        # Generate data based on time of day and user-defined ranges
+        temp = round(random.gauss(
+            (ranges['temp'][0] + ranges['temp'][1]) / 2, 2), 2)
+        light = max(ranges['light'][0], min(ranges['light'][1], int(
+            800 * (1 if 7 <= hour <= 19 else 0.2) + random.gauss(0, 50))))
+        co2 = max(ranges['co2'][0], min(ranges['co2'][1], int(
+            random.gauss(400, 50) + (50 if 8 <= hour <= 20 else -30))))
+        air_quality = max(ranges['air_quality'][0], min(
+            ranges['air_quality'][1], int(random.gauss(50, 10))))
+        sound = max(ranges['sound'][0], min(ranges['sound'][1], int(
+            random.gauss(40 if hour in range(22, 7) else 60, 5))))
+        voc = max(ranges['voc'][0], min(
+            ranges['voc'][1], int(random.gauss(100, 20))))
 
+        # Generate ISO 8601 timestamp
+        timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+        # Publish to MQTT topics with timestamp
         try:
-            publisher_client.publish(temp_topic, temp)
-            publisher_client.publish(light_topic, light)
-            logger.info(f"Simulated and published to {temp_topic}: {temp}")
-            logger.info(f"Simulated and published to {light_topic}: {light}")
+            publisher_client.publish(
+                f"{room}/temp", json.dumps({"value": temp, "timestamp": timestamp}))
+            publisher_client.publish(
+                f"{room}/light", json.dumps({"value": light, "timestamp": timestamp}))
+            publisher_client.publish(
+                f"{room}/co2", json.dumps({"value": co2, "timestamp": timestamp}))
+            publisher_client.publish(
+                f"{room}/air_quality", json.dumps({"value": air_quality, "timestamp": timestamp}))
+            publisher_client.publish(
+                f"{room}/sound", json.dumps({"value": sound, "timestamp": timestamp}))
+            publisher_client.publish(
+                f"{room}/voc", json.dumps({"value": voc, "timestamp": timestamp}))
+
+            logger.info(f"Simulated data for {room}: Temp={temp}°C, Light={light} lux, CO2={co2} ppm, "
+                        f"Air Quality={air_quality} μg/m³, Sound={sound} dB, VOC={voc} μg/m³ at {timestamp}")
         except Exception as e:
             logger.error(f"Failed to publish simulated data for {room}: {e}")
 
@@ -174,32 +135,39 @@ with st.sidebar.expander("Add Simulator"):
     add_room = st.text_input("Room Identifier", "")
     if st.button("Add Simulator"):
         if add_room:
-            # Validate room identifier
             if not re.match("^[A-Za-z0-9_-]+$", add_room):
                 st.error(
                     "Invalid room identifier. Use only letters, numbers, underscores, or hyphens.")
             elif add_room in st.session_state.active_simulators:
                 st.warning(f"Simulator for {add_room} is already active.")
             else:
-                # Define default sensor ranges or retrieve from user input
-                default_temp_range = [20.0, 30.0]
-                default_light_range = [300, 800]
+                # Define default ranges for all parameters
+                default_ranges = {
+                    'temp': [20.0, 30.0],
+                    'light': [300, 800],
+                    'co2': [350, 500],
+                    'air_quality': [10, 100],
+                    'sound': [30, 80],
+                    'voc': [50, 150]
+                }
 
-                # Create a stop event for the simulator thread
-                stop_event = threading.Event()
+                # Store the simulator ranges and other details in session_state
+                st.session_state.simulator_threads[add_room] = {
+                    'ranges': default_ranges,  # Store the ranges here
+                    'stop_event': threading.Event()
+                }
+
+                # Pass a reference to the thread
+                thread_data_ref = st.session_state.simulator_threads[add_room]
+                stop_event = thread_data_ref['stop_event']
 
                 # Start the simulator thread
                 thread = threading.Thread(target=simulator, args=(
-                    add_room, default_temp_range, default_light_range, stop_event), daemon=True)
+                    add_room, thread_data_ref, stop_event), daemon=True)
                 thread.start()
 
-                # Store thread and stop_event in session_state
-                st.session_state.simulator_threads[add_room] = {
-                    'thread': thread,
-                    'stop_event': stop_event,
-                    'temp_range': default_temp_range,
-                    'light_range': default_light_range
-                }
+                # Add thread to session_state
+                thread_data_ref['thread'] = thread
 
                 # Update active simulators
                 st.session_state.active_simulators.add(add_room)
@@ -207,6 +175,7 @@ with st.sidebar.expander("Add Simulator"):
                 st.success(f"Added simulator for {add_room}")
         else:
             st.error("Room identifier cannot be empty.")
+
 
 # Remove Simulator
 with st.sidebar.expander("Remove Simulator"):
@@ -238,62 +207,47 @@ with st.sidebar.expander("Update Simulator"):
         update_room = st.selectbox("Select Room to Update", sorted(
             st.session_state.active_simulators))
         if update_room:
-            st.write("Set Temperature Range (°C):")
-            current_temp_range = st.session_state.simulator_threads[update_room]['temp_range']
-            temp_min, temp_max = st.slider("Temperature Range", min_value=0.0, max_value=50.0, value=(
-                current_temp_range[0], current_temp_range[1]))
-            st.write("Set Light Range:")
-            current_light_range = st.session_state.simulator_threads[update_room]['light_range']
-            light_min, light_max = st.slider("Light Range", min_value=0, max_value=2000, value=(
-                current_light_range[0], current_light_range[1]))
+            current_ranges = st.session_state.simulator_threads[update_room]['ranges']
+            st.write(f"Updating parameters for {update_room}:")
+            temp_min, temp_max = st.slider("Temperature Range (°C):", min_value=0.0, max_value=50.0,
+                                           value=(current_ranges['temp'][0], current_ranges['temp'][1]))
+            light_min, light_max = st.slider("Light Range (lux):", min_value=0, max_value=2000,
+                                             value=(current_ranges['light'][0], current_ranges['light'][1]))
+            co2_min, co2_max = st.slider("CO2 Range (ppm):", min_value=300, max_value=2000,
+                                         value=(current_ranges['co2'][0], current_ranges['co2'][1]))
+            air_min, air_max = st.slider("Air Quality Range (μg/m³):", min_value=0, max_value=200,
+                                         value=(current_ranges['air_quality'][0], current_ranges['air_quality'][1]))
+            sound_min, sound_max = st.slider("Sound Range (dB):", min_value=0, max_value=120,
+                                             value=(current_ranges['sound'][0], current_ranges['sound'][1]))
+            voc_min, voc_max = st.slider("VOC Range (μg/m³):", min_value=0, max_value=500,
+                                         value=(current_ranges['voc'][0], current_ranges['voc'][1]))
+
             if st.button("Update Simulator"):
-                # Update the simulator's ranges
-                simulator_info = st.session_state.simulator_threads.get(
-                    update_room)
-                if simulator_info:
-                    simulator_info['temp_range'] = [temp_min, temp_max]
-                    simulator_info['light_range'] = [light_min, light_max]
-                    st.success(f"Updated simulator for {update_room}")
+                st.session_state.simulator_threads[update_room]['ranges'] = {
+                    'temp': [temp_min, temp_max],
+                    'light': [light_min, light_max],
+                    'co2': [co2_min, co2_max],
+                    'air_quality': [air_min, air_max],
+                    'sound': [sound_min, sound_max],
+                    'voc': [voc_min, voc_max]
+                }
+                
+                st.success(f"Updated ranges for {update_room}")
     else:
         st.write("No simulators to update.")
 
 # Display Active Simulators
 st.header("Active Simulators")
 if st.session_state.active_simulators:
-    st.write(sorted(st.session_state.active_simulators))
+    for room in sorted(st.session_state.active_simulators):
+        # Create an expander for each room
+        with st.expander(f"Room: {room}"):
+            # Retrieve the ranges for the room
+            ranges = st.session_state.simulator_threads[room]['ranges']
+
+            # Display the ranges in a table format
+            st.write("**Parameter Ranges:**")
+            st.table(pd.DataFrame(ranges).T.rename(
+                columns={0: 'Min', 1: 'Max'}))
 else:
     st.write("No active simulators.")
-
-# Visualize Sensor Data
-st.header("Sensor Data Visualization")
-
-# Prepare data for visualization
-if st.session_state.sensor_data:
-    # Create DataFrames for temperature and light
-    temp_data = []
-    light_data = []
-    for room, sensors in st.session_state.sensor_data.items():
-        if 'temp' in sensors and sensors['temp']:
-            temp_data.append({'room': room, 'temp': sensors['temp'][-1]})
-        if 'light' in sensors and sensors['light']:
-            light_data.append({'room': room, 'light': sensors['light'][-1]})
-
-    temp_df = pd.DataFrame(temp_data)
-    light_df = pd.DataFrame(light_data)
-
-    # Set 'room' as index
-    if not temp_df.empty:
-        temp_df = temp_df.set_index('room')
-        st.subheader("Temperature")
-        st.bar_chart(temp_df['temp'])  # Removed x parameter
-    else:
-        st.write("No temperature data available.")
-
-    if not light_df.empty:
-        light_df = light_df.set_index('room')
-        st.subheader("Light")
-        st.bar_chart(light_df['light'])  # Removed x parameter
-    else:
-        st.write("No light data available.")
-else:
-    st.write("No sensor data available.")
