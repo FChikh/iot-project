@@ -1,5 +1,12 @@
 .env
+env/*
+
 influxdb/*
 mosquitto/data/*
 mosquitto/log/*
 mosquitto/pwfile/*
+
+!env/
+
+
+.DS_Store
