@@ -20,6 +20,7 @@ MQTT_BROKER = os.getenv('MQTT_BROKER', 'mosquitto')
 MQTT_PORT = int(os.getenv('MQTT_PORT', '1883'))
 
 # Initialize session state
+# TODO: Add session state initialization from config file
 if 'active_simulators' not in st.session_state:
     st.session_state.active_simulators = set()
 
@@ -29,23 +30,6 @@ if 'sensor_data' not in st.session_state:
 if 'simulator_threads' not in st.session_state:
     st.session_state.simulator_threads = {}
     
-# Initialize rolling data for visualization
-if 'rolling_data' not in st.session_state:
-    st.session_state.rolling_data = {}
-
-# Update rolling data with new values
-
-
-def update_rolling_data(room, parameter, value, window_size=100):
-    if room not in st.session_state.rolling_data:
-        st.session_state.rolling_data[room] = {}
-    if parameter not in st.session_state.rolling_data[room]:
-        st.session_state.rolling_data[room][parameter] = []
-    # Append new value
-    st.session_state.rolling_data[room][parameter].append(value)
-    # Trim to the rolling window size
-    if len(st.session_state.rolling_data[room][parameter]) > window_size:
-        st.session_state.rolling_data[room][parameter] = st.session_state.rolling_data[room][parameter][-window_size:]
 
 # MQTT Publisher Client
 publisher_client = mqtt.Client()
@@ -63,41 +47,46 @@ def connect_publisher_mqtt():
 
 connect_publisher_mqtt()
 
-# Start MQTT client loop in a separate thread
-
-
 def run_publisher():
     publisher_client.loop_start()
-
 
 publisher_thread = threading.Thread(target=run_publisher, daemon=True)
 publisher_thread.start()
 
+
 # Simulator function
-
-
 def simulator(room, ranges_ref, stop_event):
     """Simulate sensor data for a given room with user-adjustable ranges and realistic distribution."""
     while not stop_event.is_set():
         current_time = time.localtime()
-        logger.info(f"Simulating data for {room} at {time.strftime('%H:%M:%S', current_time)}")
         hour = current_time.tm_hour
         ranges = ranges_ref['ranges']
-        logger.info("Ranges are: " + str(ranges))
+        
+        # Gaussian distribution with time-dependent shifts
+        temp = round(random.gauss((ranges['temp'][0] + ranges['temp'][1]) / 2, 2), 2)
+        temp += 2 if 7 <= hour <= 19 else -1  # Warmer during the day, cooler at night
 
-        # Generate data based on time of day and user-defined ranges
-        temp = round(random.gauss(
-            (ranges['temp'][0] + ranges['temp'][1]) / 2, 2), 2)
-        light = max(ranges['light'][0], min(ranges['light'][1], int(
-            800 * (1 if 7 <= hour <= 19 else 0.2) + random.gauss(0, 50))))
-        co2 = max(ranges['co2'][0], min(ranges['co2'][1], int(
-            random.gauss(400, 50) + (50 if 8 <= hour <= 20 else -30))))
-        air_quality = max(ranges['air_quality'][0], min(
-            ranges['air_quality'][1], int(random.gauss(50, 10))))
-        sound = max(ranges['sound'][0], min(ranges['sound'][1], int(
-            random.gauss(40 if hour in range(22, 7) else 60, 5))))
-        voc = max(ranges['voc'][0], min(
-            ranges['voc'][1], int(random.gauss(100, 20))))
+        hum = round(random.gauss((ranges['hum'][0] + ranges['hum'][1]) / 2, 5), 2)
+        # Higher at night, lower during the day
+        hum += 5 if hour in range(22, 7) else -3
+
+        light = round(random.gauss((ranges['light'][0] + ranges['light'][1]) / 2, 100), 2)
+        light += 400 if 7 <= hour <= 19 else -300  # Brighter during the day
+
+        co2 = round(random.gauss((ranges['co2'][0] + ranges['co2'][1]) / 2, 20), 2)
+        co2 += 50 if 8 <= hour <= 20 else -30  # Higher during the day
+
+        air_quality_pm2_5 = round(random.gauss((ranges['air_quality_pm2_5'][0] + ranges['air_quality_pm2_5'][1]) / 2, 5), 2)
+        air_quality_pm2_5 += 10 if 8 <= hour <= 18 else - 5  # Worse air quality during busy hours
+        
+        air_quality_pm10 = round(random.gauss((ranges['air_quality_pm10'][0] + ranges['air_quality_pm10'][1]) / 2, 5), 2)
+        air_quality_pm10 += 10 if 8 <= hour <= 18 else - 5  # Worse air quality during busy hours
+
+        sound = round(random.gauss((ranges['sound'][0] + ranges['sound'][1]) / 2, 5), 2)
+        sound += 10 if hour in range(7, 22) else -10  # Louder during the day
+
+        voc = round(random.gauss((ranges['voc'][0] + ranges['voc'][1]) / 2, 5), 2)
+        voc += 10 if 8 <= hour <= 20 else -5  # Higher during human activity
 
         # Generate ISO 8601 timestamp
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -107,22 +96,27 @@ def simulator(room, ranges_ref, stop_event):
             publisher_client.publish(
                 f"{room}/temp", json.dumps({"value": temp, "timestamp": timestamp}))
             publisher_client.publish(
+                f"{room}/humidity", json.dumps({"value": hum, "timestamp": timestamp}))
+            publisher_client.publish(
                 f"{room}/light", json.dumps({"value": light, "timestamp": timestamp}))
             publisher_client.publish(
                 f"{room}/co2", json.dumps({"value": co2, "timestamp": timestamp}))
             publisher_client.publish(
-                f"{room}/air_quality", json.dumps({"value": air_quality, "timestamp": timestamp}))
+                f"{room}/air_quality_pm2_5", json.dumps({"value": air_quality_pm2_5, "timestamp": timestamp}))
+            publisher_client.publish(
+                f"{room}/air_quality_pm10", json.dumps({"value": air_quality_pm10, "timestamp": timestamp}))
             publisher_client.publish(
                 f"{room}/sound", json.dumps({"value": sound, "timestamp": timestamp}))
             publisher_client.publish(
                 f"{room}/voc", json.dumps({"value": voc, "timestamp": timestamp}))
 
             logger.info(f"Simulated data for {room}: Temp={temp}°C, Light={light} lux, CO2={co2} ppm, "
-                        f"Air Quality={air_quality} μg/m³, Sound={sound} dB, VOC={voc} μg/m³ at {timestamp}")
+                        f"Air Quality PM2_5={air_quality_pm2_5} μg/m³, Air Quality PM10={air_quality_pm10} μg/m³, "
+                        f"Sound={sound} dB, VOC={voc} μg/m³ at {timestamp}")
         except Exception as e:
             logger.error(f"Failed to publish simulated data for {room}: {e}")
 
-        time.sleep(1)  # Publish every second
+        time.sleep(1)
 
 
 # Streamlit UI
@@ -144,9 +138,11 @@ with st.sidebar.expander("Add Simulator"):
                 # Define default ranges for all parameters
                 default_ranges = {
                     'temp': [20.0, 30.0],
+                    'hum': [30, 60],
                     'light': [300, 800],
                     'co2': [350, 500],
-                    'air_quality': [10, 100],
+                    'air_quality_pm2_5': [10, 100],
+                    'air_quality_pm10': [10, 100],
                     'sound': [30, 80],
                     'voc': [50, 150]
                 }
@@ -211,12 +207,16 @@ with st.sidebar.expander("Update Simulator"):
             st.write(f"Updating parameters for {update_room}:")
             temp_min, temp_max = st.slider("Temperature Range (°C):", min_value=0.0, max_value=50.0,
                                            value=(current_ranges['temp'][0], current_ranges['temp'][1]))
+            hum_min, hum_max = st.slider("Humidity Range (%):", min_value=0, max_value=100,
+                                            value=(current_ranges['hum'][0], current_ranges['hum'][1]))
             light_min, light_max = st.slider("Light Range (lux):", min_value=0, max_value=2000,
                                              value=(current_ranges['light'][0], current_ranges['light'][1]))
             co2_min, co2_max = st.slider("CO2 Range (ppm):", min_value=300, max_value=2000,
                                          value=(current_ranges['co2'][0], current_ranges['co2'][1]))
-            air_min, air_max = st.slider("Air Quality Range (μg/m³):", min_value=0, max_value=200,
-                                         value=(current_ranges['air_quality'][0], current_ranges['air_quality'][1]))
+            air_pm2_5_min, air_pm2_5_max = st.slider("Air Quality Range, pm2.5 (μg/m³):", min_value=0, max_value=200,
+                                                     value=(current_ranges['air_quality_pm2_5'][0], current_ranges['air_quality_pm2_5'][1]))
+            air_pm10_min, air_pm10_max = st.slider("Air Quality Range, pm10 (μg/m³):", min_value=0, max_value=200,
+                                                     value=(current_ranges['air_quality_pm10'][0], current_ranges['air_quality_pm10'][1]))
             sound_min, sound_max = st.slider("Sound Range (dB):", min_value=0, max_value=120,
                                              value=(current_ranges['sound'][0], current_ranges['sound'][1]))
             voc_min, voc_max = st.slider("VOC Range (μg/m³):", min_value=0, max_value=500,
@@ -225,9 +225,11 @@ with st.sidebar.expander("Update Simulator"):
             if st.button("Update Simulator"):
                 st.session_state.simulator_threads[update_room]['ranges'] = {
                     'temp': [temp_min, temp_max],
+                    'hum': [hum_min, hum_max],
                     'light': [light_min, light_max],
                     'co2': [co2_min, co2_max],
-                    'air_quality': [air_min, air_max],
+                    'air_quality_pm2_5': [air_pm2_5_min, air_pm2_5_max],
+                    'air_quality_pm10': [air_pm10_min, air_pm10_max],
                     'sound': [sound_min, sound_max],
                     'voc': [voc_min, voc_max]
                 }
