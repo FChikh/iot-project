@@ -7,7 +7,6 @@ import json
 # Environment configuration
 MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
 INFLUXDB_HOST = os.getenv("INFLUXDB_HOST", "localhost")
-
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "iot_data")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "iot_project")
 INFLUXDB_USERNAME = os.getenv("INFLUXDB_USERNAME", "admin")
@@ -17,9 +16,6 @@ INFLUXDB_PASSWORD = os.getenv("INFLUXDB_PASSWORD", "admin123")
 client = InfluxDBClient(
     url=f"http://{INFLUXDB_HOST}:8086", username=INFLUXDB_USERNAME, password=INFLUXDB_PASSWORD, org=INFLUXDB_ORG)
 write_api = client.write_api(write_options=SYNCHRONOUS)
-
-# Functions to handle writing sensor data to InfluxDB
-
 
 def write_sensor_data(sensor_type, room, value, timestamp):
     """
@@ -38,9 +34,6 @@ def write_sensor_data(sensor_type, room, value, timestamp):
         print(f"Written {sensor_type} data for room {room}: {value} at {timestamp}")
     except Exception as e:
         print(f"Error writing {sensor_type} data to InfluxDB: {e}")
-
-# Callback when MQTT receives a message
-
 
 def on_message(client, userdata, message):
     """
@@ -72,8 +65,17 @@ def on_message(client, userdata, message):
 mqtt_client = mqtt.Client()
 mqtt_client.connect(MQTT_BROKER)
 
-# Subscribe to topics for all rooms and sensors
-mqtt_client.subscribe("#")  # Subscribe to all topics
+
+# Subscribe to topics for each sensor type
+mqtt_client.subscribe("+/temp")
+mqtt_client.subscribe("+/humidity")
+mqtt_client.subscribe("+/light")
+mqtt_client.subscribe("+/co2")
+mqtt_client.subscribe("+/air_quality_pm2_5")
+mqtt_client.subscribe("+/air_quality_pm10")
+mqtt_client.subscribe("+/sound")
+mqtt_client.subscribe("+/voc")
+
 mqtt_client.on_message = on_message
 
 # Start loop to keep listening for MQTT messages
