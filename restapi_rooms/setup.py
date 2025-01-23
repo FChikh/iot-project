@@ -31,6 +31,6 @@ setup(
     entry_points={
         'console_scripts': ['swagger_server=swagger_server.__main__:main']},
     long_description="""\
-    API for retrieving sensor data from different rooms
+    API for retrieving data from different rooms (sensors, equipment, bookings)
     """
 )
