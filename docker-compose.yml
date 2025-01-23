@@ -148,6 +148,7 @@ services:
         - GOOGLE_CAL_ID=7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com # Calendar ID to get bookings
     volumes:
       - ./env/creds.json:/usr/src/app/creds.json:ro  # Read-only access to creds.json
+      - ./static_data/rooms.db:/app/rooms.db
     networks:
       - default
   
