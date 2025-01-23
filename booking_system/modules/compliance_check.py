@@ -39,55 +39,86 @@ def check_compliance_co2(df: pd.DataFrame, tolerance: float = 5.0):
 
 import pandas as pd
 
-def check_compliance_air_quality(df: pd.DataFrame, tolerance: float = 5.0):
-    """
-    Checks if the classroom meets EU air quality regulations for PM2.5 and PM10 levels
-    based on 24-hour rolling averages.
+import pandas as pd
 
-    EU Regulations:
+def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 5.0):
+    """
+    Checks if the PM2.5 measurements meet EU air quality regulations based on 24-hour rolling averages.
+
+    EU Regulation:
     - PM2.5: 24-hour average should not exceed 25 µg/m^3.
-    - PM10: 24-hour average should not exceed 50 µg/m^3.
     
     Parameters:
-        df (pd.DataFrame): DataFrame with columns 'timestamp', 'pm2.5', and 'pm10'.
+        df_pm25 (pd.DataFrame): DataFrame with columns 'timestamp' and 'pm2.5'.
         tolerance (float): Allowed percentage of non-compliant 24-hour periods.
                           
     Returns:
         dict: A summary of compliance, including:
             - 'avg_pm2.5': Overall average PM2.5.
-            - 'avg_pm10': Overall average PM10.
-            - 'pm2.5_non_compliant_hours': Count of non-compliant 24-hour periods for PM2.5.
-            - 'pm10_non_compliant_hours': Count of non-compliant 24-hour periods for PM10.
-            - 'overall_compliant': Boolean indicating if all rolling averages are compliant.
+            - 'pm2.5_non_compliant_hours': Percentage of non-compliant 24-hour periods for PM2.5.
+            - 'overall_compliant': Boolean indicating if the rolling averages are compliant within tolerance.
     """
-
     pm25_limit = 25
-    pm10_limit = 50
 
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df = df.sort_values('timestamp')
+    # Ensure proper datetime type and sort by timestamp
+    df_pm25['timestamp'] = pd.to_datetime(df_pm25['timestamp'])
+    df_pm25 = df_pm25.sort_values('timestamp')
 
-    df['pm2.5_rolling'] = df['pm2.5'].rolling(window=24, min_periods=24).mean()
-    df['pm10_rolling'] = df['pm10'].rolling(window=24, min_periods=24).mean()
+    # Calculate rolling mean over a 24-hour window
+    df_pm25['pm2.5_rolling'] = df_pm25['pm2.5'].rolling(window=24, min_periods=24).mean()
 
-    pm25_non_compliant = (df['pm2.5_rolling'] > pm25_limit).mean() * 100
-    pm10_non_compliant = (df['pm10_rolling'] > pm10_limit).mean() * 100
+    # Calculate the percentage of non-compliant periods
+    pm25_non_compliant = (df_pm25['pm2.5_rolling'] > pm25_limit).mean() * 100
 
-    overall_compliant = pm25_non_compliant <= tolerance and pm10_non_compliant <= tolerance
+    # Determine compliance based on tolerance
+    overall_compliant = pm25_non_compliant <= tolerance
 
-    avg_pm25 = df['pm2.5'].mean()
-    avg_pm10 = df['pm10'].mean()
+    # Compute overall average PM2.5
+    avg_pm25 = df_pm25['pm2.5'].mean()
 
     return {
         'avg_pm2.5': avg_pm25,
-        'avg_pm10': avg_pm10,
         'pm2.5_non_compliant_hours': pm25_non_compliant,
-        'pm10_non_compliant_hours': pm10_non_compliant,
         'overall_compliant': overall_compliant
     }
 
 
-import pandas as pd
+def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 5.0):
+    """
+    Checks if the PM10 measurements meet EU air quality regulations based on 24-hour rolling averages.
+
+    EU Regulation:
+    - PM10: 24-hour average should not exceed 50 µg/m^3.
+    
+    Parameters:
+        df_pm10 (pd.DataFrame): DataFrame with columns 'timestamp' and 'pm10'.
+        tolerance (float): Allowed percentage of non-compliant 24-hour periods.
+                          
+    Returns:
+        dict: A summary of compliance, including:
+            - 'avg_pm10': Overall average PM10.
+            - 'pm10_non_compliant_hours': Percentage of non-compliant 24-hour periods for PM10.
+            - 'overall_compliant': Boolean indicating if the rolling averages are compliant within tolerance.
+    """
+    pm10_limit = 50
+
+    df_pm10['timestamp'] = pd.to_datetime(df_pm10['timestamp'])
+    df_pm10 = df_pm10.sort_values('timestamp')
+
+    df_pm10['pm10_rolling'] = df_pm10['pm10'].rolling(window=24, min_periods=24).mean()
+
+    pm10_non_compliant = (df_pm10['pm10_rolling'] > pm10_limit).mean() * 100
+
+    overall_compliant = pm10_non_compliant <= tolerance
+
+    avg_pm10 = df_pm10['pm10'].mean()
+
+    return {
+        'avg_pm10': avg_pm10,
+        'pm10_non_compliant_hours': pm10_non_compliant,
+        'overall_compliant': overall_compliant
+    }
+
 
 def check_compliance_noise(df: pd.DataFrame, tolerance: float = 5.0):
     """
