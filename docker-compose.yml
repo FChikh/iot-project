@@ -26,15 +26,32 @@ services:
       - ./mosquitto/log:/mosquitto/log
       - ./mosquitto/pwfile:/mosquitto/pwfile
 
-
-  serial_mqtt_bridge:
+  bridge:
     build: ./serial_mqtt_bridge
-    container_name: serial_mqtt_bridge
+    container_name: bridge
     depends_on:
       - mosquitto
     devices:
-      - "/dev/ttyACM0:/dev/ttyACM0"
+      - "/dev:/dev"
     environment:
+      - MQTT_BROKER=mosquitto
+      - MQTT_PORT=1883
+    privileged: true
+    links:
+      - mosquitto
+    tty: true
+
+  dashboard:
+    build: ./dashboard
+    container_name: dashboard
+    depends_on:
+      - mosquitto
+    ports:
+      - "8501:8501"
+    environment:
+      - MQTT_BROKER=mosquitto
+      - MQTT_PORT=1883
+      - TOKEN=${TOKEN}
       - SERIAL_PORT=/dev/ttyACM0
       - MQTT_BROKER=${MQTT_BROKER}
     privileged: true
@@ -54,8 +71,10 @@ services:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
       - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
       - DOCKER_INFLUXDB_INIT_ORG=myorg
-      - DOCKER_INFLUXDB_INIT_BUCKET=mybucket
+      - DOCKER_INFLUXDB_INIT_BUCKET=room_sensors  # Match your script's bucket name
+
 
 
   mqtt_to_influx:
@@ -67,6 +86,11 @@ services:
     environment:
       - MQTT_BROKER=mosquitto
       - INFLUXDB_HOST=influxdb
+      - INFLUXDB_USERNAME=${DOCKER_INFLUXDB_INIT_USERNAME}
+      - INFLUXDB_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=myorg
+      - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
     volumes:
       - ./mqtt_to_influx:/mqtt_to_influx
     command: python /mqtt_to_influx/mqtt_to_influx.py
@@ -90,21 +114,21 @@ services:
       - default
 
 
-  sensor_simulation:
-      build: ./sensor_simulation
-      container_name: sensor_simulation
-      depends_on:
-        - influxdb
-      environment:
-        - INFLUXDB_URL=http://influxdb:8086  # Use the service name 'influxdb'
-        - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
-        - INFLUXDB_ORG=myorg
-        - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
-      volumes:
-        - ./sensor_simulation:/app
-      networks:
-        - default
-      restart: always
+  # sensor_simulation:
+  #     build: ./sensor_simulation
+  #     container_name: sensor_simulation
+  #     depends_on:
+  #       - influxdb
+  #     environment:
+  #       - INFLUXDB_URL=http://influxdb:8086  # Use the service name 'influxdb'
+  #       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+  #       - INFLUXDB_ORG=myorg
+  #       - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
+  #     volumes:
+  #       - ./sensor_simulation:/app
+  #     networks:
+  #       - default
+  #     restart: always
 
 
   restapi_rooms:
@@ -124,5 +148,17 @@ services:
         - GOOGLE_CAL_ID=7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com # Calendar ID to get bookings
     volumes:
       - ./env/creds.json:/usr/src/app/creds.json:ro  # Read-only access to creds.json
+      - ./static_data/rooms.db:/app/rooms.db
+    networks:
+      - default
+  
+
+  static_data:
+    build: ./static_data
+    container_name: static_data
+    volumes:
+      - ./static_data/rooms.db:/app/rooms.db  # Persist database file
+      - ./static_data:/app                   # Mount code for flexibility
+    command: python init_db.py               # Initialize database on startup
     networks:
       - default
