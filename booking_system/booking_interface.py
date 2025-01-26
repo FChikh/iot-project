@@ -35,13 +35,9 @@ with st.container():
     seating_capacity = st.number_input("Amount of seating facilities needed:", min_value=0, step=1)
     videoprojector_needed = st.checkbox("Is a video projector needed?")
     num_computers = st.number_input("Amount of computers required:", min_value=0, step=1)
-    col3, col4 = st.columns(2)
-    with col3:
-        co2_level_preference = st.radio("CO2 levels:", options=["Normal", "Low"])
-        air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
-    with col4:
-        noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
-        lighting_preference = st.radio("Lighting:", options=["Normal", "Bright"])
+
+    air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
+    noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
 
 # Submit button
 with st.container():
@@ -57,10 +53,8 @@ with st.container():
             st.write(f"- Seating facilities: {seating_capacity}")
             st.write(f"- Video projector needed: {'Yes' if videoprojector_needed else 'No'}")
             st.write(f"- Computers: {num_computers}")
-            st.write(f"- CO2 level Preference: {co2_level_preference}")
             st.write(f"- Air quality Preference: {air_quality_preference}")
             st.write(f"- Noise level Preference: {noise_level_preference}")
-            st.write(f"- Lighting Preference: {lighting_preference}")
 
 # Calendar preview
 with st.container():
