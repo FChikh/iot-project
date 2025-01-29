@@ -156,3 +156,19 @@ services:
       - ./booking_interface:/app
     networks:
       - default
+
+  booking_system:
+    build: ./booking_system
+    container_name: booking_system
+    depends_on:
+      - influxdb  # Add mosquitto here if needed
+    ports:
+      - "8081:8080"  # Host:Container port mapping
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=myorg
+      - INFLUXDB_BUCKET=room_sensors
+      # Include additional variables (e.g., Google Calendar ID) if required
+    networks:
+      - default
