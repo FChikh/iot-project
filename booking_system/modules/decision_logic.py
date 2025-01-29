@@ -52,11 +52,6 @@ def topsis_decision_logic(room_data, user_pref, weights=None, lower_better_cols=
     return result.sort_values('Rank')
 
 
-def check_availability(date, start_time, end_time, seating_capacity, videoprojector_needed, num_computers):
-
-    pass
-
-
 def build_topsis_matrix(rooms, environmental_data):
     """
     Constructs the TOPSIS decision matrix by evaluating the compliance of each room based on environmental data.
@@ -236,7 +231,9 @@ def retrieve_seating_capacity(room):
 
 
         
+def check_availability(date, start_time, end_time, seating_capacity, videoprojector_needed, num_computers):
 
+    pass
         
 
 
@@ -251,26 +248,38 @@ def booking(date, start_time, end_time, seating_capacity, videoprojector_needed,
 
     available_rooms= check_availability(date, start_time, end_time, seating_capacity, videoprojector_needed, num_computers)
 
-    environmental_data = ['co2_level', 'pm2_5', 'pm10', 'sound_values', 'light_intensity', 'humidity', 'voc_values', 'seating_capacity']
-
-    room_data_matrix = build_topsis_matrix(available_rooms, environmental_data)
+    sensors = [
+        'co2_level', 'pm2_5', 'pm10',
+        'sound_values', 'light_intensity',
+        'humidity', 'voc_values',
+        'seating_capacity'
+    ]
+    room_data_matrix = build_topsis_matrix(available_rooms, sensors)
 
 
     pm25_preference = 0
     pm10_preference = 0
 
-    preferences = {
-    'co2_level': 0,
-    'pm2_5': 0,
-    'pm10': 0,
-    'noise_level': 0,
-    'light_intensity': 500,
-    'humidity': 45,
-    'VOC_level': 200,
-    'seating_capacity': seating_capacity,
+    user_pref = {
+        'co2_level': 0,
+        'below_1000_ppm': 100,
+        'pm2_5': 0,
+        'pm10': 0,
+        'sound_values': 33,
+        'above_35_db': 0,
+        'light_intensity': 500,
+        'below_recommended': 0,
+        'humidity': 50,
+        'voc_values': 0,
+        'seating_capacity': 40
     }
 
+    lower_better_cols = ['co2_level', 'pm2_5', 'pm10', 'above_35_db','below_recommended', 'sound_values', 'voc_values', 'light_intensity']
+    weights = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.05, 0.1, 0.1, 0.05]
 
-
-
-
+    ranking_df = topsis_decision_logic(
+        room_data=room_data_matrix, 
+        user_pref=user_pref, 
+        weights=weights, 
+        lower_better_cols=lower_better_cols
+    )

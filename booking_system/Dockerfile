@@ -1,11 +1,16 @@
-FROM python:3.11.11-slim
+FROM python:3.11-alpine
 
-WORKDIR /app
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
 
-COPY requirements.txt .
+COPY requirements.txt /usr/src/app/
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY . /usr/src/app
 
-CMD ["python", "booking_interface.py"]
+EXPOSE 8080
+
+ENTRYPOINT ["python3"]
+
+CMD ["-m", "swagger_server"]
