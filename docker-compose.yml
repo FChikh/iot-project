@@ -58,7 +58,6 @@ services:
     links:
       - mosquitto
 
-
   influxdb:
     image: influxdb:2.0
     container_name: influxdb
@@ -73,9 +72,7 @@ services:
       - DOCKER_INFLUXDB_INIT_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
       - DOCKER_INFLUXDB_INIT_ORG=myorg
-      - DOCKER_INFLUXDB_INIT_BUCKET=room_sensors  # Match your script's bucket name
-
-
+      - DOCKER_INFLUXDB_INIT_BUCKET=room_sensors
 
   mqtt_to_influx:
     build: ./mqtt_to_influx
@@ -90,14 +87,13 @@ services:
       - INFLUXDB_PASSWORD=${DOCKER_INFLUXDB_INIT_PASSWORD}
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
       - INFLUXDB_ORG=myorg
-      - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
+      - INFLUXDB_BUCKET=room_sensors
     volumes:
       - ./mqtt_to_influx:/mqtt_to_influx
     command: python /mqtt_to_influx/mqtt_to_influx.py
     links:
       - influxdb
       - mosquitto
-
 
   grafana:
     image: grafana/grafana:latest
@@ -113,27 +109,9 @@ services:
     networks:
       - default
 
-
-  # sensor_simulation:
-  #     build: ./sensor_simulation
-  #     container_name: sensor_simulation
-  #     depends_on:
-  #       - influxdb
-  #     environment:
-  #       - INFLUXDB_URL=http://influxdb:8086  # Use the service name 'influxdb'
-  #       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
-  #       - INFLUXDB_ORG=myorg
-  #       - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
-  #     volumes:
-  #       - ./sensor_simulation:/app
-  #     networks:
-  #       - default
-  #     restart: always
-
-
   restapi_rooms:
     build:
-      context: ./restapi_rooms  # Replace with the path to your service's Dockerfile
+      context: ./restapi_rooms
       dockerfile: Dockerfile
     container_name: restapi_rooms
     depends_on:
@@ -141,24 +119,56 @@ services:
     ports:
       - "8080:8080"
     environment:
-        - INFLUXDB_URL=http://influxdb:8086  # Use the service name 'influxdb'
+        - INFLUXDB_URL=http://influxdb:8086
         - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
         - INFLUXDB_ORG=myorg
-        - INFLUXDB_BUCKET=room_sensors  # Match your script's bucket name
-        - GOOGLE_CAL_ID=7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com # Calendar ID to get bookings
+        - INFLUXDB_BUCKET=room_sensors
+        - GOOGLE_CAL_ID=7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com
     volumes:
-      - ./env/creds.json:/usr/src/app/creds.json:ro  # Read-only access to creds.json
+      - ./env/creds.json:/usr/src/app/creds.json:ro
       - ./static_data/rooms.db:/app/rooms.db
     networks:
       - default
-  
 
   static_data:
     build: ./static_data
     container_name: static_data
     volumes:
-      - ./static_data/rooms.db:/app/rooms.db  # Persist database file
-      - ./static_data:/app                   # Mount code for flexibility
-    command: python init_db.py               # Initialize database on startup
+      - ./static_data/rooms.db:/app/rooms.db
+      - ./static_data:/app
+    command: python init_db.py
+    networks:
+      - default
+
+  booking_interface:
+    build: ./booking_interface
+    container_name: booking_interface
+    depends_on:
+      - influxdb
+    ports:
+      - "8502:8502"
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=myorg
+      - INFLUXDB_BUCKET=room_sensors
+    volumes:
+      - ./booking_interface:/app
+    networks:
+      - default
+
+  booking_system:
+    build: ./booking_system
+    container_name: booking_system
+    depends_on:
+      - influxdb  # Add mosquitto here if needed
+    ports:
+      - "8081:8080"  # Host:Container port mapping
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=myorg
+      - INFLUXDB_BUCKET=room_sensors
+      # Include additional variables (e.g., Google Calendar ID) if required
     networks:
       - default
