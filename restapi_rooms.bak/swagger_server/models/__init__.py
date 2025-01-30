@@ -5,6 +5,7 @@ from __future__ import absolute_import
 # import models into model package
 from swagger_server.models.air_quality10_reading import AirQuality10Reading
 from swagger_server.models.air_quality25_reading import AirQuality25Reading
+from swagger_server.models.book_room_id_body import BookRoomIdBody
 from swagger_server.models.booking import Booking
 from swagger_server.models.co2_reading import Co2Reading
 from swagger_server.models.equipments import Equipments
@@ -26,6 +27,5 @@ from swagger_server.models.room_light import RoomLight
 from swagger_server.models.room_noise import RoomNoise
 from swagger_server.models.room_temperature import RoomTemperature
 from swagger_server.models.room_voc import RoomVoc
-from swagger_server.models.rooms_room_id_body import RoomsRoomIdBody
 from swagger_server.models.temperature_reading import TemperatureReading
 from swagger_server.models.voc_reading import VocReading
