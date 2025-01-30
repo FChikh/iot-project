@@ -19,7 +19,7 @@ def get_spec_room_spec_sensor(sensor_type, room_id, days):
                   "co2":"co2",
                   "voc":"voc",
                   "noise":"sound",
-                  "temperature":"temp",
+                  "temperature":"temperature",
                   "light":"light",
                   "humidity":"humidity"
     }
@@ -82,7 +82,7 @@ def get_all_room_spec_sensor(sensor_type, days):
                   "co2":"co2",
                   "voc":"voc",
                   "noise":"sound",
-                  "temperature":"temp",
+                  "temperature":"temperature",
                   "light":"light",
                   "humidity":"humidity"
     }
@@ -171,7 +171,7 @@ def get_spec_room_all_sensor(room_id, days):  # noqa: E501
                       "co2":"co2",
                       "voc":"voc",
                       "sound":"noise",
-                      "temp":"temperature",
+                      "temperature":"temperature",
                       "light":"light",
                       "humidity":"humidity"
         }
@@ -251,7 +251,7 @@ def get_all_room_all_sensor(days):  # noqa: E501
                       "co2":"co2",
                       "voc":"voc",
                       "sound":"noise",
-                      "temp":"temperature",
+                      "temperature":"temperature",
                       "light":"light",
                       "humidity":"humidity"
         }
