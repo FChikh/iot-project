@@ -6,7 +6,6 @@ from flask import abort, jsonify
 from influxdb_client.client.query_api import QueryApi
 
 
-aggr_window = "30s"
 
 def get_spec_room_spec_sensor(sensor_type, room_id, days):
 
@@ -19,7 +18,7 @@ def get_spec_room_spec_sensor(sensor_type, room_id, days):
                   "co2":"co2",
                   "voc":"voc",
                   "noise":"sound",
-                  "temperature":"temp",
+                  "temperature":"temperature",
                   "light":"light",
                   "humidity":"humidity"
     }
@@ -36,7 +35,7 @@ def get_spec_room_spec_sensor(sensor_type, room_id, days):
           |> filter(fn: (r) => r["_measurement"] == "room_data")
           |> filter(fn: (r) => r["_field"] == "{sensor_map_influx[sensor_type]}")
           |> filter(fn: (r) => r["room_id"] == "{room_id}")
-          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
 
@@ -82,7 +81,7 @@ def get_all_room_spec_sensor(sensor_type, days):
                   "co2":"co2",
                   "voc":"voc",
                   "noise":"sound",
-                  "temperature":"temp",
+                  "temperature":"temperature",
                   "light":"light",
                   "humidity":"humidity"
     }
@@ -96,7 +95,7 @@ def get_all_room_spec_sensor(sensor_type, days):
           |> filter(fn: (r) => r["_measurement"] == "room_data")
           |> filter(fn: (r) => r["_field"] == "{sensor_map_influx[sensor_type]}")
           |> group(columns: ["room_id"])
-          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
         
@@ -161,7 +160,7 @@ def get_spec_room_all_sensor(room_id, days):  # noqa: E501
           |> filter(fn: (r) => r["_measurement"] == "room_data")
           |> filter(fn: (r) => r["room_id"] == "{room_id}")
           |> group(columns: ["room_id", "_field"])
-          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
 
@@ -171,7 +170,7 @@ def get_spec_room_all_sensor(room_id, days):  # noqa: E501
                       "co2":"co2",
                       "voc":"voc",
                       "sound":"noise",
-                      "temp":"temperature",
+                      "temperature":"temperature",
                       "light":"light",
                       "humidity":"humidity"
         }
@@ -196,7 +195,7 @@ def get_spec_room_all_sensor(room_id, days):  # noqa: E501
                         "voc": [],
                         "noise": [],
                         "temperature": [],
-                        "co2": [],
+                        "airquality": [],
                         "light": [],
                         "humidity": []
                     }
@@ -243,7 +242,7 @@ def get_all_room_all_sensor(days):  # noqa: E501
           |> range(start: -{days}d)
           |> filter(fn: (r) => r["_measurement"] == "room_data")
           |> group(columns: ["room_id", "_field"])
-          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
         sensor_map = {"air_quality_pm2_5": "pm2_5",
@@ -251,7 +250,7 @@ def get_all_room_all_sensor(days):  # noqa: E501
                       "co2":"co2",
                       "voc":"voc",
                       "sound":"noise",
-                      "temp":"temperature",
+                      "temperature":"temperature",
                       "light":"light",
                       "humidity":"humidity"
         }
@@ -276,7 +275,7 @@ def get_all_room_all_sensor(days):  # noqa: E501
                         "voc": [],
                         "noise": [],
                         "temperature": [],
-                        "co2": [],
+                        "airquality": [],
                         "light": [],
                         "humidity": []
                     }
