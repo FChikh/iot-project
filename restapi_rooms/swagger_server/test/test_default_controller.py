@@ -41,28 +41,6 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
-    def test_rooms_aq_pm10_get(self):
-        """Test case for rooms_aq_pm10_get
-
-        Retrieve air quality data (pm10)
-        """
-        response = self.client.open(
-            '/rooms/aq_pm10',
-            method='GET')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
-    def test_rooms_aq_pm25_get(self):
-        """Test case for rooms_aq_pm25_get
-
-        Retrieve air quality data (pm2.5)
-        """
-        response = self.client.open(
-            '/rooms/aq_pm2_5',
-            method='GET')
-        self.assert200(response,
-                       'Response body is : ' + response.data.decode('utf-8'))
-
     def test_rooms_bookings_get(self):
         """Test case for rooms_bookings_get
 
@@ -132,24 +110,24 @@ class TestDefaultController(BaseTestCase):
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
-    def test_rooms_room_id_aq_pm10_get(self):
-        """Test case for rooms_room_id_aq_pm10_get
+    def test_rooms_pm10_get(self):
+        """Test case for rooms_pm10_get
 
-        Get air quality data for a specific room (i.e. pm10)
+        Retrieve air quality data (pm10)
         """
         response = self.client.open(
-            '/rooms/{room_id}/aq_pm10'.format(room_id='room_id_example'),
+            '/rooms/pm10',
             method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
-    def test_rooms_room_id_aq_pm25_get(self):
-        """Test case for rooms_room_id_aq_pm25_get
+    def test_rooms_pm25_get(self):
+        """Test case for rooms_pm25_get
 
-        Get air quality data for a specific room (i.e. pm2.5)
+        Retrieve air quality data (pm2.5)
         """
         response = self.client.open(
-            '/rooms/{room_id}/aq_pm2_5'.format(room_id='room_id_example'),
+            '/rooms/pm2_5',
             method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
@@ -219,6 +197,28 @@ class TestDefaultController(BaseTestCase):
         """
         response = self.client.open(
             '/rooms/{room_id}/noise'.format(room_id='room_id_example'),
+            method='GET')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_rooms_room_id_pm10_get(self):
+        """Test case for rooms_room_id_pm10_get
+
+        Get air quality data for a specific room (i.e. pm10)
+        """
+        response = self.client.open(
+            '/rooms/{room_id}/pm10'.format(room_id='room_id_example'),
+            method='GET')
+        self.assert200(response,
+                       'Response body is : ' + response.data.decode('utf-8'))
+
+    def test_rooms_room_id_pm25_get(self):
+        """Test case for rooms_room_id_pm25_get
+
+        Get air quality data for a specific room (i.e. pm2.5)
+        """
+        response = self.client.open(
+            '/rooms/{room_id}/pm2_5'.format(room_id='room_id_example'),
             method='GET')
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
