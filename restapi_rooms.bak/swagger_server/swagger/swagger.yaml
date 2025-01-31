@@ -140,12 +140,12 @@ paths:
         "404":
           description: No sensor data found for room room_id
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /rooms/pm2_5:
+  /rooms/aq_pm2_5:
     get:
       summary: Retrieve air quality data (pm2.5)
       description: "Fetches the air quality measurement, including particulate matter\
         \ (μg/m³) for smaller particles(i.e. pm2.5) for all rooms"
-      operationId: rooms_pm2_5_get
+      operationId: rooms_aq_pm2_5_get
       responses:
         "200":
           description: Successful response
@@ -159,12 +159,12 @@ paths:
         "404":
           description: No airquality data found for any rooms
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /rooms/pm10:
+  /rooms/aq_pm10:
     get:
       summary: Retrieve air quality data (pm10)
       description: "Fetches the air quality measurement, including particulate matter\
         \ (μg/m³) for smaller particles(i.e. pm10) for all rooms"
-      operationId: rooms_pm10_get
+      operationId: rooms_aq_pm10_get
       responses:
         "200":
           description: Successful response
@@ -339,12 +339,12 @@ paths:
         "500":
           description: Internal server error
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /rooms/{room_id}/pm2_5:
+  /rooms/{room_id}/aq_pm2_5:
     get:
       summary: Get air quality data for a specific room (i.e. pm2.5)
       description: "Fetches the air quality measurements, including particulate matter\
         \ (μg/m³) for smaller particles (i.e. pm2.5) of a single room"
-      operationId: rooms_room_id_pm2_5_get
+      operationId: rooms_room_id_aq_pm2_5_get
       parameters:
       - name: room_id
         in: path
@@ -364,12 +364,12 @@ paths:
         "404":
           description: No airquality data found for the given room
       x-openapi-router-controller: swagger_server.controllers.default_controller
-  /rooms/{room_id}/pm10:
+  /rooms/{room_id}/aq_pm10:
     get:
       summary: Get air quality data for a specific room (i.e. pm10)
       description: "Fetches the air quality measurements, including particulate matter\
         \ (μg/m³) for smaller particles (i.e. pm10) of a single room"
-      operationId: rooms_room_id_pm10_get
+      operationId: rooms_room_id_aq_pm10_get
       parameters:
       - name: room_id
         in: path
