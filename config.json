@@ -1,0 +1,744 @@
+{
+    "rooms": [
+        {
+            "name": "MSA3010",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [22, 23]
+                },
+                {
+                    "name": "hum",
+                    "range": [30, 40]
+                },
+                {
+                    "name": "light",
+                    "range": [500, 650]
+                },
+                {
+                    "name": "co2",
+                    "range": [900, 1000]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [20, 25]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [45, 50]
+                },
+                {
+                    "name": "sound",
+                    "range": [35, 55]
+                },
+                {
+                    "name": "voc",
+                    "range": [340, 400]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 80,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": false,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA3500",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [23, 24]
+                },
+                {
+                    "name": "hum",
+                    "range": [45, 55]
+                },
+                {
+                    "name": "light",
+                    "range": [650, 900]
+                },
+                {
+                    "name": "co2",
+                    "range": [350, 400]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [10, 15]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [10, 20]
+                },
+                {
+                    "name": "sound",
+                    "range": [20, 28]
+                },
+                {
+                    "name": "voc",
+                    "range": [140, 160]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 150,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": true,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA3520",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [23, 24]
+                },
+                {
+                    "name": "hum",
+                    "range": [40, 45]
+                },
+                {
+                    "name": "light",
+                    "range": [650, 1100]
+                },
+                {
+                    "name": "co2",
+                    "range": [650, 700]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [10, 13]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [23, 27]
+                },
+                {
+                    "name": "sound",
+                    "range": [25, 35]
+                },
+                {
+                    "name": "voc",
+                    "range": [80, 100]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 150,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": true,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA3110",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [19, 21]
+                },
+                {
+                    "name": "hum",
+                    "range": [35, 40]
+                },
+                {
+                    "name": "light",
+                    "range": [750, 800]
+                },
+                {
+                    "name": "co2",
+                    "range": [450, 480]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [7, 12]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [20, 28]
+                },
+                {
+                    "name": "sound",
+                    "range": [22, 28]
+                },
+                {
+                    "name": "voc",
+                    "range": [50, 80]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 70,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": false,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA3070",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [18, 20]
+                },
+                {
+                    "name": "hum",
+                    "range": [45, 50]
+                },
+                {
+                    "name": "light",
+                    "range": [600, 700]
+                },
+                {
+                    "name": "co2",
+                    "range": [300, 350]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [10, 13]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [10, 15]
+                },
+                {
+                    "name": "sound",
+                    "range": [20, 25]
+                },
+                {
+                    "name": "voc",
+                    "range": [150, 170]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 40,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": true,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA1601",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [23, 25]
+                },
+                {
+                    "name": "hum",
+                    "range": [40, 45]
+                },
+                {
+                    "name": "light",
+                    "range": [900, 950]
+                },
+                {
+                    "name": "co2",
+                    "range": [500, 530]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [18, 21]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [33, 37]
+                },
+                {
+                    "name": "sound",
+                    "range": [28, 32]
+                },
+                {
+                    "name": "voc",
+                    "range": [230, 250]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 40,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": true,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA4010",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [21, 23]
+                },
+                {
+                    "name": "hum",
+                    "range": [35, 40]
+                },
+                {
+                    "name": "light",
+                    "range": [650, 700]
+                },
+                {
+                    "name": "co2",
+                    "range": [340, 370]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [12, 15]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [18, 23]
+                },
+                {
+                    "name": "sound",
+                    "range": [25, 32]
+                },
+                {
+                    "name": "voc",
+                    "range": [120, 160]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 35,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": true,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA4030",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [24, 26]
+                },
+                {
+                    "name": "hum",
+                    "range": [50, 57]
+                },
+                {
+                    "name": "light",
+                    "range": [700, 850]
+                },
+                {
+                    "name": "co2",
+                    "range": [670, 680]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [8, 12]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [22, 26]
+                },
+                {
+                    "name": "sound",
+                    "range": [35, 42]
+                },
+                {
+                    "name": "voc",
+                    "range": [210, 230]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 35,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": true,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA4110",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [20, 21]
+                },
+                {
+                    "name": "hum",
+                    "range": [35, 38]
+                },
+                {
+                    "name": "light",
+                    "range": [750, 800]
+                },
+                {
+                    "name": "co2",
+                    "range": [500, 540]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [12, 16]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [32, 37]
+                },
+                {
+                    "name": "sound",
+                    "range": [35, 39]
+                },
+                {
+                    "name": "voc",
+                    "range": [220, 235]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 35,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": false,
+                    "type": "boolean"
+                }
+            ]
+        },
+        {
+            "name": "MSA4300",
+            "sensors": [
+                {
+                    "name": "temp",
+                    "range": [22, 23]
+                },
+                {
+                    "name": "hum",
+                    "range": [43, 49]
+                },
+                {
+                    "name": "light",
+                    "range": [700, 750]
+                },
+                {
+                    "name": "co2",
+                    "range": [640, 680]
+                },
+                {
+                    "name": "air_quality_pm2_5",
+                    "range": [8, 12]
+                },
+                {
+                    "name": "air_quality_pm10",
+                    "range": [10, 14]
+                },
+                {
+                    "name": "sound",
+                    "range": [22, 26]
+                },
+                {
+                    "name": "voc",
+                    "range": [110, 123]
+                }
+            ],
+            "equipment": [
+                {
+                    "name": "capacity",
+                    "value": 60,
+                    "type": "integer"
+                },
+                {
+                    "name": "projector",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "computer_class",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "microphone",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "smart_board_webex",
+                    "value": true,
+                    "type": "boolean"
+                },
+                {
+                    "name": "blackboard",
+                    "value": false,
+                    "type": "boolean"
+                },
+                {
+                    "name": "whiteboard",
+                    "value": true,
+                    "type": "boolean"
+                }
+            ]
+        }
+    ]
+}
