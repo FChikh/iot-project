@@ -1,51 +1,45 @@
-import sqlite3
 import os
+import json
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from models import Base, Room, Equipment  
 
-# Get the current working directory (where the script is running)
-script_dir = os.path.dirname(os.path.abspath(__file__))
+DB_NAME = os.getenv("POSTGRES_DB", "rooms_db")
+DB_USER = os.getenv("POSTGRES_USER", "user")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
+DB_HOST = os.getenv("POSTGRES_HOST", "postgres")
+DB_PORT = os.getenv("POSTGRES_PORT", "5432")
+CONFIG_FILE = os.getenv("CONFIG_FILE", "/app/config.json")
 
-# Define the full path for the database file
-db_path = os.path.join(script_dir, "rooms.db")
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# Print the database path for debugging
-print(f"Database will be created at: {db_path}")
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
 
-# Create a connection to SQLite database
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
+Base.metadata.create_all(engine)
 
-# Create the rooms table
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS rooms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    capacity INTEGER NOT NULL,
-    projector BOOLEAN NOT NULL,
-    pc_count INTEGER,
-    computer_class BOOLEAN,
-    microphone BOOLEAN,
-    smart_board_webex BOOLEAN,
-    blackboard BOOLEAN,
-    whiteboard BOOLEAN
-)
-''')
+with open(CONFIG_FILE, 'r') as file:
+    data = json.load(file)
 
-# Insert room data
-rooms = [
-    ("Room_1", 62, True, None, False, False, False, True, True),
-    ("Room_2", 23, True, 20, True, False, False, False, True),
-    ("Room_3", 30, True, 10, True, True, False, True, False),
-    ("Room_4", 12, False, None, False, False, False, False, True),
-    ("Room_5", 40, True, 25, True, True, True, True, False)
-]
+session = Session()
+for room_data in data["rooms"]:
+    room = session.query(Room).filter_by(name=room_data["name"]).first()
+    
+    if not room:
+        room = Room(name=room_data["name"])
+        session.add(room)
+        session.commit()  
 
-cursor.executemany('''
-INSERT INTO rooms (name, capacity, projector, pc_count, computer_class, microphone, smart_board_webex, blackboard, whiteboard)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-''', rooms)
+    for eq_data in room_data["equipment"]:
+        equipment = Equipment(
+            room_id=room.id,
+            name=eq_data["name"],
+            value=str(eq_data["value"]),
+            type=eq_data["type"]
+        )
+        session.add(equipment)
 
-# Commit changes and close the connection
-conn.commit()
-conn.close()
+session.commit()
+session.close()
 
-print("Database initialized and populated!")
+print("Database initialized from config.json!")
