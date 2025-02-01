@@ -3,6 +3,9 @@ import pandas as pd
 import requests
 import re
 
+import os
+print("Current Working Directory:", os.getcwd())
+
 API_BASE = "http://localhost:9999"  # Adjust if your API is hosted elsewhere
 
 st.title("Arduino Simulators Dashboard")
