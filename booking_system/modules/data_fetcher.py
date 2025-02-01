@@ -67,8 +67,77 @@ def fetch_equipments():
     Returns:
         dict: A dictionary containing the JSON data, or None if an error occurs.
     """
-    api_url = f"http://localhost:8080/rooms/equipment"
-    return fetch_api_data(api_url)
+    #api_url = f"http://localhost:8080/rooms/equipment"
+    #return fetch_api_data(api_url)
+    rooms = [
+        {
+            "room": "Room_1",
+            "equipment": {
+                "blackboard": True,
+                "capacity": 30,
+                "computer-class": True,
+                "microphone": True,
+                "pc": True,
+                "projector": True,
+                "smartboard": True,
+                "whiteboard": True
+            }
+        },
+        {
+            "room": "Room_2",
+            "equipment": {
+                "blackboard": False,
+                "capacity": 50,
+                "computer-class": True,
+                "microphone": True,
+                "pc": False,
+                "projector": True,
+                "smartboard": False,
+                "whiteboard": True
+            }
+        },
+        {
+            "room": "Room_3",
+            "equipment": {
+                "blackboard": True,
+                "capacity": 25,
+                "computer-class": False,
+                "microphone": False,
+                "pc": True,
+                "projector": False,
+                "smartboard": True,
+                "whiteboard": False
+            }
+        },
+        {
+            "room": "Room_4",
+            "equipment": {
+                "blackboard": True,
+                "capacity": 40,
+                "computer-class": False,
+                "microphone": True,
+                "pc": True,
+                "projector": True,
+                "smartboard": True,
+                "whiteboard": True
+            }
+        },
+        {
+            "room": "Room_5",
+            "equipment": {
+                "blackboard": False,
+                "capacity": 60,
+                "computer-class": True,
+                "microphone": True,
+                "pc": False,
+                "projector": True,
+                "smartboard": False,
+                "whiteboard": True
+            }
+        }
+    ]
+
+    return rooms
 
 
 def fetch_rooms(equipment_file):
