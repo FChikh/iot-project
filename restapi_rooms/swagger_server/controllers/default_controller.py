@@ -128,7 +128,7 @@ def rooms_pm10_get():  # noqa: E501
     return get_all_room_spec_sensor("pm10", 14)
 
 
-def rooms_pm25_get():  # noqa: E501
+def rooms_pm2_5_get():  # noqa: E501
     """Retrieve air quality data (pm2.5)
 
     Fetches the air quality measurement, including particulate matter (μg/m³) for smaller particles(i.e. pm2.5) for all rooms # noqa: E501
@@ -235,7 +235,7 @@ def rooms_room_id_pm10_get(room_id):  # noqa: E501
     return get_spec_room_spec_sensor("pm10", room_id, 14)
 
 
-def rooms_room_id_pm25_get(room_id):  # noqa: E501
+def rooms_room_id_pm2_5_get(room_id):  # noqa: E501
     """Get air quality data for a specific room (i.e. pm2.5)
 
     Fetches the air quality measurements, including particulate matter (μg/m³) for smaller particles (i.e. pm2.5) of a single room # noqa: E501
