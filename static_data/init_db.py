@@ -31,6 +31,13 @@ for room_data in data["rooms"]:
         session.commit()  
 
     for eq_data in room_data["equipment"]:
+        existing_equipment = session.query(Equipment).filter(
+            Equipment.room_id == room.id,
+            Equipment.name == eq_data["name"]
+        ).first()
+        
+        if existing_equipment:
+            continue
         equipment = Equipment(
             room_id=room.id,
             name=eq_data["name"],

@@ -57,11 +57,16 @@ services:
       - TOKEN=${TOKEN}
       - SERIAL_PORT=/dev/ttyACM0
       - MQTT_BROKER=${MQTT_BROKER}
+      - POSTGRES_DB=rooms_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     privileged: true
-    # volumes:
-    #   - ./config.json:/app/config.json
     links:
       - mosquitto
+    networks:
+      - default
 
   influxdb:
     image: influxdb:2.0
@@ -154,6 +159,8 @@ services:
     build:
       context: .
       dockerfile: static_data/Dockerfile
+      additional_contexts: 
+        configs: ./configs
     container_name: static_data
     depends_on:
       - postgres
