@@ -45,7 +45,7 @@ services:
     build:
       context: ./dashboard
       additional_contexts: 
-        configs: ./configs
+        configs: ./shared_vol
     container_name: dashboard
     depends_on:
       - mosquitto
