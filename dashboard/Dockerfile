@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY streamlit_app.py /app/
 COPY requirements.txt /app/
+COPY global_config.py /app/
 
 RUN pip install --no-cache-dir -r requirements.txt
 

@@ -49,7 +49,7 @@ def on_message(client, userdata, message):
         print(f"Topic: {message.topic}")
         print(f"time: {message.timestamp}")
         topic = message.topic
-        room, sensor_type = topic.split("/")
+        room, sensors, sensor_type = topic.split("/")
         value = data.get("value")
         timestamp = data.get("timestamp")
 
@@ -67,14 +67,7 @@ mqtt_client.connect(MQTT_BROKER)
 
 
 # Subscribe to topics for each sensor type
-mqtt_client.subscribe("+/temp")
-mqtt_client.subscribe("+/humidity")
-mqtt_client.subscribe("+/light")
-mqtt_client.subscribe("+/co2")
-mqtt_client.subscribe("+/air_quality_pm2_5")
-mqtt_client.subscribe("+/air_quality_pm10")
-mqtt_client.subscribe("+/sound")
-mqtt_client.subscribe("+/voc")
+mqtt_client.subscribe("+/sensors/#")
 
 mqtt_client.on_message = on_message
 
