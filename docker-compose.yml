@@ -132,15 +132,39 @@ services:
     networks:
       - default
 
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: rooms_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - default
+
   static_data:
     build: ./static_data
     container_name: static_data
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_DB=rooms_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - CONFIG_FILE=/app/config.json
     volumes:
-      - ./static_data/rooms.db:/app/rooms.db
       - ./static_data:/app
     command: python init_db.py
     networks:
       - default
+
 
   booking_interface:
     build: ./booking_interface
@@ -174,3 +198,6 @@ services:
       # Include additional variables (e.g., Google Calendar ID) if required
     networks:
       - default
+
+volumes:
+  postgres_data:
