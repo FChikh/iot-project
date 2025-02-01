@@ -1,69 +1,45 @@
-import psycopg2
-import json
 import os
+import json
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from models import Base, Room, Equipment  
 
-# Load database credentials from environment variables
 DB_NAME = os.getenv("POSTGRES_DB", "rooms_db")
 DB_USER = os.getenv("POSTGRES_USER", "user")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
 DB_HOST = os.getenv("POSTGRES_HOST", "postgres")
 DB_PORT = os.getenv("POSTGRES_PORT", "5432")
-
-# Load configuration data
 CONFIG_FILE = os.getenv("CONFIG_FILE", "/app/config.json")
 
-# Connect to PostgreSQL
-conn = psycopg2.connect(
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASSWORD,
-    host=DB_HOST,
-    port=DB_PORT
-)
-cursor = conn.cursor()
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# Create the rooms table
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS rooms (
-        id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL UNIQUE
-    )
-''')
+engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
 
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS equipment (
-        id SERIAL PRIMARY KEY,
-        room_id INTEGER REFERENCES rooms(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        value TEXT NOT NULL,
-        type TEXT NOT NULL
-    )
-''')
+Base.metadata.create_all(engine)
 
-# Load data from config.json
 with open(CONFIG_FILE, 'r') as file:
     data = json.load(file)
 
-# Insert rooms and equipment
-for room in data["rooms"]:
-    cursor.execute('INSERT INTO rooms (name) VALUES (%s) ON CONFLICT (name) DO NOTHING RETURNING id', (room["name"],))
-    room_id = cursor.fetchone()
+session = Session()
+for room_data in data["rooms"]:
+    room = session.query(Room).filter_by(name=room_data["name"]).first()
+    
+    if not room:
+        room = Room(name=room_data["name"])
+        session.add(room)
+        session.commit()  
 
-    if room_id:
-        room_id = room_id[0]
-    else:
-        cursor.execute('SELECT id FROM rooms WHERE name = %s', (room["name"],))
-        room_id = cursor.fetchone()[0]
+    for eq_data in room_data["equipment"]:
+        equipment = Equipment(
+            room_id=room.id,
+            name=eq_data["name"],
+            value=str(eq_data["value"]),
+            type=eq_data["type"]
+        )
+        session.add(equipment)
 
-    for item in room["equipment"]:
-        cursor.execute('''
-            INSERT INTO equipment (room_id, name, value, type) 
-            VALUES (%s, %s, %s, %s) 
-            ON CONFLICT DO NOTHING
-        ''', (room_id, item["name"], str(item["value"]), item["type"]))
+session.commit()
+session.close()
 
-# Commit changes and close
-conn.commit()
-conn.close()
-
-print("✅ Database initialized from config.json!")
+print("Database initialized from config.json!")
