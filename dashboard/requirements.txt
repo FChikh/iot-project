@@ -1,2 +1,5 @@
 streamlit
 paho-mqtt
+flask
+SQLAlchemy
+psycopg2-binary

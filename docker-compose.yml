@@ -42,7 +42,10 @@ services:
     tty: true
 
   dashboard:
-    build: ./dashboard
+    build:
+      context: ./dashboard
+      additional_contexts: 
+        configs: ./configs
     container_name: dashboard
     depends_on:
       - mosquitto
@@ -54,11 +57,16 @@ services:
       - TOKEN=${TOKEN}
       - SERIAL_PORT=/dev/ttyACM0
       - MQTT_BROKER=${MQTT_BROKER}
+      - POSTGRES_DB=rooms_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     privileged: true
-    volumes:
-      - ./config.json:/app/config.json
     links:
       - mosquitto
+    networks:
+      - default
 
   influxdb:
     image: influxdb:2.0
@@ -135,7 +143,6 @@ services:
         - GOOGLE_CAL_ID=7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com
     volumes:
       - ./env/creds.json:/usr/src/app/creds.json:ro
-      - ./shared_vol:/usr/src/app/shared_vol:ro
     networks:
       - default
 
