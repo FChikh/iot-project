@@ -6,6 +6,7 @@ from flask import abort, jsonify
 from influxdb_client.client.query_api import QueryApi
 
 
+aggr_window = "30s"
 
 def get_spec_room_spec_sensor(sensor_type, room_id, days):
 
@@ -13,13 +14,17 @@ def get_spec_room_spec_sensor(sensor_type, room_id, days):
     org = os.getenv('INFLUXDB_ORG', 'myorg')
     bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
 
-    sensor_map = {"airquality":"co2", 
-                  "temperature":"temperature",
+    sensor_map_influx = {"pm2_5":"air_quality_pm2_5",
+                  "pm10":"air_quality_pm10",
+                  "co2":"co2",
+                  "voc":"voc",
+                  "noise":"sound",
+                  "temperature":"temp",
                   "light":"light",
                   "humidity":"humidity"
     }
 
-
+    
     try:
         # Get the Query API
         query_api: QueryApi = client.query_api()
@@ -29,9 +34,9 @@ def get_spec_room_spec_sensor(sensor_type, room_id, days):
         from(bucket: "{bucket}")
           |> range(start: -{days}d)
           |> filter(fn: (r) => r["_measurement"] == "room_data")
-          |> filter(fn: (r) => r["_field"] == "{sensor_map[sensor_type]}")
+          |> filter(fn: (r) => r["_field"] == "{sensor_map_influx[sensor_type]}")
           |> filter(fn: (r) => r["room_id"] == "{room_id}")
-          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
 
@@ -72,8 +77,12 @@ def get_all_room_spec_sensor(sensor_type, days):
     org = os.getenv('INFLUXDB_ORG', 'myorg')
     bucket = os.getenv('INFLUXDB_BUCKET', 'room_sensors')
 
-    sensor_map = {"airquality":"co2", 
-                  "temperature":"temperature",
+    sensor_map_influx = {"pm2_5":"air_quality_pm2_5",
+                  "pm10":"air_quality_pm10",
+                  "co2":"co2",
+                  "voc":"voc",
+                  "noise":"sound",
+                  "temperature":"temp",
                   "light":"light",
                   "humidity":"humidity"
     }
@@ -85,9 +94,9 @@ def get_all_room_spec_sensor(sensor_type, days):
         from(bucket: "{bucket}")
           |> range(start: -{days}d)
           |> filter(fn: (r) => r["_measurement"] == "room_data")
-          |> filter(fn: (r) => r["_field"] == "{sensor_map[sensor_type]}")
+          |> filter(fn: (r) => r["_field"] == "{sensor_map_influx[sensor_type]}")
           |> group(columns: ["room_id"])
-          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
         
@@ -104,7 +113,7 @@ def get_all_room_spec_sensor(sensor_type, days):
                 # Initialize room data if not exists
                 if room_id not in rooms_data:
                     rooms_data[room_id] = {
-                        "room_id": room_id,
+                        "room": room_id,
                         sensor_type: []
                     }
                 
@@ -152,9 +161,20 @@ def get_spec_room_all_sensor(room_id, days):  # noqa: E501
           |> filter(fn: (r) => r["_measurement"] == "room_data")
           |> filter(fn: (r) => r["room_id"] == "{room_id}")
           |> group(columns: ["room_id", "_field"])
-          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
+
+        # maps from influx terms to restapi terms
+        sensor_map = {"air_quality_pm2_5": "pm2_5",
+                      "air_quality_pm10": "pm10",
+                      "co2":"co2",
+                      "voc":"voc",
+                      "sound":"noise",
+                      "temp":"temperature",
+                      "light":"light",
+                      "humidity":"humidity"
+        }
         
         result = query_api.query(org=org, query=flux_query)
         
@@ -171,21 +191,19 @@ def get_spec_room_all_sensor(room_id, days):  # noqa: E501
                 if room_id not in rooms_data:
                     rooms_data[roomid] = {
                         "room": roomid,
+                        "pm2_5": [],
+                        "pm10": [],
+                        "voc": [],
+                        "noise": [],
                         "temperature": [],
-                        "airquality": [],
+                        "co2": [],
                         "light": [],
                         "humidity": []
                     }
                 
-                # Map _field names to your response format names if needed
-                sensor_mapping = {
-                    "temperature": "temperature",
-                    "co2": "airquality",
-                    "light": "light",
-                    "humidity": "humidity"
-                }
                 
-                mapped_sensor = sensor_mapping.get(sensor_type)
+                
+                mapped_sensor = sensor_map[sensor_type]
                 if mapped_sensor:
                     rooms_data[room_id][mapped_sensor].append({
                         'timestamp': record.get_time().isoformat(),
@@ -225,10 +243,19 @@ def get_all_room_all_sensor(days):  # noqa: E501
           |> range(start: -{days}d)
           |> filter(fn: (r) => r["_measurement"] == "room_data")
           |> group(columns: ["room_id", "_field"])
-          |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)
+          |> aggregateWindow(every: {aggr_window}, fn: mean, createEmpty: false)
           |> yield(name: "mean")
         '''
-        
+        sensor_map = {"air_quality_pm2_5": "pm2_5",
+                      "air_quality_pm10": "pm10",
+                      "co2":"co2",
+                      "voc":"voc",
+                      "sound":"noise",
+                      "temp":"temperature",
+                      "light":"light",
+                      "humidity":"humidity"
+        }
+
         result = query_api.query(org=org, query=flux_query)
         
         # Dictionary to store data for each room
@@ -244,21 +271,18 @@ def get_all_room_all_sensor(days):  # noqa: E501
                 if room_id not in rooms_data:
                     rooms_data[room_id] = {
                         "room": room_id,
+                        "pm2_5": [],
+                        "pm10": [],
+                        "voc": [],
+                        "noise": [],
                         "temperature": [],
-                        "airquality": [],
+                        "co2": [],
                         "light": [],
                         "humidity": []
                     }
                 
-                # Map _field names to your response format names if needed
-                sensor_mapping = {
-                    "temperature": "temperature",
-                    "co2": "airquality",
-                    "light": "light",
-                    "humidity": "humidity"
-                }
                 
-                mapped_sensor = sensor_mapping.get(sensor_type)
+                mapped_sensor = sensor_map.get(sensor_type)
                 if mapped_sensor:
                     rooms_data[room_id][mapped_sensor].append({
                         'timestamp': record.get_time().isoformat(),

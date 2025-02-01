@@ -14,7 +14,7 @@ def download_sensor_data(room_id: str, sensor_name: str) -> pd.DataFrame:
         pd.DataFrame: A pandas DataFrame containing the JSON data, or an empty DataFrame if an error occurs.
     """
     try:
-        api_url = f"https://localhost:8087/room/{room_id}/{sensor_name}"
+        api_url = f"https://localhost:8087/{room_id}/{sensor_name}"
         
         response = requests.get(api_url)
         response.raise_for_status()  
@@ -23,7 +23,7 @@ def download_sensor_data(room_id: str, sensor_name: str) -> pd.DataFrame:
         
         
         df = pd.DataFrame(json_data[sensor_name])
-
+        
         return df
     except requests.exceptions.RequestException as e:
         print(f"Error during API request: {e}")
