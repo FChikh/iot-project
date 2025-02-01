@@ -129,6 +129,7 @@ services:
     volumes:
       - ./env/creds.json:/usr/src/app/creds.json:ro
       - ./static_data/rooms.db:/app/rooms.db
+      - ./shared_vol:/app/shared_vol
     networks:
       - default
 
