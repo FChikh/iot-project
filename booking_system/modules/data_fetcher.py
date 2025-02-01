@@ -1,8 +1,35 @@
 import pandas as pd
 import requests
 import json
+import time
 
-def download_sensor_data(room_id: str, sensor_name: str) -> pd.DataFrame:
+def fetch_api_data(url: str, retries: int = 3, backoff_factor: float = 1.0):
+    """
+    Fetches JSON data from the given API URL.
+
+    Args:
+        url (str): The API URL to fetch data from.
+
+    Returns:
+        dict: A dictionary containing the JSON data, or None if an error occurs.
+    """
+    for attempt in range(retries):
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"API request failed (attempt {attempt+1}/{retries}): {str(e)}")
+            if attempt == retries - 1:
+                return None
+            sleep_time = backoff_factor * (2 ** attempt)
+            time.sleep(sleep_time)
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse JSON response: {str(e)}")
+            return None
+    return None
+
+def download_sensor_data(room_id: str, sensor_name: str):
     """
     Fetches a JSON file from a REST API and loads the content of a specific sensor into a pandas DataFrame.
 
@@ -13,42 +40,37 @@ def download_sensor_data(room_id: str, sensor_name: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: A pandas DataFrame containing the JSON data, or an empty DataFrame if an error occurs.
     """
-    try:
-        api_url = f"https://localhost:8087/{room_id}/{sensor_name}"
-        
-        response = requests.get(api_url)
-        response.raise_for_status()  
-        
-        json_data = response.json() 
-        
-        
-        df = pd.DataFrame(json_data[sensor_name])
-        
-        return df
-    except requests.exceptions.RequestException as e:
-        print(f"Error during API request: {e}")
-    except ValueError as e:
-        print(f"Error decoding JSON data from API response: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-    return None
+    api_url = f"http://localhost:8080/rooms/{room_id}/{sensor_name}"
+    json_data = fetch_api_data(api_url)
+    if json_data and sensor_name in json_data:
+        return pd.DataFrame(json_data[sensor_name])
+    return pd.DataFrame()
+
+def fetch_room_bookings(date: str, days: int):
+    """
+    Fetches room bookings from the API.
+
+    Args:
+        date (str): The start date for the bookings.
+        days (int): The number of days to fetch bookings for.
+
+    Returns:
+        dict: A dictionary containing the JSON data, or None if an error occurs.
+    """
+    api_url = f"http://localhost:8080/rooms/bookings?startDate={date}&days={days}"
+    return fetch_api_data(api_url)
+
+def fetch_equipments():
+    """
+    Fetches Equipments from the API.
+
+    Returns:
+        dict: A dictionary containing the JSON data, or None if an error occurs.
+    """
+    api_url = f"http://localhost:8080/rooms/equipment"
+    return fetch_api_data(api_url)
 
 
-def download_room_bookings(date: str, days: int):
+def fetch_rooms(equipment_file):
 
-    try:
-        api_url = f"https://localhost:8080/rooms/bookings?startDate={date}&days={days}"
-
-        response = requests.get(api_url)
-        response.raise_for_status()  
-            
-        json_data = response.json()
-
-        return json_data
-    except requests.exceptions.RequestException as e:
-        print(f"Error during API request: {e}")
-    except ValueError as e:
-        print(f"Error decoding JSON data from API response: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-    return None
+    return list(set([room_info["room"] for room_info in equipment_file]))
