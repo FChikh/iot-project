@@ -621,9 +621,9 @@ components:
             $ref: "#/components/schemas/HumidityReading"
       example:
         light:
-        - value: 7.061401241503109
+        - value: 7.061401241503109105224211816675961017608642578125
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 7.061401241503109
+        - value: 7.061401241503109105224211816675961017608642578125
           timestamp: 2000-01-23T04:56:07.000+00:00
         pm2_5:
         - value: 6.0274563
@@ -631,9 +631,9 @@ components:
         - value: 6.0274563
           timestamp: 2000-01-23T04:56:07.000+00:00
         co2:
-        - value: 5.962133916683182
+        - value: 5.962133916683182377482808078639209270477294921875
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 5.962133916683182
+        - value: 5.962133916683182377482808078639209270477294921875
           timestamp: 2000-01-23T04:56:07.000+00:00
         temperature:
         - value: 0.8008282
@@ -646,19 +646,19 @@ components:
         - value: 1.4658129
           timestamp: 2000-01-23T04:56:07.000+00:00
         noise:
-        - value: 5.637376656633329
+        - value: 5.63737665663332876420099637471139430999755859375
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 5.637376656633329
+        - value: 5.63737665663332876420099637471139430999755859375
           timestamp: 2000-01-23T04:56:07.000+00:00
         humidity:
-        - value: 9.301444243932576
+        - value: 9.301444243932575517419536481611430644989013671875
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 9.301444243932576
+        - value: 9.301444243932575517419536481611430644989013671875
           timestamp: 2000-01-23T04:56:07.000+00:00
         voc:
-        - value: 2.3021358869347655
+        - value: 2.3021358869347654518833223846741020679473876953125
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 2.3021358869347655
+        - value: 2.3021358869347654518833223846741020679473876953125
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     RoomEquipment:
@@ -678,7 +678,7 @@ components:
           smartboard: true
           microphone: true
           whiteboard: true
-          capacity: 0.8008281904610115
+          capacity: 0.80082819046101150206595775671303272247314453125
         room: room
     RoomTemperature:
       type: object
@@ -743,9 +743,9 @@ components:
             $ref: "#/components/schemas/Co2Reading"
       example:
         co2:
-        - value: 5.962133916683182
+        - value: 5.962133916683182377482808078639209270477294921875
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 5.962133916683182
+        - value: 5.962133916683182377482808078639209270477294921875
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     RoomNoise:
@@ -760,9 +760,9 @@ components:
             $ref: "#/components/schemas/NoiseReading"
       example:
         noise:
-        - value: 5.637376656633329
+        - value: 5.63737665663332876420099637471139430999755859375
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 5.637376656633329
+        - value: 5.63737665663332876420099637471139430999755859375
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     RoomVoc:
@@ -777,9 +777,9 @@ components:
             $ref: "#/components/schemas/VocReading"
       example:
         voc:
-        - value: 2.3021358869347655
+        - value: 2.3021358869347654518833223846741020679473876953125
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 2.3021358869347655
+        - value: 2.3021358869347654518833223846741020679473876953125
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     RoomLight:
@@ -794,9 +794,9 @@ components:
             $ref: "#/components/schemas/LightReading"
       example:
         light:
-        - value: 7.061401241503109
+        - value: 7.061401241503109105224211816675961017608642578125
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 7.061401241503109
+        - value: 7.061401241503109105224211816675961017608642578125
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     RoomHumidity:
@@ -811,9 +811,9 @@ components:
             $ref: "#/components/schemas/HumidityReading"
       example:
         humidity:
-        - value: 9.301444243932576
+        - value: 9.301444243932575517419536481611430644989013671875
           timestamp: 2000-01-23T04:56:07.000+00:00
-        - value: 9.301444243932576
+        - value: 9.301444243932575517419536481611430644989013671875
           timestamp: 2000-01-23T04:56:07.000+00:00
         room: room
     Equipments:
@@ -854,7 +854,7 @@ components:
         smartboard: true
         microphone: true
         whiteboard: true
-        capacity: 0.8008281904610115
+        capacity: 0.80082819046101150206595775671303272247314453125
     TemperatureReading:
       type: object
       properties:
@@ -910,7 +910,7 @@ components:
           type: number
           description: Concentration of carbon dioxide in parts per million (ppm)
       example:
-        value: 5.962133916683182
+        value: 5.962133916683182377482808078639209270477294921875
         timestamp: 2000-01-23T04:56:07.000+00:00
     NoiseReading:
       type: object
@@ -923,7 +923,7 @@ components:
           type: number
           description: Measures sound levels in decibels (dB)
       example:
-        value: 5.637376656633329
+        value: 5.63737665663332876420099637471139430999755859375
         timestamp: 2000-01-23T04:56:07.000+00:00
     VocReading:
       type: object
@@ -937,7 +937,7 @@ components:
           description: Concentration of volatile organic compounds in micrograms per
             cubic meter (μg/m³)
       example:
-        value: 2.3021358869347655
+        value: 2.3021358869347654518833223846741020679473876953125
         timestamp: 2000-01-23T04:56:07.000+00:00
     LightReading:
       type: object
@@ -950,7 +950,7 @@ components:
           type: number
           description: Amount of light falling on a surface in lux = lumen/m2
       example:
-        value: 7.061401241503109
+        value: 7.061401241503109105224211816675961017608642578125
         timestamp: 2000-01-23T04:56:07.000+00:00
     HumidityReading:
       type: object
@@ -964,7 +964,7 @@ components:
           description: amount of water vapor in the air relative to the maximum amount
             the air can hold at a given temperature in percent %
       example:
-        value: 9.301444243932576
+        value: 9.301444243932575517419536481611430644989013671875
         timestamp: 2000-01-23T04:56:07.000+00:00
     Booking:
       type: string
