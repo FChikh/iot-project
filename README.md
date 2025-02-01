@@ -20,7 +20,7 @@ Prerequisites:
 
 Building project:
 ```shell
-sudo docker-compose build
+sudo docker compose up -d --build --force-recreate
 ```
 
 To run:
