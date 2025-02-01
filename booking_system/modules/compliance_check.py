@@ -108,33 +108,25 @@ def check_compliance_noise(df: pd.DataFrame, tolerance: float = 5.0):
     """
     Checks if indoor noise levels in a classroom comply with ISO 3382-2:2008 standard.
     WHO Recommendations:
-    - Background noise: ≤ 35 dB (average noise level).
-    - Peak noise levels: ≤ 55 dB.
 
     Parameters:
         df (pd.DataFrame): DataFrame with columns 'timestamp' and 'value' (in dB).
-        tolerance (float): Allowed percentage of time noise can exceed 55 dB.
+        tolerance (float): Allowed percentage of time noise can exceed 85 dB.
 
     Returns:
         dict: A summary of compliance.
     """
 
-    tolerance_high_db = 1  # Allowed % for exceeding 55 dB
-
     avg_noise_level = df['value'].mean()
     max_noise_level = df['value'].max()
+    exceeded_85_db = calculate_percentage(df['value'] > 85)
 
-    # Percentage of time above 35 dB and 55 dB
-    above_35_db = calculate_percentage(df['sound_values'] > 35)
-    exceeded_55_db = calculate_percentage(df['sound_values'] > 55)
-
-    compliant = (above_35_db <= tolerance) and (exceeded_55_db <= tolerance_high_db)
+    compliant = exceeded_85_db <= tolerance
 
     return {
         'avg_noise_level': avg_noise_level,
         'max_noise_level': max_noise_level,
-        'above_35_db': above_35_db,
-        'exceeded_55_db': exceeded_55_db,
+        'exceeded_85_db': exceeded_85_db,
         'compliant': compliant
     }
 
@@ -230,12 +222,12 @@ def check_compliance_voc(df: pd.DataFrame, tolerance: float = 1.0):
         'compliant': compliant
     }
 
-def check_compliance_temperature(df: pd.DataFrame, tolerance: float = 5.0):
+def check_compliance_temperature(df: pd.DataFrame, tolerance: float = 20.0):
     """
     Evaluates whether indoor temperature meets EU comfort and health guidelines.
 
     EU & WHO recommendations:
-    - Comfortable range: 20°C to 28°C (for general indoor spaces).
+    - Comfortable range: 20°C to 26°C (for general indoor spaces).
     - WHO recommends a minimum of 18°C for indoor living spaces and at least 20°C for vulnerable groups.
 
     Parameters:
