@@ -148,7 +148,9 @@ services:
       - default
 
   static_data:
-    build: ./static_data
+    build:
+      context: .
+      dockerfile: static_data/Dockerfile
     container_name: static_data
     depends_on:
       - postgres
@@ -159,11 +161,10 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - CONFIG_FILE=/app/config.json
-    volumes:
-      - ./static_data:/app
-    command: python init_db.py
+    command: python /app/init_db.py
     networks:
       - default
+
 
 
   booking_interface:
