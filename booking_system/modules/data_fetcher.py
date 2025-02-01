@@ -60,7 +60,7 @@ def fetch_room_bookings(date: str, days: int):
     api_url = f"http://localhost:8080/rooms/bookings?startDate={date}&days={days}"
     return fetch_api_data(api_url)
 
-def fetch_equipments():
+def fetch_rooms_and_equipments():
     """
     Fetches Equipments from the API.
 
@@ -71,24 +71,11 @@ def fetch_equipments():
     #return fetch_api_data(api_url)
     rooms = [
         {
-            "room": "Room_1",
-            "equipment": {
-                "blackboard": True,
-                "capacity": 30,
-                "computer-class": True,
-                "microphone": True,
-                "pc": True,
-                "projector": True,
-                "smartboard": True,
-                "whiteboard": True
-            }
-        },
-        {
-            "room": "Room_2",
+            "room": "MSA3010",
             "equipment": {
                 "blackboard": False,
-                "capacity": 50,
-                "computer-class": True,
+                "capacity": 40,
+                "computer-class": False,
                 "microphone": True,
                 "pc": False,
                 "projector": True,
@@ -97,25 +84,12 @@ def fetch_equipments():
             }
         },
         {
-            "room": "Room_3",
+            "room": "MSA3500",
             "equipment": {
-                "blackboard": True,
-                "capacity": 25,
-                "computer-class": False,
+                "blackboard": False,
+                "capacity": 73,
+                "computer-class": True,
                 "microphone": False,
-                "pc": True,
-                "projector": False,
-                "smartboard": True,
-                "whiteboard": False
-            }
-        },
-        {
-            "room": "Room_4",
-            "equipment": {
-                "blackboard": True,
-                "capacity": 40,
-                "computer-class": False,
-                "microphone": True,
                 "pc": True,
                 "projector": True,
                 "smartboard": True,
@@ -123,13 +97,104 @@ def fetch_equipments():
             }
         },
         {
-            "room": "Room_5",
+            "room": "MSA3520",
             "equipment": {
                 "blackboard": False,
-                "capacity": 60,
-                "computer-class": True,
+                "capacity": 29,
+                "computer-class": False,
                 "microphone": True,
                 "pc": False,
+                "projector": False,
+                "smartboard": True,
+                "whiteboard": False
+            }
+        },
+        {
+            "room": "MSA3110",
+            "equipment": {
+                "blackboard": False,
+                "capacity": 91,
+                "computer-class": False,
+                "microphone": True,
+                "pc": False,
+                "projector": True,
+                "smartboard": False,
+                "whiteboard": False
+            }
+        },
+        {
+            "room": "MSA3070",
+            "equipment": {
+                "blackboard": False,
+                "capacity": 88,
+                "computer-class": False,
+                "microphone": True,
+                "pc": False,
+                "projector": False,
+                "smartboard": False,
+                "whiteboard": False
+            }
+        },
+        {
+            "room": "MSA1601",
+            "equipment": {
+                "blackboard": False,
+                "capacity": 86,
+                "computer-class": True,
+                "microphone": False,
+                "pc": False,
+                "projector": False,
+                "smartboard": False,
+                "whiteboard": True
+            }
+        },
+        {
+            "room": "MSA4010",
+            "equipment": {
+                "blackboard": False,
+                "capacity": 34,
+                "computer-class": True,
+                "microphone": False,
+                "pc": True,
+                "projector": False,
+                "smartboard": True,
+                "whiteboard": True
+            }
+        },
+        {
+            "room": "MSA4030",
+            "equipment": {
+                "blackboard": False,
+                "capacity": 32,
+                "computer-class": False,
+                "microphone": True,
+                "pc": False,
+                "projector": False,
+                "smartboard": False,
+                "whiteboard": True
+            }
+        },
+        {
+            "room": "MSA4110",
+            "equipment": {
+                "blackboard": True,
+                "capacity": 65,
+                "computer-class": True,
+                "microphone": False,
+                "pc": True,
+                "projector": False,
+                "smartboard": True,
+                "whiteboard": True
+            }
+        },
+        {
+            "room": "MSA4300",
+            "equipment": {
+                "blackboard": True,
+                "capacity": 21,
+                "computer-class": True,
+                "microphone": True,
+                "pc": True,
                 "projector": True,
                 "smartboard": False,
                 "whiteboard": True
@@ -140,6 +205,16 @@ def fetch_equipments():
     return rooms
 
 
-def fetch_rooms(equipment_file):
+def fetch_rooms(rooms_and_equipments):
 
-    return list(set([room_info["room"] for room_info in equipment_file]))
+    return list(set([room_info["room"] for room_info in rooms_and_equipments]))
+
+def fetch_equipment(rooms_and_equipments, room_id):
+
+    for room in rooms_and_equipments:
+        if room["room"] == room_id:
+            equipment = room['equipment']
+            for key, value in equipment.items():
+                if isinstance(value, bool):  # Check if the value is boolean
+                    room['equipment'][key] = 1 if value else 0
+            return equipment

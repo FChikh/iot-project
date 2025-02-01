@@ -1,9 +1,20 @@
 import pandas as pd
 import numpy as np
+from datetime import datetime, timedelta
 
 def calculate_percentage(series):
     """Helper function to calculate the percentage of True values in a boolean series."""
     return series.mean() * 100
+
+def parse_timestamp(ts):
+    for fmt in ("%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%dT%H:%M:%S%z"):
+        try:
+            return datetime.strptime(ts, fmt)
+        except ValueError:
+            pass
+    # Fallback to pandas' own conversion as a last resort
+    return pd.to_datetime(ts)
+
 
 def check_compliance_co2(df: pd.DataFrame, tolerance: float = 5.0):
     """
@@ -53,7 +64,7 @@ def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 1.0):
 
     pm25_limit = 25
 
-    df_pm25['timestamp'] = pd.to_datetime(df_pm25['timestamp'])
+    df_pm25['timestamp'] = df_pm25['timestamp'].apply(parse_timestamp)
     df_pm25 = df_pm25.sort_values('timestamp')
 
     # Rolling 24-hour average
@@ -87,7 +98,7 @@ def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 1.0):
 
     pm10_limit = 50
 
-    df_pm10['timestamp'] = pd.to_datetime(df_pm10['timestamp'])
+    df_pm10['timestamp'] = df_pm10['timestamp'].apply(parse_timestamp)
     df_pm10 = df_pm10.sort_values('timestamp')
 
     df_pm10['pm10_rolling'] = df_pm10['value'].rolling(window=24).mean()
@@ -104,7 +115,7 @@ def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 1.0):
     }
 
 
-def check_compliance_noise(df: pd.DataFrame, tolerance: float = 5.0):
+def check_compliance_noise(df: pd.DataFrame, tolerance: float = 10.0):
     """
     Checks if indoor noise levels in a classroom comply with ISO 3382-2:2008 standard.
     WHO Recommendations:
@@ -131,7 +142,7 @@ def check_compliance_noise(df: pd.DataFrame, tolerance: float = 5.0):
     }
 
 
-def check_compliance_lighting(df: pd.DataFrame, tolerance: float = 5.0):
+def check_compliance_lighting(df: pd.DataFrame, tolerance: float = 20.0):
     """
     Checks if the lighting intensity complies with the EN 12464-1 standard
 
@@ -162,7 +173,7 @@ def check_compliance_lighting(df: pd.DataFrame, tolerance: float = 5.0):
     }
 
 
-def check_humidity_compliance(df: pd.DataFrame, tolerance: float = 5.0):
+def check_humidity_compliance(df: pd.DataFrame, tolerance: float = 15.0):
     """
     Evaluates whether indoor humidity meets EN and DIN standards for comfort and health.
 
@@ -185,6 +196,8 @@ def check_humidity_compliance(df: pd.DataFrame, tolerance: float = 5.0):
     percent_in_range = calculate_percentage(in_range)
 
     compliant = percent_in_range >= (100 - tolerance)
+    print(percent_in_range)
+    print(avg_humidity)
 
     return {
         'avg_humidity': avg_humidity,
