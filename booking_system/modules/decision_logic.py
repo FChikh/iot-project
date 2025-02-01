@@ -91,10 +91,12 @@ def build_topsis_matrix(rooms, environmental_data):
         'noise': check_compliance_noise,
         'light': check_compliance_lighting,
         'humidity': check_humidity_compliance,
-        'voc': check_compliance_voc
+        'voc': check_compliance_voc,
+        'temperature': check_compliance_temperature,
     }
 
     compliant_rooms = []
+    compliant_room_ids = []  # To keep track of room IDs that are compliant
 
     for room in rooms:
         print(f"Evaluating {room}...")
@@ -103,7 +105,6 @@ def build_topsis_matrix(rooms, environmental_data):
 
         for sensor in environmental_data:
             sensor_data = download_sensor_data(room, sensor)
-
             compliance_result = perform_compliance_check(sensor, sensor_data, compliance_functions)
             if not compliance_result.get('compliant', False):
                 print(f"{room} failed compliance for {sensor}. Skipping room.")
@@ -116,6 +117,7 @@ def build_topsis_matrix(rooms, environmental_data):
         if is_compliant:
             print(f"{room} is compliant. Adding to TOPSIS matrix.\n")
             compliant_rooms.append(room_attributes)
+            compliant_room_ids.append(room)  # Append the compliant room ID
         else:
             print(f"{room} is not compliant and will be excluded from ranking.\n")
 
@@ -123,8 +125,10 @@ def build_topsis_matrix(rooms, environmental_data):
         print("No compliant rooms found.")
         return pd.DataFrame()
 
-    topsis_df = pd.DataFrame(compliant_rooms, index=rooms)
+    # Use compliant_room_ids as the DataFrame index
+    topsis_df = pd.DataFrame(compliant_rooms, index=compliant_room_ids)
     return topsis_df
+
 
 def perform_compliance_check(sensor, sensor_data, compliance_functions):
     """
@@ -176,9 +180,17 @@ def extract_sensor_attributes(sensor, compliance_result):
         attributes['temperature'] = compliance_result.get('avg_temperature')
     return attributes
 
+def check_seats(room_id, equipments_dict, needed_seats):
+    for room in equipments_dict:
+        if room["room"] == room_id:
+
+            equipments = room["equipment"]
+            if equipments["capacity"] >= needed_seats:
+                return True
+    return False
 
         
-def check_availability(date: str, start_time: str, end_time: str) -> list:
+def check_availability(date: str, start_time: str, end_time: str, equipments_dict: dict, needed_seats: int) -> list:
     """
     Checks which rooms are available between the specified start and end times on the given date.
 
@@ -188,7 +200,7 @@ def check_availability(date: str, start_time: str, end_time: str) -> list:
         end_time (str): The end time in "HH:MM:SS" format, must be in 30-minute increments and after start_time.
 
     Returns:
-        list: A list of room IDs that are available during the specified time period.
+        list: A list of room IDs that have enough seats and are available during the specified time period.
 
     Raises:
         ValueError: If the date, start_time, or end_time are invalid, or if the times are not in 30-minute increments.
@@ -219,8 +231,7 @@ def check_availability(date: str, start_time: str, end_time: str) -> list:
             current_slot += timedelta(minutes=30)
 
         # Fetch data with error handling
-        equipments = fetch_equipments()
-        all_rooms = fetch_rooms(equipments) or []
+        all_rooms = fetch_rooms(equipments_dict) or []
         bookings_data = fetch_room_bookings(date, days=1)
 
         # Check availability
@@ -228,7 +239,11 @@ def check_availability(date: str, start_time: str, end_time: str) -> list:
         for room_id in all_rooms:
             booked_slots = bookings_data.get(room_id, [])
             if not any(slot in booked_slots for slot in required_slots):
-                available_rooms.append(room_id)
+                
+                if check_seats(room_id, equipments_dict, needed_seats):
+                    available_rooms.append(room_id)
+                else:
+                    print(f"{room_id} does not have enough seats")
 
         return available_rooms
 
@@ -257,16 +272,16 @@ compliance_functions = {
         'noise': check_compliance_noise,
         'light': check_compliance_lighting,
         'humidity': check_humidity_compliance,
-        'voc': check_compliance_voc
+        'voc': check_compliance_voc,
+        'temperature': check_compliance_temperature,
     }
 
 date = "2025-01-24"
 start_time = "08:30:00"
 end_time = "10:30:00"
-
-available_rooms = check_availability(date, start_time, end_time)
-#print(get_recommended_rooms("2025-01-24", "08:30:00", "16:30:00", user_prefs))
-sensors = ['co2', 'temperature', 'noise', 'light', 'humidity', 'voc']
+equipments = fetch_equipments()
+available_rooms = check_availability(date, start_time, end_time, equipments, 30)
+sensors = ['co2', 'temperature', 'noise', 'light', 'humidity', 'voc', 'pm2_5', 'pm10']
 decision_matrix = build_topsis_matrix(available_rooms, sensors)
 print(decision_matrix)
 
