@@ -1,86 +1,61 @@
-import sqlite3
-import json
 from flask import jsonify
+from sqlalchemy.orm import sessionmaker
+from ..models import Device, Equipment
+from ..db import engine  # Assuming you have a db.py file for engine setup
 
-# The path inside the shared volume
-db_path = "/app/rooms.db"
+# Create a session factory
+Session = sessionmaker(bind=engine)
 
 
-def get_equipment_by_room(room_id):
-    # Connect to the database
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        SELECT name, capacity, projector, pc_count, computer_class, 
-               microphone, smart_board_webex, blackboard, whiteboard
-        FROM rooms WHERE name = ?
-    ''', (room_id,))
-
-    row = cursor.fetchone()
+def get_equipment_by_room(room_name):
+    session = Session()
     
-    conn.close()
+    # Query the room (device) by name
+    device = session.query(Device).filter_by(name=room_name).first()
+    
+    if not device:
+        session.close()
+        return jsonify({"error": "Room not found"}), 404
 
-    if row is None:
-        return json.dumps({"error": "Room not found"})
-
-    room_name, capacity, projector, pc_count, computer_class, microphone, smart_board, blackboard, whiteboard = row
-
-    response = {
-        "equipment": {
-            "blackboard": bool(blackboard),
-            "capacity": capacity,
-            "computer-class": bool(computer_class),
-            "microphone": bool(microphone),
-            "pc": pc_count is not None and pc_count > 0,
-            "projector": bool(projector),
-            "smartboard": bool(smart_board),
-            "whiteboard": bool(whiteboard)
-        },
-        "room": room_name
+    equipment = {
+        "capacity": next((int(eq.value) for eq in device.equipment if eq.name == "capacity"), None),
+        "projector": any(eq.name == "projector" and eq.value.lower() == "true" for eq in device.equipment),
+        "pc": any(eq.name == "computer_class" and eq.value.lower() == "true" for eq in device.equipment),
+        "microphone": any(eq.name == "microphone" and eq.value.lower() == "true" for eq in device.equipment),
+        "smartboard": any(eq.name == "smart_board_webex" and eq.value.lower() == "true" for eq in device.equipment),
+        "blackboard": any(eq.name == "blackboard" and eq.value.lower() == "true" for eq in device.equipment),
+        "whiteboard": any(eq.name == "whiteboard" and eq.value.lower() == "true" for eq in device.equipment),
     }
 
-    return jsonify(response)
+    session.close()
 
+    return jsonify({
+        "room": device.name,
+        "equipment": equipment
+    })
 
 def get_equipment_all_rooms():
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    session = Session(bind=engine)  # Create a session
 
-    cursor.execute('''
-        SELECT name, capacity, projector, pc_count, computer_class, 
-               microphone, smart_board_webex, blackboard, whiteboard
-        FROM rooms
-    ''')
-
-    rows = cursor.fetchall()
-
-    conn.close()
+    rooms = session.query(Device).all()
 
     rooms_list = []
-    for row in rows:
-        room_name, capacity, projector, pc_count, computer_class, microphone, smart_board, blackboard, whiteboard = row
-        
+    for room in rooms:
         room_data = {
+            "room": room.name,
             "equipment": {
-                "blackboard": bool(blackboard),
-                "capacity": capacity,
-                "computer-class": bool(computer_class),
-                "microphone": bool(microphone),
-                "pc": pc_count is not None and pc_count > 0,
-                "projector": bool(projector),
-                "smartboard": bool(smart_board),
-                "whiteboard": bool(whiteboard)
-            },
-            "room": room_name
+                "capacity": next((int(eq.value) for eq in room.equipment if eq.name == "capacity"), None),
+                "projector": any(eq.name == "projector" and eq.value.lower() == "true" for eq in room.equipment),
+                "pc": any(eq.name == "computer_class" and eq.value.lower() == "true" for eq in room.equipment),
+                "microphone": any(eq.name == "microphone" and eq.value.lower() == "true" for eq in room.equipment),
+                "smartboard": any(eq.name == "smart_board_webex" and eq.value.lower() == "true" for eq in room.equipment),
+                "blackboard": any(eq.name == "blackboard" and eq.value.lower() == "true" for eq in room.equipment),
+                "whiteboard": any(eq.name == "whiteboard" and eq.value.lower() == "true" for eq in room.equipment),
+            }
         }
-
         rooms_list.append(room_data)
 
+    session.close()  # Close session
     return jsonify(rooms_list)
-
-
-
-
 
 

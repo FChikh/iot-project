@@ -11,6 +11,8 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir influxdb-client
 
 COPY . /usr/src/app
+COPY ./shared_vol/models.py /app/swagger_server/controllers/models_db.py
+COPY ./shared_vol/db.py /app/swagger_server/controllers/db.py
 
 EXPOSE 8080
 
