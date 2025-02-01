@@ -55,6 +55,8 @@ services:
       - SERIAL_PORT=/dev/ttyACM0
       - MQTT_BROKER=${MQTT_BROKER}
     privileged: true
+    volumes:
+      - ./config.json:/app/config.json
     links:
       - mosquitto
 
