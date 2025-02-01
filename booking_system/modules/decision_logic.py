@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from data_fetcher import *
 from compliance_check import *
+from datetime import datetime, timedelta
 
 def topsis_decision_logic(room_data, user_pref, weights=None, lower_better_cols=[]):
     """
@@ -17,39 +18,58 @@ def topsis_decision_logic(room_data, user_pref, weights=None, lower_better_cols=
     Returns:
         pd.DataFrame: DataFrame with closeness coefficients and ranks for each room.
     """
+    try:
+        # Validate inputs
+        if room_data.empty:
+            return pd.DataFrame()
+            
+        # Data preparation
+        adjusted_df = pd.DataFrame(index=room_data.index)
+        for col in room_data.columns:
+            if col in lower_better_cols:
+                adjusted_df[col] = 1 / (1 + abs(room_data[col] - user_pref[col]))
+            else:
+                adjusted_df[col] = 1 / (1 + abs(room_data[col] - user_pref[col]))
 
-    adjusted_df = pd.DataFrame(index=room_data.index)
-    for col in room_data.columns:
-        if col in lower_better_cols:
-            adjusted_df[col] = 1 / (1 + abs(room_data[col] - user_pref[col]))
-        else:
-            adjusted_df[col] = 1 / (1 + abs(room_data[col] - user_pref[col]))
+        # Normalization
+        norm = np.sqrt((adjusted_df**2).sum())
+        normalized = adjusted_df / norm
 
+        # Weight handling
+        if weights is None:
+            weights = np.ones(len(room_data.columns))
+        weights = np.array(weights) / np.sum(weights)
+        weighted = normalized * weights
 
-    norm = np.sqrt((adjusted_df**2).sum())
-    normalized = adjusted_df / norm
+        # Handle single-room case early
+        if len(room_data) == 1:
+            result = room_data.copy()
+            result['Closeness Coefficient'] = 1.0
+            result['Rank'] = 1
+            return result
 
-    if weights is None:
-        weights = np.ones(len(room_data.columns))
-    weights = np.array(weights) / np.sum(weights)
-    weighted = normalized * weights
+        # Ideal solutions
+        pis = weighted.max()
+        nis = weighted.min()
 
+        # Distance calculations
+        dist_pis = np.sqrt(((weighted - pis)**2).sum(axis=1))
+        dist_nis = np.sqrt(((weighted - nis)**2).sum(axis=1))
 
-    pis = weighted.max()
-    nis = weighted.min()
+        # Closeness coefficient
+        closeness = dist_nis / (dist_pis + dist_nis)
 
-    dist_pis = np.sqrt(((weighted - pis)**2).sum(axis=1))
-    dist_nis = np.sqrt(((weighted - nis)**2).sum(axis=1))
+        # Final result
+        result = room_data.copy()
+        result['Closeness Coefficient'] = closeness
+        result['Rank'] = closeness.rank(ascending=False)
+        
+        return result.sort_values('Rank')
 
+    except Exception as e:
+        print(f"TOPSIS error: {str(e)}")
+        return pd.DataFrame()
 
-    closeness = dist_nis / (dist_pis + dist_nis)
-
-
-    result = room_data.copy()
-    result['Closeness Coefficient'] = closeness
-    result['Rank'] = closeness.rank(ascending=False)
-    
-    return result.sort_values('Rank')
 
 
 def build_topsis_matrix(rooms, environmental_data):
@@ -65,13 +85,13 @@ def build_topsis_matrix(rooms, environmental_data):
     """
     # Mapping of sensors to their respective compliance check functions
     compliance_functions = {
-        'co2_level': check_compliance_co2,
+        'co2': check_compliance_co2,
         'pm2_5': check_compliance_pm25,
         'pm10': check_compliance_pm10,
-        'sound_values': check_compliance_noise,
-        'light_intensity': check_compliance_lighting,
+        'noise': check_compliance_noise,
+        'light': check_compliance_lighting,
         'humidity': check_humidity_compliance,
-        'voc_values': check_compliance_voc
+        'voc': check_compliance_voc
     }
 
     compliant_rooms = []
@@ -82,32 +102,14 @@ def build_topsis_matrix(rooms, environmental_data):
         is_compliant = True
 
         for sensor in environmental_data:
-            if sensor == 'seating_capacity':
-                # Handle 'seating_capacity' separately
-                seating_capacity = retrieve_seating_capacity(room)
-                if seating_capacity is not None:
-                    room_attributes['seating_capacity'] = seating_capacity
-                else:
-                    print(f"Failed to retrieve seating_capacity for {room}. Skipping room.")
-                    is_compliant = False
-                    break
-                continue  # Move to the next sensor
+            sensor_data = download_sensor_data(room, sensor)
 
-            # Download sensor data
-            sensor_data = download_and_validate_sensor_data(room, sensor)
-            if sensor_data is None or sensor_data.empty:
-                print(f"Failed to retrieve {sensor} data for {room}. Skipping room.")
-                is_compliant = False
-                break
-
-            # Check compliance
             compliance_result = perform_compliance_check(sensor, sensor_data, compliance_functions)
             if not compliance_result.get('compliant', False):
                 print(f"{room} failed compliance for {sensor}. Skipping room.")
                 is_compliant = False
                 break
 
-            # Extract and store relevant attributes based on sensor type
             extracted_attributes = extract_sensor_attributes(sensor, compliance_result)
             room_attributes.update(extracted_attributes)
 
@@ -121,40 +123,8 @@ def build_topsis_matrix(rooms, environmental_data):
         print("No compliant rooms found.")
         return pd.DataFrame()
 
-    # Create DataFrame for TOPSIS with room names as index
     topsis_df = pd.DataFrame(compliant_rooms, index=rooms)
-
-    # Ensure all required attributes are present, assign default values if necessary
-    required_attributes = [
-        'co2_level', 'pm2_5', 'pm10', 'sound_values', 
-        'light_intensity', 'humidity', 'voc_values', 'seating_capacity'
-    ]
-    for attr in required_attributes:
-        if attr not in topsis_df.columns:
-            print(f"Attribute '{attr}' is missing. Assigning default value of 0.")
-            topsis_df[attr] = 0
-
-    # Replace any NaN values with 0 to maintain data integrity
-    topsis_df.fillna(0, inplace=True)
-
     return topsis_df
-
-def download_and_validate_sensor_data(room, sensor):
-    """
-    Downloads sensor data for a given room and sensor, validates it, and returns the DataFrame.
-
-    Parameters:
-        room (str): Room ID.
-        sensor (str): Sensor name.
-
-    Returns:
-        pd.DataFrame or None: Sensor data DataFrame if successful, else None.
-    """
-    sensor_data = download_sensor_data(room, sensor)
-    if sensor_data is None or sensor_data.empty:
-        print(f"Failed to retrieve {sensor} data for {room}. Skipping room.")
-        return None
-    return sensor_data
 
 def perform_compliance_check(sensor, sensor_data, compliance_functions):
     """
@@ -171,7 +141,7 @@ def perform_compliance_check(sensor, sensor_data, compliance_functions):
     compliance_func = compliance_functions.get(sensor)
     if not compliance_func:
         print(f"No compliance function defined for {sensor}. Skipping sensor.")
-        return {'compliant': True}  # Assume compliant if no function is defined
+        return {'compliant': True}
 
     compliance_result = compliance_func(sensor_data)
     return compliance_result
@@ -188,98 +158,119 @@ def extract_sensor_attributes(sensor, compliance_result):
         dict: Extracted attributes relevant to TOPSIS.
     """
     attributes = {}
-    if sensor == 'co2_level':
-        attributes['co2_level'] = compliance_result.get('avg_co2_level')
-        attributes['below_1000_ppm'] = compliance_result.get('below_1000_ppm')
+    if sensor == 'co2':
+        attributes['co2'] = compliance_result.get('avg_co2_level')
     elif sensor == 'pm2_5':
         attributes['pm2_5'] = compliance_result.get('avg_pm25')
     elif sensor == 'pm10':
         attributes['pm10'] = compliance_result.get('avg_pm10')
-    elif sensor == 'sound_values':
-        attributes['sound_values'] = compliance_result.get('avg_noise_level')
-        attributes['above_35_db'] = compliance_result.get('percent_above_35_db')
-    elif sensor == 'light_intensity':
-        attributes['light_intensity'] = compliance_result.get('avg_light_intensity')
-        attributes['below_recommended'] = compliance_result.get('below_recommended')
+    elif sensor == 'noise':
+        attributes['noise'] = compliance_result.get('avg_noise_level')
+    elif sensor == 'light':
+        attributes['light'] = compliance_result.get('avg_light_intensity')
     elif sensor == 'humidity':
         attributes['humidity'] = compliance_result.get('avg_humidity')
-    elif sensor == 'voc_values':
-        attributes['voc_values'] = compliance_result.get('avg_voc_level')
+    elif sensor == 'voc':
+        attributes['voc'] = compliance_result.get('avg_voc_level')
+    elif sensor == ['temperature']:
+        attributes['temperature'] = compliance_result.get('avg_temperature')
     return attributes
 
-def retrieve_seating_capacity(room):
-    """
-    Retrieves seating capacity for the given room.
 
-    Parameters:
-        room (str): Room ID.
+        
+def check_availability(date: str, start_time: str, end_time: str) -> list:
+    """
+    Checks which rooms are available between the specified start and end times on the given date.
+
+    Args:
+        date (str): The date in "YYYY-MM-DD" format.
+        start_time (str): The start time in "HH:MM:SS" format, must be in 30-minute increments (00 or 30 minutes).
+        end_time (str): The end time in "HH:MM:SS" format, must be in 30-minute increments and after start_time.
 
     Returns:
-        float or None: Seating capacity value, or None if retrieval fails.
+        list: A list of room IDs that are available during the specified time period.
+
+    Raises:
+        ValueError: If the date, start_time, or end_time are invalid, or if the times are not in 30-minute increments.
     """
     try:
-        df_seating = download_sensor_data(room, 'seating_capacity')
-        if df_seating.empty:
-            print(f"Failed to retrieve seating_capacity for {room}.")
-            return None
-        # Assuming seating_capacity is a single value, take the maximum reported
-        seating_capacity = df_seating['seating_capacity'].max()
-        return seating_capacity
+        # Validate datetime formats
+        start_datetime = datetime.strptime(f"{date} {start_time}", "%Y-%m-%d %H:%M:%S")
+        end_datetime = datetime.strptime(f"{date} {end_time}", "%Y-%m-%d %H:%M:%S")
+
+        # Validate time constraints
+        if end_datetime <= start_datetime:
+            raise ValueError("End time must be after start time")
+
+        if start_datetime.date() != end_datetime.date():
+            raise ValueError("Start and end times must be on the same date")
+
+        if (start_datetime.minute % 30 != 0) or (start_datetime.second != 0):
+            raise ValueError("Start time must be in 30-minute increments with 0 seconds")
+
+        if (end_datetime.minute % 30 != 0) or (end_datetime.second != 0):
+            raise ValueError("End time must be in 30-minute increments with 0 seconds")
+
+        # Calculate required time slots
+        required_slots = []
+        current_slot = start_datetime
+        while current_slot < end_datetime:
+            required_slots.append(current_slot.strftime("%Y-%m-%d %H:%M:%S"))
+            current_slot += timedelta(minutes=30)
+
+        # Fetch data with error handling
+        equipments = fetch_equipments()
+        all_rooms = fetch_rooms(equipments) or []
+        bookings_data = fetch_room_bookings(date, days=1)
+
+        # Check availability
+        available_rooms = []
+        for room_id in all_rooms:
+            booked_slots = bookings_data.get(room_id, [])
+            if not any(slot in booked_slots for slot in required_slots):
+                available_rooms.append(room_id)
+
+        return available_rooms
+
+    except ValueError as ve:
+        print(f"Validation error: {str(ve)}")
+        return []
     except Exception as e:
-        print(f"Error retrieving seating_capacity for {room}: {e}")
-        return None
+        print(f"Availability check failed: {str(e)}")
+        return []
 
 
-        
-def check_availability(date, start_time, end_time, seating_capacity, videoprojector_needed, num_computers):
+user_prefs = {
+    'co2': 0,
+    'noise': 33,
+    'light': 500,
+    'humidity': 50,
+    'voc': 0,
+    'temperature': 20
 
-    pass
-        
+}
 
-
-
-def booking(date, start_time, end_time, seating_capacity, videoprojector_needed, num_computers, air_quality_preference, noise_level_preference):
-
-
-
-
-
-    #check available rooms
-
-    available_rooms= check_availability(date, start_time, end_time, seating_capacity, videoprojector_needed, num_computers)
-
-    sensors = [
-        'co2_level', 'pm2_5', 'pm10',
-        'sound_values', 'light_intensity',
-        'humidity', 'voc_values',
-        'seating_capacity'
-    ]
-    room_data_matrix = build_topsis_matrix(available_rooms, sensors)
-
-
-    pm25_preference = 0
-    pm10_preference = 0
-
-    user_pref = {
-        'co2_level': 0,
-        'below_1000_ppm': 100,
-        'pm2_5': 0,
-        'pm10': 0,
-        'sound_values': 33,
-        'above_35_db': 0,
-        'light_intensity': 500,
-        'below_recommended': 0,
-        'humidity': 50,
-        'voc_values': 0,
-        'seating_capacity': 40
+compliance_functions = {
+        'co2': check_compliance_co2,
+        'pm2_5': check_compliance_pm25,
+        'pm10': check_compliance_pm10,
+        'noise': check_compliance_noise,
+        'light': check_compliance_lighting,
+        'humidity': check_humidity_compliance,
+        'voc': check_compliance_voc
     }
 
-    lower_better_cols = ['co2_level', 'pm2_5', 'pm10', 'above_35_db','below_recommended', 'sound_values', 'voc_values', 'light_intensity']
-    weights = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.05, 0.1, 0.1, 0.05]
+date = "2025-01-24"
+start_time = "08:30:00"
+end_time = "10:30:00"
 
-    ranking_df = topsis_decision_logic(
-        room_data=room_data_matrix, 
-        user_pref=user_pref, 
-        weights=weights, 
-        lower_better_cols=lower_better_cols
-    )
+available_rooms = check_availability(date, start_time, end_time)
+#print(get_recommended_rooms("2025-01-24", "08:30:00", "16:30:00", user_prefs))
+sensors = ['co2', 'temperature', 'noise', 'light', 'humidity', 'voc']
+decision_matrix = build_topsis_matrix(available_rooms, sensors)
+print(decision_matrix)
+
+lower_better_cols=['co2', 'noise', 'voc', 'temperature']
+
+
+print(topsis_decision_logic(room_data=decision_matrix, user_pref=user_prefs, weights=None, lower_better_cols=lower_better_cols))
