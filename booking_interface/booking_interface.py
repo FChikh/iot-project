@@ -31,9 +31,10 @@ def fetch_api_data(url: str, retries: int = 3, backoff_factor: float = 1.0):
             return None
     return None
 
-def fetch_room_ranking(date, start_time, end_time, computer_class, pc, projector, blackboard, smartboard, whiteboard, microphone, air_quality_preference, noise_level, lighting):
+def fetch_room_ranking(date, start_time, end_time, computer_class, pc, projector, blackboard, smartboard, whiteboard, microphone, air_quality_preference, noise_level_preference, lighting_preference):
 
-    api_url = f"http://localhost:8081/rank-rooms?date={date}&start_time={start_time}&end_time={end_time}&seating_capacity={seating_capacity}&projector={projector}&blackboard={blackboard}&smartboard={smartboard}&microphone={microphone}&computer_class={computer_class}&pc={pc}&whiteboard={whiteboard}&air_quality_preference={air_quality_preference}&noise_level={noise_level}&lighting={lighting}"
+    api_url = f"http://localhost:8081/rank-rooms?date={date}&start_time={start_time}&end_time={end_time}&seating_capacity={seating_capacity}&projector={projector}&blackboard={blackboard}&smartboard={smartboard}&microphone={microphone}&computer_class={computer_class}&pc={pc}&whiteboard={whiteboard}&air_quality_preference={air_quality_preference}&noise_level={noise_level_preference}&lighting={lighting_preference}"
+
 
 
 # Page title
@@ -44,7 +45,7 @@ with st.container():
     st.header("Booking Details")
 
     # Select a date
-    selected_date = st.date_input("Select a date for your booking:", min_value=datetime.today())
+    date = st.date_input("Select a date for your booking:", min_value=datetime.today())
 
     # Generate 30-minute interval options
     time_intervals = []
@@ -68,11 +69,19 @@ with st.container():
 with st.container():
     st.header("Room Preferences")
     seating_capacity = st.number_input("Amount of seating facilities needed:", min_value=0, step=1)
-    videoprojector_needed = st.checkbox("Is a video projector needed?")
-    num_computers = st.number_input("Amount of computers required:", min_value=0, step=1)
-
-    air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
-    noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
+    col3, col4 = st.columns(2)
+    with col3:
+        projector = st.checkbox("Projector")
+        computer_class = st.checkbox("Computer Class")
+        pc = st.checkbox("Teacher PC")
+        air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
+        noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
+    with col4:
+        blackboard = st.checkbox("Blackboard")
+        whiteboard = st.checkbox("Whiteboard")
+        smartboard = st.checkbox("Smartboard")
+        microphone = st.checkbox("Microphone")
+        lighting_preference = st.radio("Lighting:", options=["Normal", "Bright"])
 
 # Submit button
 with st.container():
@@ -82,14 +91,7 @@ with st.container():
             st.error("Please ensure that your end time is later than your start time.")
         else:
             st.success("Your room booking request has been submitted!")
-            st.write(f"**Date:** {selected_date}")
-            st.write(f"**Time slot:** {start_time} - {end_time}")
-            st.write("**Preferences:**")
-            st.write(f"- Seating facilities: {seating_capacity}")
-            st.write(f"- Video projector needed: {'Yes' if videoprojector_needed else 'No'}")
-            st.write(f"- Computers: {num_computers}")
-            st.write(f"- Air quality Preference: {air_quality_preference}")
-            st.write(f"- Noise level Preference: {noise_level_preference}")
+            fetch_room_ranking(date, start_time, end_time, computer_class, pc, projector, blackboard, smartboard, whiteboard, microphone, air_quality_preference, noise_level_preference, lighting_preference)
 
 # Calendar preview
 with st.container():
