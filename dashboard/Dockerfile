@@ -10,11 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY streamlit_app.py /app/
-COPY requirements.txt /app/
 COPY global_config.py /app/
+COPY entrypoint.sh /app/
+COPY requirements.txt /app/
+
+RUN chmod +x /app/entrypoint.sh
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8501
+EXPOSE 9999
 
-CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["/app/entrypoint.sh"]
