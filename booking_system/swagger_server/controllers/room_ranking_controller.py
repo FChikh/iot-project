@@ -3,15 +3,17 @@ import six
 
 from swagger_server.models.room import Room  # noqa: E501
 from swagger_server import util
+from modules.decision_logic import get_ranking
+from flask import jsonify
 
 
-def rank_rooms(_date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, computer_class, pc, whiteboard, air_quality_preference, noise_level, lighting):  # noqa: E501
+def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, computer_class, pc, whiteboard, air_quality_preference, noise_level, lighting):  # noqa: E501
     """Get ranked list of available rooms
 
      # noqa: E501
 
-    :param _date: 
-    :type _date: str
+    :param date: 
+    :type date: str
     :param start_time: 
     :type start_time: str
     :param end_time: 
@@ -41,5 +43,5 @@ def rank_rooms(_date, start_time, end_time, seating_capacity, projector, blackbo
 
     :rtype: List[Room]
     """
-    _date = util.deserialize_date(_date)
-    return 'do some magic!'
+    ranking = get_ranking(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, computer_class, pc, whiteboard, air_quality_preference, noise_level, lighting)
+    return jsonify(ranking)
