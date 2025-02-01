@@ -204,21 +204,20 @@ components:
       example:
         room_id: room-101
         score: 8.7
-        features:
-          blackboard: true
-          co2: 0.80082819046101150206595775671303272247314453125
-          pm10: 1.46581298050294517310021547018550336360931396484375
-          voc: 5.962133916683182377482808078639209270477294921875
-          computer_class: true
-          whiteboard: true
-          lighting: 2.3021358869347654518833223846741020679473876953125
-          pc: true
-          seating_capacity: 30
-          projector: true
-          pm2_5: 6.02745618307040320615897144307382404804229736328125
-          noise_level: 5.63737665663332876420099637471139430999755859375
-          humidity: 7.061401241503109105224211816675961017608642578125
-          microphone: true
+        blackboard: true
+        co2: 0.8008281904610115
+        pm10: 1.4658129805029452
+        voc: 5.962133916683182
+        computer_class: true
+        whiteboard: true
+        lighting: 2.3021358869347655
+        pc: true
+        seating_capacity: 30
+        projector: true
+        pm2_5: 6.027456183070403
+        noise_level: 5.637376656633329
+        humidity: 7.061401241503109
+        microphone: true
         rank: 1
     BookingRequest:
       required:
@@ -260,25 +259,7 @@ components:
           $ref: "#/components/schemas/Room"
       example:
         booking_id: booking-789
-        details:
-          room_id: room-101
-          score: 8.7
-          features:
-            blackboard: true
-            co2: 0.80082819046101150206595775671303272247314453125
-            pm10: 1.46581298050294517310021547018550336360931396484375
-            voc: 5.962133916683182377482808078639209270477294921875
-            computer_class: true
-            whiteboard: true
-            lighting: 2.3021358869347654518833223846741020679473876953125
-            pc: true
-            seating_capacity: 30
-            projector: true
-            pm2_5: 6.02745618307040320615897144307382404804229736328125
-            noise_level: 5.63737665663332876420099637471139430999755859375
-            humidity: 7.061401241503109105224211816675961017608642578125
-            microphone: true
-          rank: 1
+        room_id: room-101
         status: confirmed
     BookingRejection:
       type: object
@@ -286,14 +267,15 @@ components:
         booking_id:
           type: string
           example: booking-789
+        room_id:
+          type: string
+          example: room-101
         status:
           type: string
           example: rejected
         rejection_reason:
           type: string
           example: Room not available
-        details:
-          $ref: "#/components/schemas/Room"
     Room_features:
       type: object
       properties:
@@ -328,18 +310,18 @@ components:
           type: number
       example:
         blackboard: true
-        co2: 0.80082819046101150206595775671303272247314453125
-        pm10: 1.46581298050294517310021547018550336360931396484375
-        voc: 5.962133916683182377482808078639209270477294921875
+        co2: 0.8008281904610115
+        pm10: 1.4658129805029452
+        voc: 5.962133916683182
         computer_class: true
         whiteboard: true
-        lighting: 2.3021358869347654518833223846741020679473876953125
+        lighting: 2.3021358869347655
         pc: true
         seating_capacity: 30
         projector: true
-        pm2_5: 6.02745618307040320615897144307382404804229736328125
-        noise_level: 5.63737665663332876420099637471139430999755859375
-        humidity: 7.061401241503109105224211816675961017608642578125
+        pm2_5: 6.027456183070403
+        noise_level: 5.637376656633329
+        humidity: 7.061401241503109
         microphone: true
   securitySchemes:
     BearerAuth:

@@ -6,7 +6,6 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from swagger_server.models.base_model_ import Model
-from swagger_server.models.room import Room  # noqa: F401,E501
 from swagger_server import util
 
 
@@ -15,35 +14,35 @@ class BookingRejection(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, booking_id: str=None, status: str=None, rejection_reason: str=None, details: Room=None):  # noqa: E501
+    def __init__(self, booking_id: str=None, room_id: str=None, status: str=None, rejection_reason: str=None):  # noqa: E501
         """BookingRejection - a model defined in Swagger
 
         :param booking_id: The booking_id of this BookingRejection.  # noqa: E501
         :type booking_id: str
+        :param room_id: The room_id of this BookingRejection.  # noqa: E501
+        :type room_id: str
         :param status: The status of this BookingRejection.  # noqa: E501
         :type status: str
         :param rejection_reason: The rejection_reason of this BookingRejection.  # noqa: E501
         :type rejection_reason: str
-        :param details: The details of this BookingRejection.  # noqa: E501
-        :type details: Room
         """
         self.swagger_types = {
             'booking_id': str,
+            'room_id': str,
             'status': str,
-            'rejection_reason': str,
-            'details': Room
+            'rejection_reason': str
         }
 
         self.attribute_map = {
             'booking_id': 'booking_id',
+            'room_id': 'room_id',
             'status': 'status',
-            'rejection_reason': 'rejection_reason',
-            'details': 'details'
+            'rejection_reason': 'rejection_reason'
         }
         self._booking_id = booking_id
+        self._room_id = room_id
         self._status = status
         self._rejection_reason = rejection_reason
-        self._details = details
 
     @classmethod
     def from_dict(cls, dikt) -> 'BookingRejection':
@@ -76,6 +75,27 @@ class BookingRejection(Model):
         """
 
         self._booking_id = booking_id
+
+    @property
+    def room_id(self) -> str:
+        """Gets the room_id of this BookingRejection.
+
+
+        :return: The room_id of this BookingRejection.
+        :rtype: str
+        """
+        return self._room_id
+
+    @room_id.setter
+    def room_id(self, room_id: str):
+        """Sets the room_id of this BookingRejection.
+
+
+        :param room_id: The room_id of this BookingRejection.
+        :type room_id: str
+        """
+
+        self._room_id = room_id
 
     @property
     def status(self) -> str:
@@ -118,24 +138,3 @@ class BookingRejection(Model):
         """
 
         self._rejection_reason = rejection_reason
-
-    @property
-    def details(self) -> Room:
-        """Gets the details of this BookingRejection.
-
-
-        :return: The details of this BookingRejection.
-        :rtype: Room
-        """
-        return self._details
-
-    @details.setter
-    def details(self, details: Room):
-        """Sets the details of this BookingRejection.
-
-
-        :param details: The details of this BookingRejection.
-        :type details: Room
-        """
-
-        self._details = details
