@@ -42,7 +42,10 @@ services:
     tty: true
 
   dashboard:
-    build: ./dashboard
+    build:
+      context: ./dashboard
+      additional_contexts: 
+        configs: ./configs
     container_name: dashboard
     depends_on:
       - mosquitto
@@ -55,8 +58,8 @@ services:
       - SERIAL_PORT=/dev/ttyACM0
       - MQTT_BROKER=${MQTT_BROKER}
     privileged: true
-    volumes:
-      - ./config.json:/app/config.json
+    # volumes:
+    #   - ./config.json:/app/config.json
     links:
       - mosquitto
 
