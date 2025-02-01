@@ -1,5 +1,3 @@
-# dashboard/streamlit_app.py
-
 import streamlit as st
 import pandas as pd
 import paho.mqtt.client as mqtt
@@ -11,29 +9,17 @@ import time
 import random
 import re
 
-# Configure logging
+# Import shared state from the separate module.
+from global_config import global_config, active_simulators, simulator_threads
+
+# mqtt setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# MQTT settings
 MQTT_BROKER = os.getenv('MQTT_BROKER', 'mosquitto')
 MQTT_PORT = int(os.getenv('MQTT_PORT', '1883'))
 
-# Initialize session state
-# TODO: Add session state initialization from config file
-if 'active_simulators' not in st.session_state:
-    st.session_state.active_simulators = set()
-
-if 'sensor_data' not in st.session_state:
-    st.session_state.sensor_data = {}
-
-if 'simulator_threads' not in st.session_state:
-    st.session_state.simulator_threads = {}
-    
-
-# MQTT Publisher Client
 publisher_client = mqtt.Client()
-
 
 def connect_publisher_mqtt():
     """Connect the publisher MQTT client to the broker."""
@@ -44,87 +30,149 @@ def connect_publisher_mqtt():
         logger.error(f"Failed to connect publisher to MQTT broker: {e}")
         st.error("Failed to connect publisher to MQTT broker.")
 
-
-connect_publisher_mqtt()
-
 def run_publisher():
     publisher_client.loop_start()
 
+# Start the MQTT loop in a background thread.
 publisher_thread = threading.Thread(target=run_publisher, daemon=True)
 publisher_thread.start()
 
 
-# Simulator function
-def simulator(room, ranges_ref, stop_event):
-    """Simulate sensor data for a given room with user-adjustable ranges and realistic distribution."""
+
+def simulator(room, config_ref, stop_event):
+    """
+    Simulate sensor data for a given room using the provided configuration (ranges)
+    until stop_event is set.
+    
+    :param room: The room identifier.
+    :param config_ref: A reference to the global configuration dictionary.
+    :param stop_event: A threading.Event object to signal the simulator to stop.
+    """
     while not stop_event.is_set():
         current_time = time.localtime()
         hour = current_time.tm_hour
-        ranges = ranges_ref['ranges']
-        
-        # Gaussian distribution with time-dependent shifts
-        temp = round(random.gauss((ranges['temp'][0] + ranges['temp'][1]) / 2, 2), 2)
-        temp += 2 if 7 <= hour <= 19 else -1  # Warmer during the day, cooler at night
+        ranges = config_ref['ranges']
 
-        hum = round(random.gauss((ranges['hum'][0] + ranges['hum'][1]) / 2, 5), 2)
-        # Higher at night, lower during the day
+        # Simulate sensor values using Gaussian distributions and time-dependent shifts.
+        temp = round(random.gauss(
+            (ranges['temp'][0] + ranges['temp'][1]) / 2, 2), 2)
+        temp += 2 if 7 <= hour <= 19 else -1
+
+        hum = round(random.gauss(
+            (ranges['hum'][0] + ranges['hum'][1]) / 2, 5), 2)
         hum += 5 if hour in range(22, 7) else -3
 
-        light = round(random.gauss((ranges['light'][0] + ranges['light'][1]) / 2, 100), 2)
-        light += 400 if 7 <= hour <= 19 else -300  # Brighter during the day
+        light = round(random.gauss(
+            (ranges['light'][0] + ranges['light'][1]) / 2, 100), 2)
+        light += 400 if 7 <= hour <= 19 else -300
 
-        co2 = round(random.gauss((ranges['co2'][0] + ranges['co2'][1]) / 2, 20), 2)
-        co2 += 50 if 8 <= hour <= 20 else -30  # Higher during the day
+        co2 = round(random.gauss(
+            (ranges['co2'][0] + ranges['co2'][1]) / 2, 20), 2)
+        co2 += 50 if 8 <= hour <= 20 else -30
 
-        air_quality_pm2_5 = round(random.gauss((ranges['air_quality_pm2_5'][0] + ranges['air_quality_pm2_5'][1]) / 2, 5), 2)
-        air_quality_pm2_5 += 10 if 8 <= hour <= 18 else - 5  # Worse air quality during busy hours
-        
-        air_quality_pm10 = round(random.gauss((ranges['air_quality_pm10'][0] + ranges['air_quality_pm10'][1]) / 2, 5), 2)
-        air_quality_pm10 += 10 if 8 <= hour <= 18 else - 5  # Worse air quality during busy hours
+        air_quality_pm2_5 = round(random.gauss(
+            (ranges['air_quality_pm2_5'][0] + ranges['air_quality_pm2_5'][1]) / 2, 5), 2)
+        air_quality_pm10 = round(random.gauss(
+            (ranges['air_quality_pm10'][0] + ranges['air_quality_pm10'][1]) / 2, 5), 2)
 
-        sound = round(random.gauss((ranges['sound'][0] + ranges['sound'][1]) / 2, 5), 2)
-        sound += 10 if hour in range(7, 22) else -10  # Louder during the day
+        sound = round(random.gauss(
+            (ranges['sound'][0] + ranges['sound'][1]) / 2, 5), 2)
+        sound += 10 if 7 <= hour <= 22 else -10
 
-        voc = round(random.gauss((ranges['voc'][0] + ranges['voc'][1]) / 2, 5), 2)
-        voc += 10 if 8 <= hour <= 20 else -5  # Higher during human activity
+        voc = round(random.gauss(
+            (ranges['voc'][0] + ranges['voc'][1]) / 2, 5), 2)
 
-        # Generate ISO 8601 timestamp
+        # Generate timestamp (ISO 8601)
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
-        # Publish to MQTT topics with timestamp
+        # Publish sensor data to MQTT topics.
         try:
             publisher_client.publish(
-                f"{room}/temp", json.dumps({"value": temp, "timestamp": timestamp}))
+                f"{room}/sensors/temp", json.dumps({"value": temp, "timestamp": timestamp}))
             publisher_client.publish(
-                f"{room}/humidity", json.dumps({"value": hum, "timestamp": timestamp}))
+                f"{room}/sensors/humidity", json.dumps({"value": hum, "timestamp": timestamp}))
             publisher_client.publish(
-                f"{room}/light", json.dumps({"value": light, "timestamp": timestamp}))
+                f"{room}/sensors/light", json.dumps({"value": light, "timestamp": timestamp}))
             publisher_client.publish(
-                f"{room}/co2", json.dumps({"value": co2, "timestamp": timestamp}))
+                f"{room}/sensors/co2", json.dumps({"value": co2, "timestamp": timestamp}))
+            publisher_client.publish(f"{room}/sensors/air_quality_pm2_5", json.dumps(
+                {"value": air_quality_pm2_5, "timestamp": timestamp}))
+            publisher_client.publish(f"{room}/sensors/air_quality_pm10", json.dumps(
+                {"value": air_quality_pm10, "timestamp": timestamp}))
             publisher_client.publish(
-                f"{room}/air_quality_pm2_5", json.dumps({"value": air_quality_pm2_5, "timestamp": timestamp}))
+                f"{room}/sensors/sound", json.dumps({"value": sound, "timestamp": timestamp}))
             publisher_client.publish(
-                f"{room}/air_quality_pm10", json.dumps({"value": air_quality_pm10, "timestamp": timestamp}))
-            publisher_client.publish(
-                f"{room}/sound", json.dumps({"value": sound, "timestamp": timestamp}))
-            publisher_client.publish(
-                f"{room}/voc", json.dumps({"value": voc, "timestamp": timestamp}))
-
-            logger.info(f"Simulated data for {room}: Temp={temp}°C, Light={light} lux, CO2={co2} ppm, "
-                        f"Air Quality PM2_5={air_quality_pm2_5} μg/m³, Air Quality PM10={air_quality_pm10} μg/m³, "
-                        f"Sound={sound} dB, VOC={voc} μg/m³ at {timestamp}")
+                f"{room}/sensors/voc", json.dumps({"value": voc, "timestamp": timestamp}))
+            logger.info(f"Simulated data for {room} at {timestamp}")
         except Exception as e:
             logger.error(f"Failed to publish simulated data for {room}: {e}")
 
-        time.sleep(1)
+        time.sleep(10)
 
+
+def load_config_from_file(config_file="config.json"):
+    """
+    Load room configurations from a JSON file.
+    
+    :param config_file: The path to the JSON configuration file.
+    """
+    try:
+        with open(config_file, "r") as file:
+            config_data = json.load(file)
+            logger.info("Configuration loaded successfully.")
+            return config_data.get("rooms", [])
+    except Exception as e:
+        logger.error(f"Failed to load configuration: {e}")
+        st.error(f"Failed to load configuration: {e}")
+        return []
+
+
+def initialize_simulators_from_config(rooms):
+    """
+    For each room in the config, store its sensor ranges in the global configuration and
+    initialize a simulator thread if not already running.
+    
+    :param rooms: A list of room configurations.
+    """
+    for room_config in rooms:
+        room_name = room_config["name"]
+        sensor_ranges = {}
+        for sensor in room_config["sensors"]:
+            sensor_ranges[sensor["name"]] = sensor["range"]
+
+        # Store the configuration in the shared global_config dictionary.
+        if room_name not in global_config:
+            global_config[room_name] = sensor_ranges.copy()
+
+        if room_name not in simulator_threads:
+            simulator_threads[room_name] = {
+                'ranges': sensor_ranges.copy(),
+                'stop_event': threading.Event()
+            }
+            stop_event = simulator_threads[room_name]['stop_event']
+            thread = threading.Thread(target=simulator, args=(
+                room_name, simulator_threads[room_name], stop_event), daemon=True)
+            thread.start()
+            simulator_threads[room_name]['thread'] = thread
+            active_simulators.add(room_name)
+            logger.info(f"Simulator for {room_name} initialized.")
+
+
+# Run the initialization only once per process.
+if not globals().get("global_initialized", False):
+    connect_publisher_mqtt()
+    config_file_path = os.getenv('SIMULATOR_CONFIG_FILE', 'config.json')
+    rooms_config = load_config_from_file(config_file_path)
+    initialize_simulators_from_config(rooms_config)
+    print(global_config)
+    global_initialized = True
 
 # Streamlit UI
 st.title("Arduino Simulators Dashboard")
-
 st.sidebar.header("Manage Simulators")
 
-# Add Simulator
+
+# Adding a new simulator
 with st.sidebar.expander("Add Simulator"):
     add_room = st.text_input("Room Identifier", "")
     if st.button("Add Simulator"):
@@ -132,98 +180,92 @@ with st.sidebar.expander("Add Simulator"):
             if not re.match("^[A-Za-z0-9_-]+$", add_room):
                 st.error(
                     "Invalid room identifier. Use only letters, numbers, underscores, or hyphens.")
-            elif add_room in st.session_state.active_simulators:
+            elif add_room in active_simulators:
                 st.warning(f"Simulator for {add_room} is already active.")
             else:
-                # Define default ranges for all parameters
+                # Define default ranges for a new simulator.
                 default_ranges = {
-                    'temp': [20.0, 30.0],
+                    'temp': [20, 30],
                     'hum': [30, 60],
                     'light': [300, 800],
                     'co2': [350, 500],
-                    'air_quality_pm2_5': [10, 100],
-                    'air_quality_pm10': [10, 100],
+                    'air_quality_pm2_5': [10, 25],
+                    'air_quality_pm10': [10, 50],
                     'sound': [30, 80],
-                    'voc': [50, 150]
+                    'voc': [50, 400]
                 }
-
-                # Store the simulator ranges and other details in session_state
-                st.session_state.simulator_threads[add_room] = {
-                    'ranges': default_ranges,  # Store the ranges here
+                # Add the new room's configuration globally.
+                global_config[add_room] = default_ranges.copy()
+                simulator_threads[add_room] = {
+                    'ranges': default_ranges.copy(),
                     'stop_event': threading.Event()
                 }
-
-                # Pass a reference to the thread
-                thread_data_ref = st.session_state.simulator_threads[add_room]
-                stop_event = thread_data_ref['stop_event']
-
-                # Start the simulator thread
+                stop_event = simulator_threads[add_room]['stop_event']
                 thread = threading.Thread(target=simulator, args=(
-                    add_room, thread_data_ref, stop_event), daemon=True)
+                    add_room, simulator_threads[add_room], stop_event), daemon=True)
                 thread.start()
-
-                # Add thread to session_state
-                thread_data_ref['thread'] = thread
-
-                # Update active simulators
-                st.session_state.active_simulators.add(add_room)
-
+                simulator_threads[add_room]['thread'] = thread
+                active_simulators.add(add_room)
                 st.success(f"Added simulator for {add_room}")
         else:
             st.error("Room identifier cannot be empty.")
 
-
-# Remove Simulator
+# Removing a simulator
 with st.sidebar.expander("Remove Simulator"):
-    if st.session_state.active_simulators:
-        remove_room = st.selectbox("Select Room to Remove", sorted(
-            st.session_state.active_simulators))
+    if active_simulators:
+        remove_room = st.selectbox(
+            "Select Room to Remove", sorted(list(active_simulators)))
         if st.button("Remove Simulator"):
-            if remove_room:
-                # Retrieve and stop the simulator thread
-                simulator_info = st.session_state.simulator_threads.get(
-                    remove_room)
-                if simulator_info:
-                    simulator_info['stop_event'].set()
-                    simulator_info['thread'].join(timeout=2)
-                    logger.info(f"Simulator for {remove_room} stopped.")
-                    del st.session_state.simulator_threads[remove_room]
-
-                # Update active simulators and sensor data
-                st.session_state.active_simulators.discard(remove_room)
-                st.session_state.sensor_data.pop(remove_room, None)
-
-                st.success(f"Removed simulator for {remove_room}")
+            if remove_room in simulator_threads:
+                simulator_threads[remove_room]['stop_event'].set()
+                simulator_threads[remove_room]['thread'].join(timeout=2)
+                del simulator_threads[remove_room]
+            active_simulators.discard(remove_room)
+            if remove_room in global_config:
+                del global_config[remove_room]
+            st.success(f"Removed simulator for {remove_room}")
     else:
         st.write("No simulators to remove.")
 
-# Update Simulator
+
+
+# Updating ranges of simulator
 with st.sidebar.expander("Update Simulator"):
-    if st.session_state.active_simulators:
-        update_room = st.selectbox("Select Room to Update", sorted(
-            st.session_state.active_simulators))
+    if active_simulators:
+        update_room = st.selectbox(
+            "Select Room to Update", sorted(list(active_simulators)))
         if update_room:
-            current_ranges = st.session_state.simulator_threads[update_room]['ranges']
+            # Get the current configuration from the shared global_config.
+            current_ranges = global_config.get(update_room, {})
             st.write(f"Updating parameters for {update_room}:")
-            temp_min, temp_max = st.slider("Temperature Range (°C):", min_value=0.0, max_value=50.0,
-                                           value=(current_ranges['temp'][0], current_ranges['temp'][1]))
-            hum_min, hum_max = st.slider("Humidity Range (%):", min_value=0, max_value=100,
-                                            value=(current_ranges['hum'][0], current_ranges['hum'][1]))
-            light_min, light_max = st.slider("Light Range (lux):", min_value=0, max_value=2000,
-                                             value=(current_ranges['light'][0], current_ranges['light'][1]))
-            co2_min, co2_max = st.slider("CO2 Range (ppm):", min_value=300, max_value=2000,
-                                         value=(current_ranges['co2'][0], current_ranges['co2'][1]))
-            air_pm2_5_min, air_pm2_5_max = st.slider("Air Quality Range, pm2.5 (μg/m³):", min_value=0, max_value=200,
-                                                     value=(current_ranges['air_quality_pm2_5'][0], current_ranges['air_quality_pm2_5'][1]))
-            air_pm10_min, air_pm10_max = st.slider("Air Quality Range, pm10 (μg/m³):", min_value=0, max_value=200,
-                                                     value=(current_ranges['air_quality_pm10'][0], current_ranges['air_quality_pm10'][1]))
-            sound_min, sound_max = st.slider("Sound Range (dB):", min_value=0, max_value=120,
-                                             value=(current_ranges['sound'][0], current_ranges['sound'][1]))
-            voc_min, voc_max = st.slider("VOC Range (μg/m³):", min_value=0, max_value=500,
-                                         value=(current_ranges['voc'][0], current_ranges['voc'][1]))
+            temp_range = current_ranges.get('temp', [20, 30])
+            hum_range = current_ranges.get('hum', [30, 60])
+            light_range = current_ranges.get('light', [300, 800])
+            co2_range = current_ranges.get('co2', [350, 500])
+            air_pm2_5_range = current_ranges.get('air_quality_pm2_5', [10, 25])
+            air_pm10_range = current_ranges.get('air_quality_pm10', [10, 50])
+            sound_range = current_ranges.get('sound', [30, 80])
+            voc_range = current_ranges.get('voc', [50, 400])
+
+            temp_min, temp_max = st.slider("Temperature Range (°C):", 0.0, 50.0,
+                                           (float(temp_range[0]), float(temp_range[1])), 0.1)
+            hum_min, hum_max = st.slider("Humidity Range (%):", 0.0, 100.0,
+                                         (float(hum_range[0]), float(hum_range[1])), 0.1)
+            light_min, light_max = st.slider("Light Range (lux):", 0.0, 2000.0,
+                                             (float(light_range[0]), float(light_range[1])), 1.0)
+            co2_min, co2_max = st.slider("CO2 Range (ppm):", 300.0, 2000.0,
+                                         (float(co2_range[0]), float(co2_range[1])), 1.0)
+            air_pm2_5_min, air_pm2_5_max = st.slider("Air Quality Range, pm2.5 (μg/m³):", 0.0, 200.0,
+                                                     (float(air_pm2_5_range[0]), float(air_pm2_5_range[1])), 0.1)
+            air_pm10_min, air_pm10_max = st.slider("Air Quality Range, pm10 (μg/m³):", 0.0, 200.0,
+                                                   (float(air_pm10_range[0]), float(air_pm10_range[1])), 0.1)
+            sound_min, sound_max = st.slider("Sound Range (dB):", 0.0, 120.0,
+                                             (float(sound_range[0]), float(sound_range[1])), 1.0)
+            voc_min, voc_max = st.slider("VOC Range (μg/m³):", 0.0, 500.0,
+                                         (float(voc_range[0]), float(voc_range[1])), 1.0)
 
             if st.button("Update Simulator"):
-                st.session_state.simulator_threads[update_room]['ranges'] = {
+                new_ranges = {
                     'temp': [temp_min, temp_max],
                     'hum': [hum_min, hum_max],
                     'light': [light_min, light_max],
@@ -233,23 +275,27 @@ with st.sidebar.expander("Update Simulator"):
                     'sound': [sound_min, sound_max],
                     'voc': [voc_min, voc_max]
                 }
-                
+                # Update the shared global_config
+                global_config[update_room] = new_ranges.copy()
+                # Also update the configuration used by the simulator thread
+                if update_room in simulator_threads:
+                    simulator_threads[update_room]['ranges'] = new_ranges.copy()
                 st.success(f"Updated ranges for {update_room}")
     else:
         st.write("No simulators to update.")
 
-# Display Active Simulators
+# Display ranges of active simulatorsdjj
 st.header("Active Simulators")
-if st.session_state.active_simulators:
-    for room in sorted(st.session_state.active_simulators):
-        # Create an expander for each room
+if active_simulators:
+    for room in sorted(active_simulators):
         with st.expander(f"Room: {room}"):
-            # Retrieve the ranges for the room
-            ranges = st.session_state.simulator_threads[room]['ranges']
-
-            # Display the ranges in a table format
-            st.write("**Parameter Ranges:**")
-            st.table(pd.DataFrame(ranges).T.rename(
-                columns={0: 'Min', 1: 'Max'}))
+            ranges = global_config.get(room, {})
+            if ranges:
+                df = pd.DataFrame.from_dict(
+                    ranges, orient='index', columns=["Min", "Max"])
+                st.write("**Parameter Ranges:**")
+                st.table(df.style.format(precision=1))
+            else:
+                st.write("No range information available.")
 else:
     st.write("No active simulators.")
