@@ -22,17 +22,13 @@ try:
     if not devices:
         st.info("No devices found in the database.")
     else:
-        # Loop over each device
         for device in devices:
             st.subheader(f"Room: {device.name}")
             with st.form(key=f"form_device_{device.id}"):
-                updated_values = {}  # Will hold new values keyed by equipment id
-                # Loop over each equipment item for this device.
+                updated_values = {}  
                 for equip in sorted(device.equipment, key=lambda equip: equip.name):
                     equip_key = f"device_{device.id}_equip_{equip.id}"
-                    # Choose a widget based on the equipment type.
                     if equip.type.lower() == "boolean":
-                        # Convert the stored string value to a boolean.
                         current_val = equip.value.lower() in ["true", "1", "yes"]
                         new_val = st.checkbox(f"{equip.name} (Boolean)", value=current_val, key=equip_key)
                         updated_values[equip.id] = "True" if new_val else "False"
@@ -41,7 +37,6 @@ try:
                             current_val = int(equip.value)
                         except (ValueError, TypeError):
                             current_val = 0
-                        # Using number_input for integers; adjust min/max as needed.
                         new_val = st.number_input(f"{equip.name} (Integer)", value=current_val, step=1, key=equip_key)
                         updated_values[equip.id] = str(int(new_val))
                     else:

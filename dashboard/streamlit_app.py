@@ -10,9 +10,6 @@ API_BASE = "http://localhost:9999"  # Adjust if your API is hosted elsewhere
 
 st.title("Arduino Simulators Dashboard")
 
-# --------------------------
-# Display current simulators
-# --------------------------
 st.header("Active Simulators")
 try:
     resp = requests.get(f"{API_BASE}/simulators")
@@ -37,9 +34,6 @@ try:
 except Exception as e:
     st.error(f"Error connecting to API: {e}")
 
-# --------------------------
-# Add a new simulator
-# --------------------------
 with st.sidebar.expander("Add Simulator"):
     add_room = st.text_input("Room Identifier", "")
     if st.button("Add Simulator"):
@@ -73,9 +67,7 @@ with st.sidebar.expander("Add Simulator"):
         else:
             st.error("Room identifier cannot be empty.")
 
-# --------------------------
 # Update an existing simulator
-# --------------------------
 with st.sidebar.expander("Update Simulator"):
     try:
         resp = requests.get(f"{API_BASE}/simulators")
@@ -90,9 +82,6 @@ with st.sidebar.expander("Update Simulator"):
     if simulators:
         update_room = st.selectbox("Select Room to Update", sorted(simulators))
         if update_room:
-            # For simplicity, we only update temperature range here, but you can extend to all parameters.
-           
-            
             current_ranges = current_config = data.get(
                 "configurations", {}).get(update_room, {})
             st.write(f"Updating parameters for {update_room}:")
@@ -148,9 +137,7 @@ with st.sidebar.expander("Update Simulator"):
         
 
 
-# --------------------------
-# Remove a simulator
-# --------------------------
+# Remove an existing simulator
 with st.sidebar.expander("Remove Simulator"):
     try:
         resp = requests.get(f"{API_BASE}/simulators")
