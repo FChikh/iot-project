@@ -113,14 +113,21 @@ services:
 
   restapi_rooms:
     build:
-      context: .
-      dockerfile: ./restapi_rooms/Dockerfile
+      context: restapi_rooms
+      dockerfile: Dockerfile
+      additional_contexts:
+        shared_vol: ./shared_vol
     container_name: restapi_rooms
     depends_on:
       - influxdb
     ports:
       - "8080:8080"
     environment:
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - POSTGRES_HOST=${POSTGRES_HOST}
+        - POSTGRES_PORT=${POSTGRES_PORT}
         - INFLUXDB_URL=http://influxdb:8086
         - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
         - INFLUXDB_ORG=myorg
@@ -128,7 +135,7 @@ services:
         - GOOGLE_CAL_ID=7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com
     volumes:
       - ./env/creds.json:/usr/src/app/creds.json:ro
-      - ./shared_vol:/app/shared_vol
+      - ./shared_vol:/usr/src/app/shared_vol:ro
     networks:
       - default
 
@@ -151,15 +158,17 @@ services:
     build:
       context: .
       dockerfile: static_data/Dockerfile
+      additional_contexts:
+        shared_vol: ./shared_vol
     container_name: static_data
     depends_on:
       - postgres
     environment:
-      - POSTGRES_DB=rooms_db
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
       - CONFIG_FILE=/app/config.json
     command: python /app/init_db.py
     networks:
