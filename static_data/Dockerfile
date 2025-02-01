@@ -5,6 +5,6 @@ WORKDIR /app
 COPY . .
 
 # Install necessary Python dependencies (if any other than sqlite3)
-RUN pip install --no-cache-dir -r requirements.txt || true
+RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "init_db.py"]
