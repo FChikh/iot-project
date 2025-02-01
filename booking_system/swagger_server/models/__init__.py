@@ -6,6 +6,5 @@ from __future__ import absolute_import
 from swagger_server.models.booking_confirmation import BookingConfirmation
 from swagger_server.models.booking_rejection import BookingRejection
 from swagger_server.models.booking_request import BookingRequest
-from swagger_server.models.ranking_request import RankingRequest
 from swagger_server.models.room import Room
 from swagger_server.models.room_features import RoomFeatures

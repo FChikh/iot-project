@@ -1,21 +1,45 @@
 import connexion
 import six
 
-from swagger_server.models.ranking_request import RankingRequest  # noqa: E501
 from swagger_server.models.room import Room  # noqa: E501
 from swagger_server import util
 
 
-def rank_rooms(body):  # noqa: E501
+def rank_rooms(_date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, computer_class, pc, whiteboard, air_quality_preference, noise_level, lighting):  # noqa: E501
     """Get ranked list of available rooms
 
      # noqa: E501
 
-    :param body: 
-    :type body: dict | bytes
+    :param _date: 
+    :type _date: str
+    :param start_time: 
+    :type start_time: str
+    :param end_time: 
+    :type end_time: str
+    :param seating_capacity: 
+    :type seating_capacity: int
+    :param projector: 
+    :type projector: bool
+    :param blackboard: 
+    :type blackboard: bool
+    :param smartboard: 
+    :type smartboard: bool
+    :param microphone: 
+    :type microphone: bool
+    :param computer_class: 
+    :type computer_class: bool
+    :param pc: 
+    :type pc: bool
+    :param whiteboard: 
+    :type whiteboard: bool
+    :param air_quality_preference: 
+    :type air_quality_preference: str
+    :param noise_level: 
+    :type noise_level: str
+    :param lighting: 
+    :type lighting: str
 
     :rtype: List[Room]
     """
-    if connexion.request.is_json:
-        body = RankingRequest.from_dict(connexion.request.get_json())  # noqa: E501
+    _date = util.deserialize_date(_date)
     return 'do some magic!'

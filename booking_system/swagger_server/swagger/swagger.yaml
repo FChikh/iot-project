@@ -7,17 +7,137 @@ servers:
 - url: /
 paths:
   /rank-rooms:
-    post:
+    get:
       tags:
       - Room Ranking
       summary: Get ranked list of available rooms
       operationId: rank_rooms
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RankingRequest"
+      parameters:
+      - name: date
+        in: query
         required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: 2023-12-25
+      - name: start_time
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: time
+          example: 09:00:00
+      - name: end_time
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: time
+          example: 11:30:00
+      - name: seating_capacity
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          minimum: 1
+          type: integer
+          example: 10
+      - name: projector
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: blackboard
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: smartboard
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: microphone
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: computer_class
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: pc
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: whiteboard
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: air_quality_preference
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: normal
+          enum:
+          - high
+          - normal
+      - name: noise_level
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: normal
+          enum:
+          - silent
+          - normal
+      - name: lighting
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: normal
+          enum:
+          - bright
+          - normal
       responses:
         "200":
           description: Successfully returned ranked rooms
@@ -65,56 +185,6 @@ paths:
       x-openapi-router-controller: swagger_server.controllers.booking_controller
 components:
   schemas:
-    RankingRequest:
-      required:
-      - computers_required
-      - date
-      - end_time
-      - seating_capacity
-      - start_time
-      - videoprojector_needed
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          example: 2023-12-25
-        start_time:
-          type: string
-          format: time
-          example: 09:00:00
-        end_time:
-          type: string
-          format: time
-          example: 11:30:00
-        seating_capacity:
-          minimum: 1
-          type: integer
-          example: 10
-        videoprojector_needed:
-          type: boolean
-          default: false
-        computers_required:
-          type: boolean
-          default: false
-        air_quality_preference:
-          type: string
-          default: normal
-          enum:
-          - high
-          - normal
-        noise_level:
-          type: string
-          default: normal
-          enum:
-          - silent
-          - normal
-        lighting:
-          type: string
-          default: normal
-          enum:
-          - bright
-          - normal
     Room:
       type: object
       properties:
@@ -135,16 +205,20 @@ components:
         room_id: room-101
         score: 8.7
         features:
+          blackboard: true
+          co2: 0.80082819046101150206595775671303272247314453125
+          pm10: 1.46581298050294517310021547018550336360931396484375
+          voc: 5.962133916683182377482808078639209270477294921875
+          computer_class: true
+          whiteboard: true
+          lighting: 2.3021358869347654518833223846741020679473876953125
+          pc: true
           seating_capacity: 30
-          co2: 0.8008281904610115
-          pm2_5: 6.027456183070403
-          noise_level: 5.637376656633329
-          pm10: 1.4658129805029452
-          humidity: 7.061401241503109
-          has_videoprojector: true
-          voc: 5.962133916683182
-          lighting: 2.3021358869347655
-          has_computers: true
+          projector: true
+          pm2_5: 6.02745618307040320615897144307382404804229736328125
+          noise_level: 5.63737665663332876420099637471139430999755859375
+          humidity: 7.061401241503109105224211816675961017608642578125
+          microphone: true
         rank: 1
     BookingRequest:
       required:
@@ -190,16 +264,20 @@ components:
           room_id: room-101
           score: 8.7
           features:
+            blackboard: true
+            co2: 0.80082819046101150206595775671303272247314453125
+            pm10: 1.46581298050294517310021547018550336360931396484375
+            voc: 5.962133916683182377482808078639209270477294921875
+            computer_class: true
+            whiteboard: true
+            lighting: 2.3021358869347654518833223846741020679473876953125
+            pc: true
             seating_capacity: 30
-            co2: 0.8008281904610115
-            pm2_5: 6.027456183070403
-            noise_level: 5.637376656633329
-            pm10: 1.4658129805029452
-            humidity: 7.061401241503109
-            has_videoprojector: true
-            voc: 5.962133916683182
-            lighting: 2.3021358869347655
-            has_computers: true
+            projector: true
+            pm2_5: 6.02745618307040320615897144307382404804229736328125
+            noise_level: 5.63737665663332876420099637471139430999755859375
+            humidity: 7.061401241503109105224211816675961017608642578125
+            microphone: true
           rank: 1
         status: confirmed
     BookingRejection:
@@ -222,9 +300,17 @@ components:
         seating_capacity:
           type: integer
           example: 30
-        has_videoprojector:
+        projector:
           type: boolean
-        has_computers:
+        computer_class:
+          type: boolean
+        blackboard:
+          type: boolean
+        microphone:
+          type: boolean
+        pc:
+          type: boolean
+        whiteboard:
           type: boolean
         co2:
           type: number
@@ -241,16 +327,20 @@ components:
         humidity:
           type: number
       example:
+        blackboard: true
+        co2: 0.80082819046101150206595775671303272247314453125
+        pm10: 1.46581298050294517310021547018550336360931396484375
+        voc: 5.962133916683182377482808078639209270477294921875
+        computer_class: true
+        whiteboard: true
+        lighting: 2.3021358869347654518833223846741020679473876953125
+        pc: true
         seating_capacity: 30
-        co2: 0.8008281904610115
-        pm2_5: 6.027456183070403
-        noise_level: 5.637376656633329
-        pm10: 1.4658129805029452
-        humidity: 7.061401241503109
-        has_videoprojector: true
-        voc: 5.962133916683182
-        lighting: 2.3021358869347655
-        has_computers: true
+        projector: true
+        pm2_5: 6.02745618307040320615897144307382404804229736328125
+        noise_level: 5.63737665663332876420099637471139430999755859375
+        humidity: 7.061401241503109105224211816675961017608642578125
+        microphone: true
   securitySchemes:
     BearerAuth:
       type: http

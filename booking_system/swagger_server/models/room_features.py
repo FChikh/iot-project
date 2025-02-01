@@ -14,15 +14,23 @@ class RoomFeatures(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, seating_capacity: int=None, has_videoprojector: bool=None, has_computers: bool=None, co2: float=None, pm2_5: float=None, pm10: float=None, voc: float=None, noise_level: float=None, lighting: float=None, humidity: float=None):  # noqa: E501
+    def __init__(self, seating_capacity: int=None, projector: bool=None, computer_class: bool=None, blackboard: bool=None, microphone: bool=None, pc: bool=None, whiteboard: bool=None, co2: float=None, pm2_5: float=None, pm10: float=None, voc: float=None, noise_level: float=None, lighting: float=None, humidity: float=None):  # noqa: E501
         """RoomFeatures - a model defined in Swagger
 
         :param seating_capacity: The seating_capacity of this RoomFeatures.  # noqa: E501
         :type seating_capacity: int
-        :param has_videoprojector: The has_videoprojector of this RoomFeatures.  # noqa: E501
-        :type has_videoprojector: bool
-        :param has_computers: The has_computers of this RoomFeatures.  # noqa: E501
-        :type has_computers: bool
+        :param projector: The projector of this RoomFeatures.  # noqa: E501
+        :type projector: bool
+        :param computer_class: The computer_class of this RoomFeatures.  # noqa: E501
+        :type computer_class: bool
+        :param blackboard: The blackboard of this RoomFeatures.  # noqa: E501
+        :type blackboard: bool
+        :param microphone: The microphone of this RoomFeatures.  # noqa: E501
+        :type microphone: bool
+        :param pc: The pc of this RoomFeatures.  # noqa: E501
+        :type pc: bool
+        :param whiteboard: The whiteboard of this RoomFeatures.  # noqa: E501
+        :type whiteboard: bool
         :param co2: The co2 of this RoomFeatures.  # noqa: E501
         :type co2: float
         :param pm2_5: The pm2_5 of this RoomFeatures.  # noqa: E501
@@ -40,8 +48,12 @@ class RoomFeatures(Model):
         """
         self.swagger_types = {
             'seating_capacity': int,
-            'has_videoprojector': bool,
-            'has_computers': bool,
+            'projector': bool,
+            'computer_class': bool,
+            'blackboard': bool,
+            'microphone': bool,
+            'pc': bool,
+            'whiteboard': bool,
             'co2': float,
             'pm2_5': float,
             'pm10': float,
@@ -53,8 +65,12 @@ class RoomFeatures(Model):
 
         self.attribute_map = {
             'seating_capacity': 'seating_capacity',
-            'has_videoprojector': 'has_videoprojector',
-            'has_computers': 'has_computers',
+            'projector': 'projector',
+            'computer_class': 'computer_class',
+            'blackboard': 'blackboard',
+            'microphone': 'microphone',
+            'pc': 'pc',
+            'whiteboard': 'whiteboard',
             'co2': 'co2',
             'pm2_5': 'pm2_5',
             'pm10': 'pm10',
@@ -64,8 +80,12 @@ class RoomFeatures(Model):
             'humidity': 'humidity'
         }
         self._seating_capacity = seating_capacity
-        self._has_videoprojector = has_videoprojector
-        self._has_computers = has_computers
+        self._projector = projector
+        self._computer_class = computer_class
+        self._blackboard = blackboard
+        self._microphone = microphone
+        self._pc = pc
+        self._whiteboard = whiteboard
         self._co2 = co2
         self._pm2_5 = pm2_5
         self._pm10 = pm10
@@ -107,46 +127,130 @@ class RoomFeatures(Model):
         self._seating_capacity = seating_capacity
 
     @property
-    def has_videoprojector(self) -> bool:
-        """Gets the has_videoprojector of this RoomFeatures.
+    def projector(self) -> bool:
+        """Gets the projector of this RoomFeatures.
 
 
-        :return: The has_videoprojector of this RoomFeatures.
+        :return: The projector of this RoomFeatures.
         :rtype: bool
         """
-        return self._has_videoprojector
+        return self._projector
 
-    @has_videoprojector.setter
-    def has_videoprojector(self, has_videoprojector: bool):
-        """Sets the has_videoprojector of this RoomFeatures.
+    @projector.setter
+    def projector(self, projector: bool):
+        """Sets the projector of this RoomFeatures.
 
 
-        :param has_videoprojector: The has_videoprojector of this RoomFeatures.
-        :type has_videoprojector: bool
+        :param projector: The projector of this RoomFeatures.
+        :type projector: bool
         """
 
-        self._has_videoprojector = has_videoprojector
+        self._projector = projector
 
     @property
-    def has_computers(self) -> bool:
-        """Gets the has_computers of this RoomFeatures.
+    def computer_class(self) -> bool:
+        """Gets the computer_class of this RoomFeatures.
 
 
-        :return: The has_computers of this RoomFeatures.
+        :return: The computer_class of this RoomFeatures.
         :rtype: bool
         """
-        return self._has_computers
+        return self._computer_class
 
-    @has_computers.setter
-    def has_computers(self, has_computers: bool):
-        """Sets the has_computers of this RoomFeatures.
+    @computer_class.setter
+    def computer_class(self, computer_class: bool):
+        """Sets the computer_class of this RoomFeatures.
 
 
-        :param has_computers: The has_computers of this RoomFeatures.
-        :type has_computers: bool
+        :param computer_class: The computer_class of this RoomFeatures.
+        :type computer_class: bool
         """
 
-        self._has_computers = has_computers
+        self._computer_class = computer_class
+
+    @property
+    def blackboard(self) -> bool:
+        """Gets the blackboard of this RoomFeatures.
+
+
+        :return: The blackboard of this RoomFeatures.
+        :rtype: bool
+        """
+        return self._blackboard
+
+    @blackboard.setter
+    def blackboard(self, blackboard: bool):
+        """Sets the blackboard of this RoomFeatures.
+
+
+        :param blackboard: The blackboard of this RoomFeatures.
+        :type blackboard: bool
+        """
+
+        self._blackboard = blackboard
+
+    @property
+    def microphone(self) -> bool:
+        """Gets the microphone of this RoomFeatures.
+
+
+        :return: The microphone of this RoomFeatures.
+        :rtype: bool
+        """
+        return self._microphone
+
+    @microphone.setter
+    def microphone(self, microphone: bool):
+        """Sets the microphone of this RoomFeatures.
+
+
+        :param microphone: The microphone of this RoomFeatures.
+        :type microphone: bool
+        """
+
+        self._microphone = microphone
+
+    @property
+    def pc(self) -> bool:
+        """Gets the pc of this RoomFeatures.
+
+
+        :return: The pc of this RoomFeatures.
+        :rtype: bool
+        """
+        return self._pc
+
+    @pc.setter
+    def pc(self, pc: bool):
+        """Sets the pc of this RoomFeatures.
+
+
+        :param pc: The pc of this RoomFeatures.
+        :type pc: bool
+        """
+
+        self._pc = pc
+
+    @property
+    def whiteboard(self) -> bool:
+        """Gets the whiteboard of this RoomFeatures.
+
+
+        :return: The whiteboard of this RoomFeatures.
+        :rtype: bool
+        """
+        return self._whiteboard
+
+    @whiteboard.setter
+    def whiteboard(self, whiteboard: bool):
+        """Sets the whiteboard of this RoomFeatures.
+
+
+        :param whiteboard: The whiteboard of this RoomFeatures.
+        :type whiteboard: bool
+        """
+
+        self._whiteboard = whiteboard
 
     @property
     def co2(self) -> float:
