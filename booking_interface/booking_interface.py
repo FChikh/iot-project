@@ -1,5 +1,40 @@
 import streamlit as st
 from datetime import datetime, timedelta
+import requests
+import time
+import json
+
+
+def fetch_api_data(url: str, retries: int = 3, backoff_factor: float = 1.0):
+    """
+    Fetches JSON data from the given API URL.
+
+    Args:
+        url (str): The API URL to fetch data from.
+
+    Returns:
+        dict: A dictionary containing the JSON data, or None if an error occurs.
+    """
+    for attempt in range(retries):
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"API request failed (attempt {attempt+1}/{retries}): {str(e)}")
+            if attempt == retries - 1:
+                return None
+            sleep_time = backoff_factor * (2 ** attempt)
+            time.sleep(sleep_time)
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse JSON response: {str(e)}")
+            return None
+    return None
+
+def fetch_room_ranking(date, start_time, end_time, computer_class, pc, projector, blackboard, smartboard, whiteboard, microphone, air_quality_preference, noise_level, lighting):
+
+    api_url = f"http://localhost:8081/rank-rooms?date={date}&start_time={start_time}&end_time={end_time}&seating_capacity={seating_capacity}&projector={projector}&blackboard={blackboard}&smartboard={smartboard}&microphone={microphone}&computer_class={computer_class}&pc={pc}&whiteboard={whiteboard}&air_quality_preference={air_quality_preference}&noise_level={noise_level}&lighting={lighting}"
+
 
 # Page title
 st.title("Room Booking System")
