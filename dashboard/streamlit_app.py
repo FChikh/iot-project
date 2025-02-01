@@ -185,13 +185,13 @@ with st.sidebar.expander("Add Simulator"):
             else:
                 # Define default ranges for a new simulator.
                 default_ranges = {
-                    'temp': [20, 30],
+                    'temp': [20, 26],
                     'hum': [30, 60],
-                    'light': [300, 800],
+                    'light': [500, 800],
                     'co2': [350, 500],
                     'air_quality_pm2_5': [10, 25],
                     'air_quality_pm10': [10, 50],
-                    'sound': [30, 80],
+                    'sound': [25, 35],
                     'voc': [50, 400]
                 }
                 # Add the new room's configuration globally.

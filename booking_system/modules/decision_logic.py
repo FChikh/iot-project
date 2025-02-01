@@ -258,11 +258,13 @@ def check_availability(date: str, start_time: str, end_time: str, equipments_dic
 user_prefs = {
     'co2': 0,
     'noise': 33,
+    'pm2_5': 0,
+    'pm10': 0,
     'light': 500,
     'humidity': 50,
     'voc': 0,
-    'temperature': 20
-
+    'temperature': 21,
+    'projector': 1,
 }
 
 compliance_functions = {
@@ -281,11 +283,12 @@ start_time = "08:30:00"
 end_time = "10:30:00"
 equipments = fetch_equipments()
 available_rooms = check_availability(date, start_time, end_time, equipments, 30)
+print(available_rooms)
 sensors = ['co2', 'temperature', 'noise', 'light', 'humidity', 'voc', 'pm2_5', 'pm10']
-decision_matrix = build_topsis_matrix(available_rooms, sensors)
-print(decision_matrix)
+#decision_matrix = build_topsis_matrix(available_rooms, sensors)
+#print(decision_matrix)
 
 lower_better_cols=['co2', 'noise', 'voc', 'temperature']
 
 
-print(topsis_decision_logic(room_data=decision_matrix, user_pref=user_prefs, weights=None, lower_better_cols=lower_better_cols))
+#print(topsis_decision_logic(room_data=decision_matrix, user_pref=user_prefs, weights=None, lower_better_cols=lower_better_cols))
