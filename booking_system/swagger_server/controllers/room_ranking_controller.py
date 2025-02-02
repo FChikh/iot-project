@@ -7,7 +7,7 @@ from modules.decision_logic import get_ranking
 from flask import jsonify
 
 
-def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, computer_class, pc, whiteboard, air_quality_preference, noise_level, lighting):  # noqa: E501
+def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, pc, whiteboard, air_quality_preference, noise_level, lighting):  # noqa: E501
     """Get ranked list of available rooms
 
      # noqa: E501
@@ -28,8 +28,6 @@ def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboa
     :type smartboard: bool
     :param microphone: 
     :type microphone: bool
-    :param computer_class: 
-    :type computer_class: bool
     :param pc: 
     :type pc: bool
     :param whiteboard: 
@@ -43,5 +41,5 @@ def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboa
 
     :rtype: List[Room]
     """
-    ranking = get_ranking(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, computer_class, pc, whiteboard, air_quality_preference, noise_level, lighting)
+    ranking = get_ranking(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, pc, whiteboard, air_quality_preference, noise_level, lighting)
     return jsonify(ranking)
