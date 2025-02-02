@@ -60,55 +60,73 @@ def simulator(room, config_ref, stop_event):
         ranges = config_ref['ranges']
 
         # Example simulation for several sensor names.
-        temp = round(random.gauss(
-            (ranges['temp'][0] + ranges['temp'][1]) / 2, 2), 2)
-        temp += 2 if 7 <= hour <= 19 else -1
+        if 'temp' in ranges:
+            temp = round(random.gauss(
+                (ranges['temp'][0] + ranges['temp'][1]) / 2, 0.5), 2)
+            temp += 1.5 if 7 <= hour <= 19 else -1
 
-        hum = round(random.gauss(
-            (ranges['hum'][0] + ranges['hum'][1]) / 2, 5), 2)
-        hum += 5 if 0 <= hour < 7 or 22 <= hour <= 23 else -3
+        if 'hum' in ranges:
+            hum = round(random.gauss(
+                (ranges['hum'][0] + ranges['hum'][1]) / 2, 1), 2)
+            hum += 3 if 0 <= hour < 7 or 22 <= hour <= 23 else -1
 
-        light = round(random.gauss(
-            (ranges['light'][0] + ranges['light'][1]) / 2, 100), 2)
-        light += 400 if 7 <= hour <= 19 else -300
+        if 'light' in ranges:
+            light = round(random.gauss(
+                (ranges['light'][0] + ranges['light'][1]) / 2, 30), 2)
+            light += 400 if 7 <= hour <= 19 else -300
 
-        co2 = round(random.gauss(
-            (ranges['co2'][0] + ranges['co2'][1]) / 2, 20), 2)
-        co2 += 50 if 8 <= hour <= 20 else -30
+        if 'co2' in ranges:
+            co2 = round(random.gauss(
+                (ranges['co2'][0] + ranges['co2'][1]) / 2, 5), 2)
+            co2 += 50 if 8 <= hour <= 20 else -30
 
-        air_quality_pm2_5 = round(random.gauss(
-            (ranges['air_quality_pm2_5'][0] + ranges['air_quality_pm2_5'][1]) / 2, 5), 2)
-        air_quality_pm10 = round(random.gauss(
-            (ranges['air_quality_pm10'][0] + ranges['air_quality_pm10'][1]) / 2, 5), 2)
+        if 'air_quality_pm2_5' in ranges:
+            air_quality_pm2_5 = round(random.gauss(
+                (ranges['air_quality_pm2_5'][0] + ranges['air_quality_pm2_5'][1]) / 2, 1), 2)
+            
+        if 'air_quality_pm10' in ranges:
+            air_quality_pm10 = round(random.gauss(
+                (ranges['air_quality_pm10'][0] + ranges['air_quality_pm10'][1]) / 2, 2), 2)
 
-        sound = round(random.gauss(
-            (ranges['sound'][0] + ranges['sound'][1]) / 2, 5), 2)
-        sound += 10 if 7 <= hour <= 22 else -10
+        if 'sound' in ranges:
+            sound = round(random.gauss(
+                (ranges['sound'][0] + ranges['sound'][1]) / 2, 5), 2)
+            sound += 10 if 7 <= hour <= 22 else -10
 
-        voc = round(random.gauss(
-            (ranges['voc'][0] + ranges['voc'][1]) / 2, 5), 2)
+        if 'voc' in ranges:
+            voc = round(random.gauss(
+                (ranges['voc'][0] + ranges['voc'][1]) / 2, 5), 2)
 
         # Generate timestamp (ISO 8601)
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
         # Publish sensor data to MQTT topics.
         try:
-            publisher_client.publish(
-                f"{room}/sensors/temp", json.dumps({"value": temp, "timestamp": timestamp}))
-            publisher_client.publish(
-                f"{room}/sensors/humidity", json.dumps({"value": hum, "timestamp": timestamp}))
-            publisher_client.publish(
-                f"{room}/sensors/light", json.dumps({"value": light, "timestamp": timestamp}))
-            publisher_client.publish(
-                f"{room}/sensors/co2", json.dumps({"value": co2, "timestamp": timestamp}))
-            publisher_client.publish(f"{room}/sensors/air_quality_pm2_5", json.dumps(
-                {"value": air_quality_pm2_5, "timestamp": timestamp}))
-            publisher_client.publish(f"{room}/sensors/air_quality_pm10", json.dumps(
-                {"value": air_quality_pm10, "timestamp": timestamp}))
-            publisher_client.publish(
-                f"{room}/sensors/sound", json.dumps({"value": sound, "timestamp": timestamp}))
-            publisher_client.publish(
-                f"{room}/sensors/voc", json.dumps({"value": voc, "timestamp": timestamp}))
+            if 'temp' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/temp", json.dumps({"value": temp, "timestamp": timestamp}))
+            if 'hum' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/humidity", json.dumps({"value": hum, "timestamp": timestamp}))
+            if 'light' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/light", json.dumps({"value": light, "timestamp": timestamp}))
+            if 'co2' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/co2", json.dumps({"value": co2, "timestamp": timestamp}))
+            if 'air_quality_pm2_5' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/air_quality_pm2_5", json.dumps({"value": air_quality_pm2_5, "timestamp": timestamp}))
+            if 'air_quality_pm10' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/air_quality_pm10", json.dumps({"value": air_quality_pm10, "timestamp": timestamp}))
+            if 'sound' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/sound", json.dumps({"value": sound, "timestamp": timestamp}))
+            if 'voc' in ranges:
+                publisher_client.publish(
+                    f"{room}/sensors/voc", json.dumps({"value": voc, "timestamp": timestamp}))
+                
             logger.info(f"Simulated data for {room} at {timestamp}")
         except Exception as e:
             logger.error(f"Failed to publish simulated data for {room}: {e}")
