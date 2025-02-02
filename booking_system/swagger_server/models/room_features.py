@@ -14,15 +14,13 @@ class RoomFeatures(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, seating_capacity: int=None, projector: bool=None, computer_class: bool=None, blackboard: bool=None, microphone: bool=None, pc: bool=None, whiteboard: bool=None, air_quality_preference: str=None, noise_level: str=None, lighting: str=None):  # noqa: E501
+    def __init__(self, seating_capacity: int=None, projector: bool=None, blackboard: bool=None, microphone: bool=None, pc: bool=None, whiteboard: bool=None, air_quality_preference: str=None, noise_level: str=None, lighting: str=None):  # noqa: E501
         """RoomFeatures - a model defined in Swagger
 
         :param seating_capacity: The seating_capacity of this RoomFeatures.  # noqa: E501
         :type seating_capacity: int
         :param projector: The projector of this RoomFeatures.  # noqa: E501
         :type projector: bool
-        :param computer_class: The computer_class of this RoomFeatures.  # noqa: E501
-        :type computer_class: bool
         :param blackboard: The blackboard of this RoomFeatures.  # noqa: E501
         :type blackboard: bool
         :param microphone: The microphone of this RoomFeatures.  # noqa: E501
@@ -41,7 +39,6 @@ class RoomFeatures(Model):
         self.swagger_types = {
             'seating_capacity': int,
             'projector': bool,
-            'computer_class': bool,
             'blackboard': bool,
             'microphone': bool,
             'pc': bool,
@@ -54,7 +51,6 @@ class RoomFeatures(Model):
         self.attribute_map = {
             'seating_capacity': 'seating_capacity',
             'projector': 'projector',
-            'computer_class': 'computer_class',
             'blackboard': 'blackboard',
             'microphone': 'microphone',
             'pc': 'pc',
@@ -65,7 +61,6 @@ class RoomFeatures(Model):
         }
         self._seating_capacity = seating_capacity
         self._projector = projector
-        self._computer_class = computer_class
         self._blackboard = blackboard
         self._microphone = microphone
         self._pc = pc
@@ -126,27 +121,6 @@ class RoomFeatures(Model):
         """
 
         self._projector = projector
-
-    @property
-    def computer_class(self) -> bool:
-        """Gets the computer_class of this RoomFeatures.
-
-
-        :return: The computer_class of this RoomFeatures.
-        :rtype: bool
-        """
-        return self._computer_class
-
-    @computer_class.setter
-    def computer_class(self, computer_class: bool):
-        """Sets the computer_class of this RoomFeatures.
-
-
-        :param computer_class: The computer_class of this RoomFeatures.
-        :type computer_class: bool
-        """
-
-        self._computer_class = computer_class
 
     @property
     def blackboard(self) -> bool:

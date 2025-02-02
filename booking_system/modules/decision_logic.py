@@ -286,26 +286,10 @@ def check_availability(date: str, start_time: str, end_time: str, rooms_and_equi
 
 
 def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, smartboard: bool,
-                      microphone: bool, computer_class: bool, pc: bool, whiteboard: bool,
+                      microphone: bool, pc: bool, whiteboard: bool,
                       air_quality_preference: str, noise_level: str, lighting: str) -> dict:
     """
     Creates a dictionary of user preferences based on provided parameters.
-
-    Parameters:
-        seating_capacity (int): Number of seats required.
-        projector (bool): Whether a projector is required.
-        blackboard (bool): Whether a blackboard is required.
-        smartboard (bool): Whether a smartboard is required.
-        microphone (bool): Whether a microphone is required.
-        computer_class (bool): Whether the room is for a computer class.
-        pc (bool): Whether a PC is required.
-        whiteboard (bool): Whether a whiteboard is required.
-        air_quality_preference (str): "high" or other preference.
-        noise_level (str): "silent" or other preference.
-        lighting (str): "bright" or other preference.
-
-    Returns:
-        dict: User preferences.
     """
     # Set environmental preferences based on air quality
     if air_quality_preference.lower() == "high":
@@ -335,7 +319,6 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
         'projector': 1 if projector else 0,
         'capacity': seating_capacity,
         'blackboard': 1 if blackboard else 0,
-        'computer_class': 1 if computer_class else 0,
         'microphone': 1 if microphone else 0,
         'pc': 1 if pc else 0,
         'smartboard': 1 if smartboard else 0,
@@ -343,8 +326,9 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
     }
     return user_prefs
 
+
 def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int, projector: bool,
-                blackboard: bool, smartboard: bool, microphone: bool, computer_class: bool, pc: bool,
+                blackboard: bool, smartboard: bool, microphone: bool, pc: bool,
                 whiteboard: bool, air_quality_preference: str, noise_level: str, lighting: str) -> list:
     """
     Determines the ranking of available and compliant rooms based on user preferences and TOPSIS.
@@ -358,7 +342,6 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
         blackboard (bool): Whether a blackboard is required.
         smartboard (bool): Whether a smartboard is required.
         microphone (bool): Whether a microphone is required.
-        computer_class (bool): Whether it is for a computer class.
         pc (bool): Whether a PC is required.
         whiteboard (bool): Whether a whiteboard is required.
         air_quality_preference (str): Air quality preference.
@@ -405,17 +388,16 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # 9. projector
     # 10. capacity
     # 11. blackboard
-    # 12. computer-class
-    # 13. microphone
-    # 14. pc
-    # 15. smartboard
-    # 16. whiteboard
+    # 12. microphone
+    # 13. pc
+    # 14. smartboard
+    # 15. whiteboard
 
-    weights = [1, 0.5, 1, 0.5, 0.5, 1, 1, 0.5, 3, 4, 3, 3, 3, 3, 3, 3]
+    weights = [1, 0.5, 1, 0.5, 0.5, 1, 1, 0.5, 3, 4, 3, 3, 3, 3, 3]
 
     # Create the user preferences based on input parameters
     user_prefs = create_user_prefs(seating_capacity, projector, blackboard, smartboard,
-                                   microphone, computer_class, pc, whiteboard,
+                                   microphone, pc, whiteboard,
                                    air_quality_preference, noise_level, lighting)
 
     # Run TOPSIS decision logic to rank rooms
@@ -426,7 +408,7 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
         return []
 
     # Convert equipment columns to boolean values if present
-    equipment_columns = ['projector', 'blackboard', 'smartboard', 'microphone', 'computer-class', 'pc', 'whiteboard']
+    equipment_columns = ['projector', 'blackboard', 'smartboard', 'microphone', 'pc', 'whiteboard']
     for column in equipment_columns:
         if column in topsis_result.columns:
             topsis_result[column] = topsis_result[column].map({0: False, 1: True})
@@ -437,3 +419,4 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # Convert results to a list of dictionaries
     topsis_dict = topsis_result.reset_index().rename(columns={"index": "room_id"}).to_dict(orient='records')
     return topsis_dict
+

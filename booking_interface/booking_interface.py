@@ -32,7 +32,7 @@ def fetch_api_data(url: str, retries: int = 5, backoff_factor: float = 1.0):
 
 
 def fetch_room_ranking(date: str, start_time: str, end_time: str, seating_capacity: int, 
-                       computer_class: bool, pc: bool, projector: bool, blackboard: bool, 
+                    pc: bool, projector: bool, blackboard: bool, 
                        smartboard: bool, whiteboard: bool, microphone: bool, 
                        air_quality_preference: str, noise_level_preference: str, 
                        lighting_preference: str):
@@ -46,7 +46,7 @@ def fetch_room_ranking(date: str, start_time: str, end_time: str, seating_capaci
         f"&start_time={start_time}&end_time={end_time}"
         f"&seating_capacity={seating_capacity}&projector={projector}"
         f"&blackboard={blackboard}&smartboard={smartboard}"
-        f"&microphone={microphone}&computer_class={computer_class}"
+        f"&microphone={microphone}"
         f"&pc={pc}&whiteboard={whiteboard}"
         f"&air_quality_preference={air_quality_preference.lower()}"
         f"&noise_level={noise_level_preference.lower()}"
@@ -186,8 +186,7 @@ with st.container():
     col3, col4 = st.columns(2)
     with col3:
         projector = st.checkbox("Projector")
-        computer_class = st.checkbox("Computer Class")
-        pc = st.checkbox("Teacher PC")
+        pc = st.checkbox("Computer Classroom")
         air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
         noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
     with col4:
@@ -204,7 +203,7 @@ with st.container():
 # Build a tuple from the search parameters (excluding user_name and course_name).
 new_search_key = (
     str(date), start_time, end_time, seating_capacity,
-    projector, computer_class, pc, blackboard, smartboard,
+    projector, pc, blackboard, smartboard,
     whiteboard, microphone, air_quality_preference,
     noise_level_preference, lighting_preference
 )
@@ -231,7 +230,6 @@ if st.button("Check Availability"):
                 start_time=start_time,
                 end_time=end_time,
                 seating_capacity=seating_capacity,
-                computer_class=computer_class,
                 pc=pc,
                 projector=projector,
                 blackboard=blackboard,
@@ -276,7 +274,7 @@ if st.session_state.availability_data is not None:
                     feature_cols = st.columns(2)
                     features = [
                         ("Projector", room['projector']),
-                        ("Computer Class", room['computer-class']),
+                        ("Computer Classroom", room['pc']),
                         ("Teacher PC", room['pc']),
                         ("Blackboard", room['blackboard']),
                         ("Whiteboard", room['whiteboard']),

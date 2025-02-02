@@ -48,7 +48,7 @@ def check_compliance_co2(df: pd.DataFrame, tolerance: float = 5.0):
     }
 
 
-def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 1.0):
+def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 5.0):
     """
     Checks if the PM2.5 measurements meet EU air quality regulations based on 24-hour rolling averages.
     EU Regulation:
@@ -82,7 +82,7 @@ def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 1.0):
     }
 
 
-def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 1.0):
+def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 5.0):
     """
     Checks if the PM10 measurements meet EU air quality regulations based on 24-hour rolling averages.
     EU Regulation:
@@ -208,7 +208,7 @@ def check_humidity_compliance(df: pd.DataFrame, tolerance: float = 15.0):
     }
 
 
-def check_compliance_voc(df: pd.DataFrame, tolerance: float = 1.0):
+def check_compliance_voc(df: pd.DataFrame, tolerance: float = 5.0):
     """
     Checks compliance for VOC levels with tolerances for brief deviations.
 

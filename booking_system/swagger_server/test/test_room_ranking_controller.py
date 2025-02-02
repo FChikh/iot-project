@@ -25,7 +25,6 @@ class TestRoomRankingController(BaseTestCase):
                         ('blackboard', false),
                         ('smartboard', false),
                         ('microphone', false),
-                        ('computer_class', false),
                         ('pc', false),
                         ('whiteboard', false),
                         ('air_quality_preference', 'normal'),
