@@ -6,7 +6,6 @@ swagger-ui-bundle>=0.0.2
 certifi==2024.12.14
 charset-normalizer==3.4.1
 idna==3.10
-numpy==2.2.2
 pandas==2.2.3
 pytz==2024.2
 requests==2.32.3
