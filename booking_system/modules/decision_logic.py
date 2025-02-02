@@ -62,13 +62,25 @@ def topsis_decision_logic(room_data: pd.DataFrame, user_pref: dict, weights=None
             result['rank'] = 1
             return result
 
-        # Identify the positive ideal solution (PIS) and negative ideal solution (NIS)
-        pis = weighted.max()
-        nis = weighted.min()
+        # Determine the positive ideal solution (PIS) and negative ideal solution (NIS)
+        # Adjusting the logic for columns where lower values are better.
+        ideal_best = {}
+        ideal_worst = {}
+        for col in weighted.columns:
+            if col in lower_better_cols:
+                ideal_best[col] = weighted[col].min()  # lower is better
+                ideal_worst[col] = weighted[col].max()
+            else:
+                ideal_best[col] = weighted[col].max()  # higher is better
+                ideal_worst[col] = weighted[col].min()
+
+        # Convert the ideal values to a Series for vectorized computation
+        ideal_best_series = pd.Series(ideal_best)
+        ideal_worst_series = pd.Series(ideal_worst)
 
         # Calculate Euclidean distances from the PIS and NIS
-        dist_pis = np.sqrt(((weighted - pis) ** 2).sum(axis=1))
-        dist_nis = np.sqrt(((weighted - nis) ** 2).sum(axis=1))
+        dist_pis = np.sqrt(((weighted - ideal_best_series) ** 2).sum(axis=1))
+        dist_nis = np.sqrt(((weighted - ideal_worst_series) ** 2).sum(axis=1))
 
         # Calculate the closeness coefficient
         closeness = dist_nis / (dist_pis + dist_nis)
@@ -82,6 +94,7 @@ def topsis_decision_logic(room_data: pd.DataFrame, user_pref: dict, weights=None
     except Exception as e:
         print(f"TOPSIS error: {str(e)}")
         return pd.DataFrame()
+
 
 
 def perform_compliance_check(sensor: str, sensor_data: pd.DataFrame, compliance_functions: dict) -> dict:
@@ -297,18 +310,18 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
     # Set environmental preferences based on air quality
     if air_quality_preference.lower() == "high":
         co2 = 350
-        pm2_5 = 1
-        pm10 = 5
+        pm2_5 = 5
+        pm10 = 10
     else:
         co2 = 500
         pm2_5 = 10
         pm10 = 15
 
     # Set noise preference
-    noise = 20 if noise_level.lower() == "silent" else 40
+    noise = 15 if noise_level.lower() == "silent" else 30
 
     # Set lighting preference
-    light = 1000 if lighting.lower() == "bright" else 500
+    light = 800 if lighting.lower() == "bright" else 500
 
     user_prefs = {
         'co2': co2,
@@ -322,7 +335,7 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
         'projector': 1 if projector else 0,
         'capacity': seating_capacity,
         'blackboard': 1 if blackboard else 0,
-        'computer-class': 1 if computer_class else 0,
+        'computer_class': 1 if computer_class else 0,
         'microphone': 1 if microphone else 0,
         'pc': 1 if pc else 0,
         'smartboard': 1 if smartboard else 0,
@@ -379,7 +392,26 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     lower_better_cols = ['co2', 'noise', 'voc', 'temperature', 'capacity', 'light']
 
     # Example weights array: adjust the weights as needed.
-    weights = [1, 0.5, 1, 0.5, 0.5, 1, 1, 1, 3, 2, 3, 3, 3, 3, 3, 3]
+    # The order of the attributes in the decision matrix is as follows:
+    # 
+    # 1. co2
+    # 2. noise
+    # 3. pm2_5
+    # 4. pm10
+    # 5. light
+    # 6. humidity
+    # 7. voc
+    # 8. temperature
+    # 9. projector
+    # 10. capacity
+    # 11. blackboard
+    # 12. computer-class
+    # 13. microphone
+    # 14. pc
+    # 15. smartboard
+    # 16. whiteboard
+
+    weights = [1, 0.5, 1, 0.5, 0.5, 1, 1, 0.5, 3, 4, 3, 3, 3, 3, 3, 3]
 
     # Create the user preferences based on input parameters
     user_prefs = create_user_prefs(seating_capacity, projector, blackboard, smartboard,
