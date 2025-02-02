@@ -7,9 +7,6 @@ mosquitto/log/*
 mosquitto/pwfile/*
 
 !env/
-<<<<<<< HEAD
 
 
 .DS_Store
-=======
->>>>>>> a27582fdda7cadacb3abe92c07a1b028136fdd86

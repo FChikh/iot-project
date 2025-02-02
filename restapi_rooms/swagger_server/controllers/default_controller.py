@@ -47,28 +47,6 @@ def book_rooms_room_id_post(body, room_id):  # noqa: E501
     return post_book_room_id(body, room_id)
 
 
-def rooms_pm10_get():  # noqa: E501
-    """Retrieve air quality data (pm10)
-
-    Fetches the air quality measurement, including particulate matter (μg/m³) for smaller particles(i.e. pm10) for all rooms # noqa: E501
-
-
-    :rtype: List[RoomAirQuality10]
-    """
-    return get_all_room_spec_sensor("pm10", 14)
-
-
-def rooms_pm2_5_get():  # noqa: E501
-    """Retrieve air quality data (pm2.5)
-
-    Fetches the air quality measurement, including particulate matter (μg/m³) for smaller particles(i.e. pm2.5) for all rooms # noqa: E501
-
-
-    :rtype: List[RoomAirQuality25]
-    """
-    return get_all_room_spec_sensor("pm2_5", 14)
-
-
 def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
     """Get bookings for all rooms
 
@@ -81,7 +59,6 @@ def rooms_bookings_get(start_date=None, days=None):  # noqa: E501
 
     :rtype: Dict[str, List[Booking]]
     """
-    # start_date = util.deserialize_date(start_date)
     return get_all_room_bookings(start_date, days)
 
 
@@ -140,30 +117,26 @@ def rooms_noise_get():  # noqa: E501
     return get_all_room_spec_sensor("noise", 14)
 
 
-def rooms_room_id_pm10_get(room_id):  # noqa: E501
-    """Get air quality data for a specific room (i.e. pm10)
+def rooms_pm10_get():  # noqa: E501
+    """Retrieve air quality data (pm10)
 
-    Fetches the air quality measurements, including particulate matter (μg/m³) for smaller particles (i.e. pm10) of a single room # noqa: E501
+    Fetches the air quality measurement, including particulate matter (μg/m³) for smaller particles(i.e. pm10) for all rooms # noqa: E501
 
-    :param room_id: Unique identifier for the room
-    :type room_id: str
 
-    :rtype: RoomAirQuality10
+    :rtype: List[RoomAirQuality10]
     """
-    return get_spec_room_spec_sensor("pm10", room_id, 14)
+    return get_all_room_spec_sensor("pm10", 14)
 
 
-def rooms_room_id_pm2_5_get(room_id):  # noqa: E501
-    """Get air quality data for a specific room (i.e. pm2.5)
+def rooms_pm2_5_get():  # noqa: E501
+    """Retrieve air quality data (pm2.5)
 
-    Fetches the air quality measurements, including particulate matter (μg/m³) for smaller particles (i.e. pm2.5) of a single room # noqa: E501
+    Fetches the air quality measurement, including particulate matter (μg/m³) for smaller particles(i.e. pm2.5) for all rooms # noqa: E501
 
-    :param room_id: Unique identifier for the room
-    :type room_id: str
 
-    :rtype: RoomAirQuality25
+    :rtype: List[RoomAirQuality25]
     """
-    return get_spec_room_spec_sensor("pm2_5", room_id, 14)
+    return get_all_room_spec_sensor("pm2_5", 14)
 
 
 def rooms_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E501
@@ -180,7 +153,6 @@ def rooms_room_id_bookings_get(room_id, start_date=None, days=None):  # noqa: E5
 
     :rtype: InlineResponse2001
     """
-    #start_date = util.deserialize_date(start_date)
     return get_spec_room_bookings(room_id, start_date, days)
 
 
@@ -236,6 +208,7 @@ def rooms_room_id_light_get(room_id):  # noqa: E501
     return get_spec_room_spec_sensor("light", room_id, 14)
 
 
+
 def rooms_room_id_noise_get(room_id):  # noqa: E501
     """Get noise/sound data for a specific room
 
@@ -247,6 +220,32 @@ def rooms_room_id_noise_get(room_id):  # noqa: E501
     :rtype: RoomNoise
     """
     return get_spec_room_spec_sensor("noise", room_id, 14)
+
+
+def rooms_room_id_pm10_get(room_id):  # noqa: E501
+    """Get air quality data for a specific room (i.e. pm10)
+
+    Fetches the air quality measurements, including particulate matter (μg/m³) for smaller particles (i.e. pm10) of a single room # noqa: E501
+
+    :param room_id: Unique identifier for the room
+    :type room_id: str
+
+    :rtype: RoomAirQuality10
+    """
+    return get_spec_room_spec_sensor("pm10", room_id, 14)
+
+
+def rooms_room_id_pm2_5_get(room_id):  # noqa: E501
+    """Get air quality data for a specific room (i.e. pm2.5)
+
+    Fetches the air quality measurements, including particulate matter (μg/m³) for smaller particles (i.e. pm2.5) of a single room # noqa: E501
+
+    :param room_id: Unique identifier for the room
+    :type room_id: str
+
+    :rtype: RoomAirQuality25
+    """
+    return get_spec_room_spec_sensor("pm2_5", room_id, 14)
 
 
 def rooms_room_id_sensor_get(room_id):  # noqa: E501

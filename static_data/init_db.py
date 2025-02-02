@@ -3,20 +3,12 @@ import json
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from models import Base, Room, Equipment, Sensor 
+from db import engine
 
-DB_NAME = os.getenv("POSTGRES_DB", "rooms_db")
-DB_USER = os.getenv("POSTGRES_USER", "user")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
-DB_HOST = os.getenv("POSTGRES_HOST", "postgres")
-DB_PORT = os.getenv("POSTGRES_PORT", "5432")
-CONFIG_FILE = os.getenv("CONFIG_FILE", "/app/config.json")
-
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
-engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
 Base.metadata.create_all(engine)
+CONFIG_FILE = os.getenv("CONFIG_FILE", "/app/config.json")
 
 with open(CONFIG_FILE, 'r') as file:
     data = json.load(file)
