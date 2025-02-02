@@ -297,10 +297,8 @@ if st.session_state.availability_data is not None:
                     brightness = "Bright" if room['light'] >= 1000 else "Dark" if room['light'] < 500 else "Normal"
                     if room['co2'] < 600 and room['pm2_5'] < 5 and room['pm10'] < 10 and room['voc'] < 100:
                         air_quality = "High"
-                    elif room['co2'] < 900 and room['pm2_5'] < 20 and room['pm10'] < 40 and room['voc'] < 300:
-                        air_quality = "Normal"
                     else:
-                        air_quality = "Low"
+                        air_quality = "Normal"
 
                     env_cols = st.columns(2)
                     with env_cols[0]:
