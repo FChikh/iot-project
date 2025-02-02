@@ -289,8 +289,9 @@ if st.session_state.availability_data is not None:
                         for feature, value in features[:3]:
                             st.write(f"{'✅' if value else '❌'} {feature}")
                     with feature_cols[1]:
-                        for feature, value in features[3:]:
+                        for feature, value in features[3:5]:
                             st.write(f"{'✅' if value else '❌'} {feature}")
+
 
                     # Display environmental conditions.
                     st.markdown("**Environmental Conditions:**")
@@ -300,13 +301,15 @@ if st.session_state.availability_data is not None:
                     else:
                         air_quality = "Normal"
 
-                    env_cols = st.columns(2)
+                    env_cols = st.columns(3)
                     with env_cols[0]:
                         st.metric("Temperature", f"{room['temperature']:.1f}°C")
                         st.metric("Air Quality", air_quality)
                     with env_cols[1]:
                         st.metric("Noise Level", f"{room['noise']:.1f} dB")
                         st.metric("Lighting", brightness)
+                    with env_cols[2]:
+                        st.metric("Humidity", f"{room['humidity']:.1f} %")
 
                 with cols[1]:
                     if user_name and course_name:
