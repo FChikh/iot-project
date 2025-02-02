@@ -21,14 +21,25 @@ User preferences for environmental conditions and room amenities are provided th
 Each sensor type has a dedicated function to:
 - Compute key statistics: Such as average, maximum, and the percentage of compliant or non-compliant readings.
 - Evaluate compliance: The compliance checks are based on EU/German regulations. The German compliance rules were chosen, as they are stricter than Luxembourgish regulations and are well-documented. Also, there was limited information on Luxembourgish compliance regulations.
+- Added tolerances to compliances, because of possible outliers due to faulty sensor measurements
 
 ##### Compliance Standards:
 1. **CO₂**: [German Committee on Indoor Air Guide Values](https://www.umweltbundesamt.de/en/topics/health/commissions-working-groups/german-committee-on-indoor-air-guide-values#german-committee-on-indoor-air-guide-values-air)
+  - Good air quality: CO2 levels < 1000 ppm.
+  - Acceptable threshold: CO2 levels should not exceed 1500 ppm.
 2. **PM2.5 & PM10**: [EU Air Quality Standards](https://environment.ec.europa.eu/topics/air/air-quality/eu-air-quality-standards_en)
+  - PM2.5: 24-hour average should not exceed 25 µg/m^3.
+  - PM10: 24-hour average should not exceed 50 µg/m^3.
 3. **Acoustic**: EN ISO 3382-2:2008
+  - Noise Limit: 85dB.
 4. **Light**: EN 12464-1
+  - Minimum Light Intensity: 500 lux.
 5. **Humidity**: EN ISO 773
+  - Minimum Humidity: 30%
+  - Maximum Humidity: 70%
 6. **Temperature**: According to German ASR (Arbeitsstätten Regeln), an office workspace should have a minimum temperature of 19°C and a maximum temperature of 26°C (without ventilation/AC).
+  - Minimum Temperature 19°C
+  - Maximum Temperature 26°C
 
 ### B. Decision Logic and Room Ranking
 
