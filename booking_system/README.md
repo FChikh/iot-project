@@ -51,9 +51,9 @@ Each sensor type has a dedicated function to:
 ### C. Booking Interface
 
 #### 5. Booking Interface (`booking_interface.py`):
-- The **Streamlit interface** collects user details, desired booking times, and room preferences.
+- The **Streamlit interface** collects user details, desired booking times, and room preferences. It uses natural language for the selection of the sensor data preferences as the user can interpret them better than the actual values. 
 - **`fetch_room_ranking`**: This function builds the API URL with the appropriate query parameters and sends a GET request to the decision logic REST API endpoint. The endpoint is documented with Swagger for clarity and ease of testing.
-- The **ranked list of rooms**, along with their environmental and equipment attributes, is then displayed. Users can trigger the booking process via a button that calls `send_booking`, which posts booking requests to the room service.
+- The **ranked list of rooms**, along with their environmental and equipment attributes, is then displayed. Users can select a room from the ranked list that they prefer and trigger the booking process via a button that calls `send_booking`, which posts booking requests to the room service.
 - The **Google Calendar** is displayed on the webpage to provide an overview of the booking schedule.
 
 ## 3. Why TOPSIS Was Chosen
@@ -68,7 +68,7 @@ Several Multi-Criteria Decision Making (MCDM) methods are available (such as AHP
 The weights in the TOPSIS algorithm were carefully chosen based on the following priorities:
 
 - **Higher Importance of Equipment Data**:
-  - Equipment features such as seating capacity, projector availability, PC, smartboard, and other amenities were given **higher weights**. This is because the physical and functional aspects of a room are critical to its suitability for booking.
+  - Equipment features such as projector availability, PC, smartboard, and other amenities were given **higher weights**. This is because the physical and functional aspects of a room are critical to its suitability for booking. Seating capacity got a high weight, so that rooms with higher capacities than needed are ranked lower.
 
 - **Sensor Data Considerations**:
   - **VOC levels** are critical in industrial settings or newly renovated spaces with strong off-gassing, but in typical classrooms/offices they are **less critical** as long as they stay within the compliance range. The weighting is chosen to prioritize **comfort and usability**, as these are classrooms.
