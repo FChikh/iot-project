@@ -120,7 +120,7 @@ def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 5.0):
 def check_compliance_noise(df: pd.DataFrame, tolerance: float = 10.0):
     """
     Checks if indoor noise levels in a classroom comply with ISO 3382-2:2008 standard.
-    WHO Recommendations:
+    - Noise Limit: 85dB
 
     Parameters:
         df (pd.DataFrame): DataFrame with columns 'timestamp' and 'value' (in dB).
@@ -147,6 +147,7 @@ def check_compliance_noise(df: pd.DataFrame, tolerance: float = 10.0):
 def check_compliance_lighting(df: pd.DataFrame, tolerance: float = 50.0):
     """
     Checks if the lighting intensity complies with the EN 12464-1 standard
+    - Minimum Light Intensity: 500 lux.
 
     Parameters:
         df (pd.DataFrame): DataFrame with 'timestamp' and 'value' (in lux).
@@ -178,6 +179,8 @@ def check_compliance_lighting(df: pd.DataFrame, tolerance: float = 50.0):
 def check_humidity_compliance(df: pd.DataFrame, tolerance: float = 15.0):
     """
     Evaluates whether indoor humidity meets EN and DIN standards for comfort and health.
+    - Minimum Humidity: 30%
+    - Maximum Humidity: 70%
 
     Parameters:
         df (pd.DataFrame): DataFrame with 'timestamp' and 'value' (in % RH).
@@ -212,7 +215,8 @@ def check_humidity_compliance(df: pd.DataFrame, tolerance: float = 15.0):
 
 def check_compliance_voc(df: pd.DataFrame, tolerance: float = 5.0):
     """
-    Checks compliance for VOC levels with tolerances for brief deviations.
+    Checks compliance for VOC levels.
+    - VOC Limit: 400 ppb
 
     Parameters:
         df (pd.DataFrame): DataFrame with columns 'timestamp' and 'voc_values' (in ppb).
@@ -242,8 +246,8 @@ def check_compliance_temperature(df: pd.DataFrame, tolerance: float = 20.0):
     """
     Evaluates whether indoor temperature meets EU comfort and health guidelines.
 
-    EU & WHO recommendations:
-    - Comfortable range according to German ASR: 19°C to 26°C (for workplace indoor spaces).
+    German ASR regulations:
+    - Comfortable range: 19°C to 26°C (for workplace indoor spaces).
 
     Parameters:
         df (pd.DataFrame): DataFrame with 'timestamp' and 'value' (temperature in °C).
