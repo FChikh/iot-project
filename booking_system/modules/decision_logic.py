@@ -37,16 +37,17 @@ def topsis_decision_logic(room_data: pd.DataFrame, user_pref: dict, weights=None
         if room_data.empty:
             return pd.DataFrame()
 
-        # Adjust the decision matrix based on user preferences
-        adjusted_df = pd.DataFrame(index=room_data.index)
-        for col in room_data.columns:
-            if col in user_pref:
-                adjusted_df[col] = 1 / (1 + abs(room_data[col] - user_pref[col]))
+        # Adjust the decision matrix based on user preferences using z-score
+        adjusted_df = room_data.copy()
+        for col in user_pref:
+            if col in room_data.columns:
+                mean, std = room_data[col].mean(), room_data[col].std()
+                adjusted_df[col] = -abs((room_data[col] - user_pref[col]) / (std + 1e-9))
             else:
                 adjusted_df[col] = room_data[col]
 
         # Normalize the decision matrix
-        norm = np.sqrt((adjusted_df ** 2).sum())
+        norm = np.sqrt((adjusted_df ** 2).sum(axis=0))
         normalized = adjusted_df / norm
 
         # Apply weights (if not provided, use equal weighting)
