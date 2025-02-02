@@ -14,7 +14,7 @@ class RoomFeatures(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, seating_capacity: int=None, projector: bool=None, computer_class: bool=None, blackboard: bool=None, microphone: bool=None, pc: bool=None, whiteboard: bool=None, co2: float=None, pm2_5: float=None, pm10: float=None, voc: float=None, noise_level: float=None, lighting: float=None, humidity: float=None):  # noqa: E501
+    def __init__(self, seating_capacity: int=None, projector: bool=None, computer_class: bool=None, blackboard: bool=None, microphone: bool=None, pc: bool=None, whiteboard: bool=None, air_quality_preference: str=None, noise_level: str=None, lighting: str=None):  # noqa: E501
         """RoomFeatures - a model defined in Swagger
 
         :param seating_capacity: The seating_capacity of this RoomFeatures.  # noqa: E501
@@ -31,20 +31,12 @@ class RoomFeatures(Model):
         :type pc: bool
         :param whiteboard: The whiteboard of this RoomFeatures.  # noqa: E501
         :type whiteboard: bool
-        :param co2: The co2 of this RoomFeatures.  # noqa: E501
-        :type co2: float
-        :param pm2_5: The pm2_5 of this RoomFeatures.  # noqa: E501
-        :type pm2_5: float
-        :param pm10: The pm10 of this RoomFeatures.  # noqa: E501
-        :type pm10: float
-        :param voc: The voc of this RoomFeatures.  # noqa: E501
-        :type voc: float
+        :param air_quality_preference: The air_quality_preference of this RoomFeatures.  # noqa: E501
+        :type air_quality_preference: str
         :param noise_level: The noise_level of this RoomFeatures.  # noqa: E501
-        :type noise_level: float
+        :type noise_level: str
         :param lighting: The lighting of this RoomFeatures.  # noqa: E501
-        :type lighting: float
-        :param humidity: The humidity of this RoomFeatures.  # noqa: E501
-        :type humidity: float
+        :type lighting: str
         """
         self.swagger_types = {
             'seating_capacity': int,
@@ -54,13 +46,9 @@ class RoomFeatures(Model):
             'microphone': bool,
             'pc': bool,
             'whiteboard': bool,
-            'co2': float,
-            'pm2_5': float,
-            'pm10': float,
-            'voc': float,
-            'noise_level': float,
-            'lighting': float,
-            'humidity': float
+            'air_quality_preference': str,
+            'noise_level': str,
+            'lighting': str
         }
 
         self.attribute_map = {
@@ -71,13 +59,9 @@ class RoomFeatures(Model):
             'microphone': 'microphone',
             'pc': 'pc',
             'whiteboard': 'whiteboard',
-            'co2': 'co2',
-            'pm2_5': 'pm2_5',
-            'pm10': 'pm10',
-            'voc': 'voc',
+            'air_quality_preference': 'air_quality_preference',
             'noise_level': 'noise_level',
-            'lighting': 'lighting',
-            'humidity': 'humidity'
+            'lighting': 'lighting'
         }
         self._seating_capacity = seating_capacity
         self._projector = projector
@@ -86,13 +70,9 @@ class RoomFeatures(Model):
         self._microphone = microphone
         self._pc = pc
         self._whiteboard = whiteboard
-        self._co2 = co2
-        self._pm2_5 = pm2_5
-        self._pm10 = pm10
-        self._voc = voc
+        self._air_quality_preference = air_quality_preference
         self._noise_level = noise_level
         self._lighting = lighting
-        self._humidity = humidity
 
     @classmethod
     def from_dict(cls, dikt) -> 'RoomFeatures':
@@ -253,148 +233,82 @@ class RoomFeatures(Model):
         self._whiteboard = whiteboard
 
     @property
-    def co2(self) -> float:
-        """Gets the co2 of this RoomFeatures.
+    def air_quality_preference(self) -> str:
+        """Gets the air_quality_preference of this RoomFeatures.
 
 
-        :return: The co2 of this RoomFeatures.
-        :rtype: float
+        :return: The air_quality_preference of this RoomFeatures.
+        :rtype: str
         """
-        return self._co2
+        return self._air_quality_preference
 
-    @co2.setter
-    def co2(self, co2: float):
-        """Sets the co2 of this RoomFeatures.
+    @air_quality_preference.setter
+    def air_quality_preference(self, air_quality_preference: str):
+        """Sets the air_quality_preference of this RoomFeatures.
 
 
-        :param co2: The co2 of this RoomFeatures.
-        :type co2: float
+        :param air_quality_preference: The air_quality_preference of this RoomFeatures.
+        :type air_quality_preference: str
         """
+        allowed_values = ["high", "normal"]  # noqa: E501
+        if air_quality_preference not in allowed_values:
+            raise ValueError(
+                "Invalid value for `air_quality_preference` ({0}), must be one of {1}"
+                .format(air_quality_preference, allowed_values)
+            )
 
-        self._co2 = co2
+        self._air_quality_preference = air_quality_preference
 
     @property
-    def pm2_5(self) -> float:
-        """Gets the pm2_5 of this RoomFeatures.
-
-
-        :return: The pm2_5 of this RoomFeatures.
-        :rtype: float
-        """
-        return self._pm2_5
-
-    @pm2_5.setter
-    def pm2_5(self, pm2_5: float):
-        """Sets the pm2_5 of this RoomFeatures.
-
-
-        :param pm2_5: The pm2_5 of this RoomFeatures.
-        :type pm2_5: float
-        """
-
-        self._pm2_5 = pm2_5
-
-    @property
-    def pm10(self) -> float:
-        """Gets the pm10 of this RoomFeatures.
-
-
-        :return: The pm10 of this RoomFeatures.
-        :rtype: float
-        """
-        return self._pm10
-
-    @pm10.setter
-    def pm10(self, pm10: float):
-        """Sets the pm10 of this RoomFeatures.
-
-
-        :param pm10: The pm10 of this RoomFeatures.
-        :type pm10: float
-        """
-
-        self._pm10 = pm10
-
-    @property
-    def voc(self) -> float:
-        """Gets the voc of this RoomFeatures.
-
-
-        :return: The voc of this RoomFeatures.
-        :rtype: float
-        """
-        return self._voc
-
-    @voc.setter
-    def voc(self, voc: float):
-        """Sets the voc of this RoomFeatures.
-
-
-        :param voc: The voc of this RoomFeatures.
-        :type voc: float
-        """
-
-        self._voc = voc
-
-    @property
-    def noise_level(self) -> float:
+    def noise_level(self) -> str:
         """Gets the noise_level of this RoomFeatures.
 
 
         :return: The noise_level of this RoomFeatures.
-        :rtype: float
+        :rtype: str
         """
         return self._noise_level
 
     @noise_level.setter
-    def noise_level(self, noise_level: float):
+    def noise_level(self, noise_level: str):
         """Sets the noise_level of this RoomFeatures.
 
 
         :param noise_level: The noise_level of this RoomFeatures.
-        :type noise_level: float
+        :type noise_level: str
         """
+        allowed_values = ["silent", "normal"]  # noqa: E501
+        if noise_level not in allowed_values:
+            raise ValueError(
+                "Invalid value for `noise_level` ({0}), must be one of {1}"
+                .format(noise_level, allowed_values)
+            )
 
         self._noise_level = noise_level
 
     @property
-    def lighting(self) -> float:
+    def lighting(self) -> str:
         """Gets the lighting of this RoomFeatures.
 
 
         :return: The lighting of this RoomFeatures.
-        :rtype: float
+        :rtype: str
         """
         return self._lighting
 
     @lighting.setter
-    def lighting(self, lighting: float):
+    def lighting(self, lighting: str):
         """Sets the lighting of this RoomFeatures.
 
 
         :param lighting: The lighting of this RoomFeatures.
-        :type lighting: float
+        :type lighting: str
         """
+        allowed_values = ["bright", "normal"]  # noqa: E501
+        if lighting not in allowed_values:
+            raise ValueError(
+                "Invalid value for `lighting` ({0}), must be one of {1}"
+                .format(lighting, allowed_values)
+            )
 
         self._lighting = lighting
-
-    @property
-    def humidity(self) -> float:
-        """Gets the humidity of this RoomFeatures.
-
-
-        :return: The humidity of this RoomFeatures.
-        :rtype: float
-        """
-        return self._humidity
-
-    @humidity.setter
-    def humidity(self, humidity: float):
-        """Sets the humidity of this RoomFeatures.
-
-
-        :param humidity: The humidity of this RoomFeatures.
-        :type humidity: float
-        """
-
-        self._humidity = humidity

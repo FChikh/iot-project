@@ -12,8 +12,8 @@ def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboa
 
      # noqa: E501
 
-    :param _date: 
-    :type _date: str
+    :param date: 
+    :type date: str
     :param start_time: 
     :type start_time: str
     :param end_time: 
@@ -43,6 +43,5 @@ def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboa
 
     :rtype: List[Room]
     """
-
     ranking = get_ranking(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, computer_class, pc, whiteboard, air_quality_preference, noise_level, lighting)
     return jsonify(ranking)
