@@ -135,7 +135,6 @@ services:
         - GOOGLE_CAL_ID=7e153f9a22e108db15281a9791412833960a6568cee592790c8bf4ee8b2518de@group.calendar.google.com
     volumes:
       - ./env/creds.json:/usr/src/app/creds.json:ro
-      - ./shared_vol:/usr/src/app/shared_vol:ro
     networks:
       - default
 
