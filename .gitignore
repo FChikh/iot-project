@@ -5,7 +5,6 @@ influxdb/*
 mosquitto/data/*
 mosquitto/log/*
 mosquitto/pwfile/*
-graphana/data/graphana.db
 
 !env/
 
