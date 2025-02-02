@@ -3,6 +3,7 @@ import requests
 import json
 import time
 
+
 def fetch_api_data(url: str, retries: int = 5, backoff_factor: float = 1.0):
     """
     Fetches JSON data from the given API URL.
@@ -29,6 +30,7 @@ def fetch_api_data(url: str, retries: int = 5, backoff_factor: float = 1.0):
             return None
     return None
 
+
 def download_sensor_data(room_id: str, sensor_name: str):
     """
     Fetches a JSON file from a REST API and loads the content of a specific sensor into a pandas DataFrame.
@@ -46,6 +48,7 @@ def download_sensor_data(room_id: str, sensor_name: str):
         return pd.DataFrame(json_data[sensor_name])
     return pd.DataFrame()
 
+
 def fetch_room_bookings(date: str, days: int):
     """
     Fetches room bookings from the API.
@@ -60,6 +63,7 @@ def fetch_room_bookings(date: str, days: int):
     api_url = f"http://restapi_rooms:8080/rooms/bookings?startDate={date}&days={days}"
     return fetch_api_data(api_url)
 
+
 def fetch_rooms_and_equipments():
     """
     Fetches Equipments from the API.
@@ -67,13 +71,14 @@ def fetch_rooms_and_equipments():
     Returns:
         dict: A dictionary containing the JSON data, or None if an error occurs.
     """
-    api_url = f"http://localhost:8080/rooms/equipment"
+    api_url = f"http://restapi_rooms:8080/rooms/equipment"
     return fetch_api_data(api_url)
 
 
 def fetch_rooms(rooms_and_equipments):
 
     return [room_info["room"] for room_info in rooms_and_equipments]
+
 
 def fetch_equipment(rooms_and_equipments, room_id):
 
