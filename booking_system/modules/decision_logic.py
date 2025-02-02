@@ -296,10 +296,12 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
         co2 = 350
         pm2_5 = 5
         pm10 = 10
+        voc = 50
     else:
-        co2 = 500
+        co2 = 400
         pm2_5 = 10
         pm10 = 15
+        voc = 100
 
     # Set noise preference
     noise = 15 if noise_level.lower() == "silent" else 30
@@ -314,7 +316,7 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
         'pm10': pm10,
         'light': light,
         'humidity': 50,
-        'voc': 50,
+        'voc': voc,
         'temperature': 21,
         'projector': 1 if projector else 0,
         'capacity': seating_capacity,
@@ -372,7 +374,7 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
         return []
 
     # Specify columns where lower values are preferable (if applicable)
-    lower_better_cols = ['co2', 'noise', 'voc', 'temperature', 'capacity']
+    lower_better_cols = ['co2', 'noise', 'pm10', 'pm2_5' 'voc', 'temperature', 'capacity']
 
     # Example weights array: adjust the weights as needed.
     # The order of the attributes in the decision matrix is as follows:
@@ -393,7 +395,7 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # 14. smartboard
     # 15. whiteboard
 
-    weights = [2, 4, 2, 2, 3, 2, 1, 3, 4, 4, 4, 4, 4, 4, 4]
+    weights = [2, 4, 2, 2, 3, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3]
 
     # Create the user preferences based on input parameters
     user_prefs = create_user_prefs(seating_capacity, projector, blackboard, smartboard,
