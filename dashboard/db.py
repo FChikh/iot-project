@@ -31,11 +31,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(bind=engine)
 
 
-# --------------------------
+
 # Helper functions for simulator management (with DB updates)
-# --------------------------
-
-
 def add_simulator(room, sensor_ranges):
     """
     Add a simulator for the given room by:
@@ -52,17 +49,23 @@ def add_simulator(room, sensor_ranges):
     db_session = SessionLocal()
     try:
         # Check if the room already exists.
-        existing_room = db_session.query(
+        room_instance = db_session.query(
             Room).filter(Room.name == room).first()
-        if existing_room:
-            return False, f"Room {room} already exists in DB."
-        new_room = Room(name=room)
-        db_session.add(new_room)
-        db_session.flush()  # Get new_room.id
+        if room_instance:
+            # check if sensors already exist
+            existing_sensors = db_session.query(Sensor).filter(
+                Sensor.room_id == room_instance.id
+            ).all()
+            if existing_sensors:
+                return False, f"Room '{room}' already has sensors."
+        else:
+            room_instance = Room(name=room)
+            db_session.add(room_instance)
+            db_session.flush()  # Get new_room.id
 
         # Add sensor configuration rows.
         for sensor_name, range_vals in sensor_ranges.items():
-            new_sensor = Sensor(room_id=new_room.id, name=sensor_name,
+            new_sensor = Sensor(room_id=room_instance.id, name=sensor_name,
                                 min_value=range_vals[0], max_value=range_vals[1])
             db_session.add(new_sensor)
         db_session.commit()
@@ -149,9 +152,14 @@ def remove_simulator(room):
     db_session = SessionLocal()
     try:
         room_record = db_session.query(Room).filter(Room.name == room).first()
-        if room_record:
-            db_session.delete(room_record)
-            db_session.commit()
+        if not room_record:
+            return False, f"Room '{room}' not found in DB."
+        sensor_list = db_session.query(Sensor).filter(
+            Sensor.room_id == room_record.id
+        ).all()
+        for eq in sensor_list:
+            db_session.delete(eq)
+        db_session.commit()
     except Exception as e:
         db_session.rollback()
         logger.error(f"DB error removing simulator for {room}: {e}")
@@ -162,12 +170,22 @@ def remove_simulator(room):
     logger.info(f"Simulator for {room} removed.")
     return True, f"Simulator for {room} removed."
 
+def get_rooms():
+    """
+    Retrieve all room names from the database.
+    Returns a list of room names.
+    """
+    db_session = SessionLocal()
+    try:
+        rooms = db_session.query(Room).all()
+        return {'rooms': [room.name for room in rooms]}
+    except Exception as e:
+        logger.error(f"Error retrieving room names: {e}")
+        return []
+    finally:
+        db_session.close()
 
-
-# --------------------------
 # Helper functions for equipment management (with DB updates)
-# --------------------------
-
 def get_equipment_for_room(room):
     """
     Retrieve the equipment list for the specified room from the database.
@@ -212,7 +230,11 @@ def add_equipment_for_room(room, equipment_list):
     try:
         room_record = db_session.query(Room).filter(Room.name == room).first()
         if not room_record:
-            return False, f"Room '{room}' not found in DB."
+            # create a new room
+            new_room = Room(name=room)
+            db_session.add(new_room)
+            db_session.flush()  # Get new_room.id
+            room_record = new_room
         created = []
         for eq_data in equipment_list:
             eq_name = eq_data.get("name")
@@ -280,6 +302,7 @@ def update_equipment_for_room(room, equipment_list):
                 )
                 db_session.add(new_eq)
         db_session.commit()
+        
         return True, f"Equipment for room '{room}' updated."
     except Exception as e:
         db_session.rollback()
@@ -287,6 +310,7 @@ def update_equipment_for_room(room, equipment_list):
         return False, f"DB error updating equipment: {e}"
     finally:
         db_session.close()
+    
 
 
 def remove_equipment_for_room(room):

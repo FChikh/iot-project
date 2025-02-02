@@ -29,6 +29,8 @@ for room_data in data["rooms"]:
         ).first()
         
         if existing_equipment:
+            existing_equipment.value = str(eq_data["value"])
+            existing_equipment.type = eq_data["type"]
             continue
         equipment = Equipment(
             room_id=room.id,
