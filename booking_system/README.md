@@ -64,7 +64,7 @@ Several Multi-Criteria Decision Making (MCDM) methods are available (such as AHP
 - **Effective Normalization and Weighting**: TOPSIS easily accommodates varying scales by normalizing data and applying weights. This is essential when combining continuous sensor data with binary equipment data.
 - **Clear Outcome**: The algorithm produces a **closeness coefficient** for each room, allowing for a transparent and interpretable rank order based on both environmental and equipment criteria.
 
-## 4. Rationale Behind the Weight Selection
+## 4. Motivation Behind the Weight Selection
 The weights in the TOPSIS algorithm were carefully chosen based on the following priorities:
 
 - **Higher Importance of Equipment Data**:
