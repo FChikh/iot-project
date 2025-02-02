@@ -10,12 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY streamlit_app.py /app/
+COPY simulator_editor.py /app/
 COPY pages /app/pages
 COPY db.py /app/
-COPY global_config.py /app/
+COPY db_api.py /app/
 COPY entrypoint.sh /app/
 COPY requirements.txt /app/
+COPY simulator.py /app/
 COPY --from=configs ./models.py /app/
 COPY --from=configs ./config.json /app/
 

@@ -40,6 +40,8 @@ services:
     links:
       - mosquitto
     tty: true
+    networks:
+      - default
 
   dashboard:
     build:

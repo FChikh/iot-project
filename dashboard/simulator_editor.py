@@ -43,18 +43,7 @@ with st.sidebar.expander("Add Simulator"):
                 st.error(
                     "Invalid room identifier. Use only letters, numbers, underscores, or hyphens.")
             else:
-                # Define default ranges for a new simulator.
-                default_ranges = {
-                    "temp": [20, 30],
-                    "hum": [30, 60],
-                    "light": [300, 800],
-                    "co2": [350, 500],
-                    "air_quality_pm2_5": [10, 25],
-                    "air_quality_pm10": [10, 50],
-                    "sound": [30, 80],
-                    "voc": [50, 400]
-                }
-                payload = {"room": add_room, "ranges": default_ranges}
+                payload = {"room": add_room}
                 try:
                     resp = requests.post(
                         f"{API_BASE}/simulators", json=payload)

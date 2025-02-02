@@ -2,7 +2,7 @@ import os
 import json
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from models import Base, Room, Equipment  
+from models import Base, Room, Equipment, Sensor 
 from db import engine
 
 Session = sessionmaker(bind=engine)
@@ -29,6 +29,8 @@ for room_data in data["rooms"]:
         ).first()
         
         if existing_equipment:
+            existing_equipment.value = str(eq_data["value"])
+            existing_equipment.type = eq_data["type"]
             continue
         equipment = Equipment(
             room_id=room.id,
@@ -37,6 +39,24 @@ for room_data in data["rooms"]:
             type=eq_data["type"]
         )
         session.add(equipment)
+        
+    for sensor_data in room_data["sensors"]:
+        existing_sensor = session.query(Sensor).filter(
+            Sensor.room_id == room.id,
+            Sensor.name == sensor_data["name"]
+        ).first()
+        
+        if existing_sensor:
+            existing_sensor.min_value = sensor_data["range"][0]
+            existing_sensor.max_value = sensor_data["range"][1]
+            continue
+        sensor = Sensor(
+            room_id=room.id,
+            name=sensor_data["name"],
+            min_value=sensor_data["range"][0],
+            max_value=sensor_data["range"][1]
+        )
+        session.add(sensor)
 
 session.commit()
 session.close()
