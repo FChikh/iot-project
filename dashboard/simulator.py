@@ -53,28 +53,30 @@ def simulator(room, config_ref, stop_event):
     while not stop_event.is_set():
         current_time = time.localtime()
         hour = current_time.tm_hour
+        minutes = current_time.tm_min
+        time_float = hour + minutes / 60
         ranges = config_ref['ranges']
 
         # Example simulation for several sensor names.
         if 'temp' in ranges:
             temp = round(random.gauss(
                 mean(ranges['temp']), sigma_3(ranges['temp'])), 2)
-            temp += -1.5 * cos((hour - 1) / 12 * pi)
+            temp += -1.5 * cos((time_float - 1) / 12 * pi)
             
         if 'hum' in ranges:
             hum = round(random.gauss(
                 mean(ranges['hum']), sigma_3(ranges['hum'])), 2)
-            hum += 3 * cos((hour - 4) / 12 * pi)
+            hum += 3 * cos((time_float - 4) / 12 * pi)
 
         if 'light' in ranges:
             light = round(random.gauss(
                 mean(ranges['light']), sigma_3(ranges['light'])), 2)
-            light += -150 * cos((hour - 1) / 12 * pi)
+            light += -150 * cos((time_float - 1) / 12 * pi)
 
         if 'co2' in ranges:
             co2 = round(random.gauss(
                 mean(ranges['co2']), sigma_3(ranges['co2'])), 2)
-            co2 += -50 * cos((hour - 1) / 12 * pi)
+            co2 += -50 * cos((time_float - 1) / 12 * pi)
 
         if 'air_quality_pm2_5' in ranges:
             air_quality_pm2_5 = round(random.gauss(
@@ -87,7 +89,7 @@ def simulator(room, config_ref, stop_event):
         if 'sound' in ranges:
             sound = round(random.gauss(
                 mean(ranges['sound']), sigma_3(ranges['sound'])), 2)
-            sound += -10 * cos((hour - 1) / 12 * pi)
+            sound += -10 * cos((time_float - 1) / 12 * pi)
 
         if 'voc' in ranges:
             voc = round(random.gauss(
