@@ -60,17 +60,13 @@ async def read_from_serial(port):
                     # Generate timestamp (ISO 8601)
                     timestamp = time.strftime(
                         "%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                    
+                    # Publish to MQTT topics
                     msg_temp = publish.single(temp_topic, payload=
                         json.dumps({"value": temp, "timestamp": timestamp}), hostname=MQTT_BROKER, port=MQTT_PORT, qos=1)
                     msg_light = publish.single(light_topic, payload=
                         json.dumps({"value": light, "timestamp": timestamp}), hostname=MQTT_BROKER, port=MQTT_PORT, qos=1)
 
-                    # ans_t = client.publish(temp_topic, json.dumps(
-                    #     {"value": temp, "timestamp": timestamp}), qos=2)
-                    
-                    # ans_l = client.publish(light_topic, json.dumps(
-                    #     {"value": light, "timestamp": timestamp}), qos=2)
-                    
                     print(msg_temp)
                     print(msg_light)
                     logger.info(f"Published to {temp_topic}: {temp}")
