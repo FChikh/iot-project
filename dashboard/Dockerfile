@@ -16,6 +16,7 @@ COPY db.py /app/
 COPY global_config.py /app/
 COPY entrypoint.sh /app/
 COPY requirements.txt /app/
+COPY simulator.py /app/
 COPY --from=configs ./models.py /app/
 COPY --from=configs ./config.json /app/
 

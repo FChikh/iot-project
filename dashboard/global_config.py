@@ -8,7 +8,12 @@ import random
 import re
 
 from flask import Flask, request, jsonify
-import paho.mqtt.client as mqtt
+from simulator import simulator, connect_publisher_mqtt, run_publisher
+from simulator import global_config, active_simulators, simulator_threads
+
+from db import add_equipment_for_room, update_equipment_for_room, remove_equipment_for_room, get_equipment_for_room
+from db import add_simulator, update_simulator, remove_simulator
+
 
 # Import SQLAlchemy session and models.
 from db import SessionLocal
@@ -21,117 +26,55 @@ from models import Room, Sensor, Equipment
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Shared state (in‑memory configuration for simulators)
-# holds configuration for each room: { room_name: { sensor_name: [min, max], ... } }
-global_config = {}
-active_simulators = set()    # set of room names that have an active simulator
-simulator_threads = {}       # mapping of room name to thread info
 
-# MQTT publisher setup
-MQTT_BROKER = os.getenv('MQTT_BROKER', 'mosquitto')
-MQTT_PORT = int(os.getenv('MQTT_PORT', '1883'))
-publisher_client = mqtt.Client()
+default_equipment = [
+    {
+        "name": "blackboard",
+        "value": True,
+        "type": "boolean"
+    },
+    {
+        "name": "capacity",
+        "value": 30,
+        "type": "integer"
+    },
+    {
+        "name": "computer_class",
+        "value": True,
+        "type": "boolean"
+    },
+    {
+        "name": "microphone",
+        "value": True,
+        "type": "boolean"
+    },
+    {
+        "name": "projector",
+        "value": True,
+        "type": "boolean"
+    },
+    {
+        "name": "smart_board_webex",
+        "value": True,
+        "type": "boolean"
+    },
+    {
+        "name": "whiteboard",
+        "value": True,
+        "type": "boolean"
+    }
+]
 
-
-def connect_publisher_mqtt():
-    try:
-        publisher_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-        logger.info(f"Publisher connected to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}")
-    except Exception as e:
-        logger.error(f"Failed to connect publisher to MQTT broker: {e}")
-        exit(1)
-
-
-def run_publisher():
-    publisher_client.loop_start()
-
-# --------------------------
-# Simulator function
-# --------------------------
-
-
-def simulator(room, config_ref, stop_event):
-    """
-    Simulate sensor values for a given room using configuration from config_ref.
-    """
-    while not stop_event.is_set():
-        current_time = time.localtime()
-        hour = current_time.tm_hour
-        ranges = config_ref['ranges']
-
-        # Example simulation for several sensor names.
-        if 'temp' in ranges:
-            temp = round(random.gauss(
-                (ranges['temp'][0] + ranges['temp'][1]) / 2, 0.5), 2)
-            temp += 1.5 if 7 <= hour <= 19 else -1
-
-        if 'hum' in ranges:
-            hum = round(random.gauss(
-                (ranges['hum'][0] + ranges['hum'][1]) / 2, 1), 2)
-            hum += 3 if 0 <= hour < 7 or 22 <= hour <= 23 else -1
-
-        if 'light' in ranges:
-            light = round(random.gauss(
-                (ranges['light'][0] + ranges['light'][1]) / 2, 30), 2)
-            light += 400 if 7 <= hour <= 19 else -300
-
-        if 'co2' in ranges:
-            co2 = round(random.gauss(
-                (ranges['co2'][0] + ranges['co2'][1]) / 2, 5), 2)
-            co2 += 50 if 8 <= hour <= 20 else -30
-
-        if 'air_quality_pm2_5' in ranges:
-            air_quality_pm2_5 = round(random.gauss(
-                (ranges['air_quality_pm2_5'][0] + ranges['air_quality_pm2_5'][1]) / 2, 1), 2)
-            
-        if 'air_quality_pm10' in ranges:
-            air_quality_pm10 = round(random.gauss(
-                (ranges['air_quality_pm10'][0] + ranges['air_quality_pm10'][1]) / 2, 2), 2)
-
-        if 'sound' in ranges:
-            sound = round(random.gauss(
-                (ranges['sound'][0] + ranges['sound'][1]) / 2, 5), 2)
-            sound += 10 if 7 <= hour <= 22 else -10
-
-        if 'voc' in ranges:
-            voc = round(random.gauss(
-                (ranges['voc'][0] + ranges['voc'][1]) / 2, 5), 2)
-
-        # Generate timestamp (ISO 8601)
-        timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-
-        # Publish sensor data to MQTT topics.
-        try:
-            if 'temp' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/temp", json.dumps({"value": temp, "timestamp": timestamp}))
-            if 'hum' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/humidity", json.dumps({"value": hum, "timestamp": timestamp}))
-            if 'light' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/light", json.dumps({"value": light, "timestamp": timestamp}))
-            if 'co2' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/co2", json.dumps({"value": co2, "timestamp": timestamp}))
-            if 'air_quality_pm2_5' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/air_quality_pm2_5", json.dumps({"value": air_quality_pm2_5, "timestamp": timestamp}))
-            if 'air_quality_pm10' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/air_quality_pm10", json.dumps({"value": air_quality_pm10, "timestamp": timestamp}))
-            if 'sound' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/sound", json.dumps({"value": sound, "timestamp": timestamp}))
-            if 'voc' in ranges:
-                publisher_client.publish(
-                    f"{room}/sensors/voc", json.dumps({"value": voc, "timestamp": timestamp}))
-                
-            logger.info(f"Simulated data for {room} at {timestamp}")
-        except Exception as e:
-            logger.error(f"Failed to publish simulated data for {room}: {e}")
-
-        time.sleep(10)
+default_ranges = {
+    "temp": [20, 30],
+    "hum": [30, 60],
+    "light": [300, 800],
+    "co2": [350, 500],
+    "air_quality_pm2_5": [10, 25],
+    "air_quality_pm10": [10, 50],
+    "sound": [30, 80],
+    "voc": [50, 400]
+}
 
 # --------------------------
 # Database-backed configuration functions
@@ -190,137 +133,6 @@ def initialize_simulators_from_config(rooms):
             active_simulators.add(room_name)
             logger.info(f"Simulator for {room_name} initialized.")
 
-# --------------------------
-# Helper functions for simulator management (with DB updates)
-# --------------------------
-
-
-def add_simulator(room, sensor_ranges):
-    """
-    Add a simulator for the given room by:
-      1. Inserting a new Room and corresponding Sensor rows into the DB.
-      2. Updating the in-memory global_config and starting a simulator thread.
-    """
-    if room in active_simulators:
-        return False, "Simulator already active."
-
-    # Update in-memory configuration.
-    global_config[room] = sensor_ranges.copy()
-
-    # Insert into the DB.
-    db_session = SessionLocal()
-    try:
-        # Check if the room already exists.
-        existing_room = db_session.query(
-            Room).filter(Room.name == room).first()
-        if existing_room:
-            return False, f"Room {room} already exists in DB."
-        new_room = Room(name=room)
-        db_session.add(new_room)
-        db_session.flush()  # Get new_room.id
-
-        # Add sensor configuration rows.
-        for sensor_name, range_vals in sensor_ranges.items():
-            new_sensor = Sensor(room_id=new_room.id, name=sensor_name,
-                                min_value=range_vals[0], max_value=range_vals[1])
-            db_session.add(new_sensor)
-        db_session.commit()
-    except Exception as e:
-        db_session.rollback()
-        logger.error(f"DB error adding simulator for {room}: {e}")
-        return False, f"DB error adding simulator: {e}"
-    finally:
-        db_session.close()
-
-    # Start simulator thread.
-    stop_event = threading.Event()
-    simulator_threads[room] = {
-        'ranges': sensor_ranges.copy(),
-        'stop_event': stop_event
-    }
-    thread = threading.Thread(target=simulator, args=(
-        room, simulator_threads[room], stop_event), daemon=True)
-    thread.start()
-    simulator_threads[room]['thread'] = thread
-    active_simulators.add(room)
-    logger.info(f"Simulator for {room} added.")
-    return True, f"Simulator for {room} added."
-
-
-def update_simulator(room, new_ranges):
-    """
-    Update the simulator configuration both in memory and in the DB.
-    """
-    if room not in active_simulators:
-        return False, "Simulator not active."
-
-    global_config[room] = new_ranges.copy()
-    if room in simulator_threads:
-        simulator_threads[room]['ranges'] = new_ranges.copy()
-
-    # Update the DB.
-    db_session = SessionLocal()
-    try:
-        room_record = db_session.query(Room).filter(Room.name == room).first()
-        if not room_record:
-            return False, f"Room {room} not found in DB."
-        # For each sensor in new_ranges, update if exists; otherwise, add it.
-        for sensor_name, range_vals in new_ranges.items():
-            sensor_record = db_session.query(Sensor).filter(
-                Sensor.room_id == room_record.id,
-                Sensor.name == sensor_name
-            ).first()
-            if sensor_record:
-                sensor_record.min_value = range_vals[0]
-                sensor_record.max_value = range_vals[1]
-            else:
-                new_sensor = Sensor(room_id=room_record.id, name=sensor_name,
-                                    min_value=range_vals[0], max_value=range_vals[1])
-                db_session.add(new_sensor)
-        db_session.commit()
-    except Exception as e:
-        db_session.rollback()
-        logger.error(f"DB error updating simulator for {room}: {e}")
-        return False, f"DB error updating simulator: {e}"
-    finally:
-        db_session.close()
-
-    logger.info(f"Simulator for {room} updated.")
-    return True, f"Simulator for {room} updated."
-
-
-def remove_simulator(room):
-    """
-    Remove the simulator from memory and delete the corresponding Room (and cascade delete Sensors) from the DB.
-    """
-    if room not in active_simulators:
-        return False, "Simulator not active."
-
-    if room in simulator_threads:
-        simulator_threads[room]['stop_event'].set()
-        simulator_threads[room]['thread'].join(timeout=2)
-        del simulator_threads[room]
-    active_simulators.discard(room)
-    if room in global_config:
-        del global_config[room]
-
-    # Remove from the DB.
-    db_session = SessionLocal()
-    try:
-        room_record = db_session.query(Room).filter(Room.name == room).first()
-        if room_record:
-            db_session.delete(room_record)
-            db_session.commit()
-    except Exception as e:
-        db_session.rollback()
-        logger.error(f"DB error removing simulator for {room}: {e}")
-        return False, f"DB error removing simulator: {e}"
-    finally:
-        db_session.close()
-
-    logger.info(f"Simulator for {room} removed.")
-    return True, f"Simulator for {room} removed."
-
 
 # --------------------------
 # REST API using Flask
@@ -342,7 +154,7 @@ def list_simulators():
 def create_simulator():
     data = request.get_json()
     room = data.get("room")
-    sensor_ranges = data.get("ranges")
+    sensor_ranges = default_ranges
     if not room or not sensor_ranges:
         return jsonify({"error": "Missing 'room' or 'ranges' in request."}), 400
     success, message = add_simulator(room, sensor_ranges)
@@ -378,6 +190,134 @@ def delete_simulator(room):
         }
         return jsonify(response), status
     return jsonify({"message": message}), status
+
+
+# --------------------------
+# Equipment REST API Endpoints (by room)
+# --------------------------
+
+@app.route("/equipment/<room>", methods=["GET"])
+def get_equipment_route(room):
+    """
+    API endpoint to retrieve the equipment list for a given room.
+    Delegates the DB retrieval to `retrieve_equipment_for_room` and builds a JSON response.
+    """
+    try:
+        equipment_data = get_equipment_for_room(room)
+        if equipment_data is None:
+            # Room not found.
+            return jsonify({"error": f"Room '{room}' not found."}), 404
+        return jsonify(equipment_data), 200
+    except Exception as e:
+        # Log error already done in helper; return error message.
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/equipment/<room>", methods=["POST"])
+def create_equipment_route(room):
+    """
+    Create equipment records for the given room.
+    Expects a JSON payload of the form:
+    
+    {
+      "equipment": [
+          {
+             "name": "blackboard",
+             "value": true,
+             "type": "boolean"
+          },
+          {
+             "name": "capacity",
+             "value": 30,
+             "type": "integer"
+          },
+          ...
+      ]
+    }
+    """
+    data = request.get_json()
+    eq_list = data.get("equipment")
+    if not eq_list or not isinstance(eq_list, list):
+        return jsonify({"error": "Missing or invalid 'equipment' list in request."}), 400
+
+    success, message = add_equipment_for_room(room, eq_list)
+    status = 200 if success else 400
+    return jsonify({"message": message}), status
+
+
+@app.route("/equipment/<room>", methods=["PUT"])
+def update_equipment_route(room):
+    """
+    Update the equipment records for the given room.
+    Expects a JSON payload of the form:
+    
+    {
+      "equipment": [
+          {
+             "name": "blackboard",
+             "value": true,
+             "type": "boolean"
+          },
+          {
+             "name": "capacity",
+             "value": 30,
+             "type": "integer"
+          },
+          ...
+      ]
+    }
+    For each equipment entry, if a record exists it will be updated;
+    if not, a new record will be created.
+    """
+    data = request.get_json()
+    eq_list = data.get("equipment")
+    if not eq_list:
+        return jsonify({"error": "Missing 'equipment' list in request."}), 400
+
+    success, message = update_equipment_for_room(room, eq_list)
+    status = 200 if success else 400
+    if status == 200:
+        # Optionally, return the updated equipment list.
+        db_session = SessionLocal()
+        try:
+            room_record = db_session.query(
+                Room).filter(Room.name == room).first()
+            equipment_list = db_session.query(Equipment).filter(
+                Equipment.room_id == room_record.id
+            ).all()
+            result = []
+            for eq in equipment_list:
+                result.append({
+                    "id": eq.id,
+                    "name": eq.name,
+                    "value": eq.value,
+                    "type": eq.type
+                })
+            response = {"room": room, "equipment": result}
+        except Exception as e:
+            logger.error(
+                f"Error retrieving updated equipment for room {room}: {e}")
+            response = {"message": message}
+        finally:
+            db_session.close()
+        return jsonify(response), status
+    return jsonify({"message": message}), status
+
+
+@app.route("/equipment/<room>", methods=["DELETE"])
+def delete_equipment_route(room):
+    """
+    Delete all equipment records for the given room.
+    """
+    success, message = remove_equipment_for_room(room)
+    status = 200 if success else 400
+    if status == 200:
+        response = {"message": message}
+    else:
+        response = {"error": message}
+    return jsonify(response), status
+
+
 
 
 def run_api():

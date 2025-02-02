@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY static_data/init_db.py /app/init_db.py
 
 # Copy models.py and config.json from the root of the project
-COPY --from=configs models.py /app/models.py
-COPY --from=configs config.json /app/config.json
-
+COPY --from=shared_vol models.py /app/models.py
+COPY --from=shared_vol db.py /app/db.py
+COPY --from=shared_vol config.json /app/config.json
 CMD ["python", "/app/init_db.py"]
