@@ -5,7 +5,6 @@ from __future__ import absolute_import
 from flask import json
 from six import BytesIO
 
-from swagger_server.models.ranking_request import RankingRequest  # noqa: E501
 from swagger_server.models.room import Room  # noqa: E501
 from swagger_server.test import BaseTestCase
 
@@ -16,14 +15,25 @@ class TestRoomRankingController(BaseTestCase):
     def test_rank_rooms(self):
         """Test case for rank_rooms
 
-        Get ranked list of available rooms
+        Get a ranked list of available rooms based on preferences
         """
-        body = RankingRequest()
+        query_string = [('_date', '2013-10-20'),
+                        ('start_time', 'start_time_example'),
+                        ('end_time', 'end_time_example'),
+                        ('seating_capacity', 2),
+                        ('projector', false),
+                        ('blackboard', false),
+                        ('smartboard', false),
+                        ('microphone', false),
+                        ('pc', false),
+                        ('whiteboard', false),
+                        ('air_quality_preference', 'normal'),
+                        ('noise_level', 'normal'),
+                        ('lighting', 'normal')]
         response = self.client.open(
             '/rank-rooms',
-            method='POST',
-            data=json.dumps(body),
-            content_type='application/json')
+            method='GET',
+            query_string=query_string)
         self.assert200(response,
                        'Response body is : ' + response.data.decode('utf-8'))
 
