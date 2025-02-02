@@ -1,23 +1,135 @@
 openapi: 3.0.0
 info:
   title: Room Booking API
-  description: API for ranking and booking rooms
+  description: API for ranking rooms based on user preferences and availability
   version: 1.0.0
 servers:
 - url: /
 paths:
   /rank-rooms:
-    post:
+    get:
       tags:
       - Room Ranking
-      summary: Get ranked list of available rooms
+      summary: Get a ranked list of available rooms based on preferences
       operationId: rank_rooms
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RankingRequest"
+      parameters:
+      - name: date
+        in: query
         required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+          example: 2023-12-25
+      - name: start_time
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: time
+          example: 09:00:00
+      - name: end_time
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: time
+          example: 11:30:00
+      - name: seating_capacity
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          minimum: 1
+          type: integer
+          example: 10
+      - name: projector
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: blackboard
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: smartboard
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: microphone
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: pc
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: whiteboard
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
+      - name: air_quality_preference
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: normal
+          enum:
+          - high
+          - normal
+      - name: noise_level
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: normal
+          enum:
+          - silent
+          - normal
+      - name: lighting
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: normal
+          enum:
+          - bright
+          - normal
       responses:
         "200":
           description: Successfully returned ranked rooms
@@ -31,90 +143,8 @@ paths:
         "400":
           description: Invalid input parameters
       x-openapi-router-controller: swagger_server.controllers.room_ranking_controller
-  /bookings:
-    post:
-      tags:
-      - Booking
-      summary: Book a specific room
-      operationId: book_room
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BookingRequest"
-        required: true
-      responses:
-        "201":
-          description: Room booked successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BookingConfirmation"
-        "400":
-          description: Invalid booking request
-        "404":
-          description: Room not found
-        "409":
-          description: "Booking conflict, room unavailable"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BookingRejection"
-      security:
-      - BearerAuth: []
-      x-openapi-router-controller: swagger_server.controllers.booking_controller
 components:
   schemas:
-    RankingRequest:
-      required:
-      - computers_required
-      - date
-      - end_time
-      - seating_capacity
-      - start_time
-      - videoprojector_needed
-      type: object
-      properties:
-        date:
-          type: string
-          format: date
-          example: 2023-12-25
-        start_time:
-          type: string
-          format: time
-          example: 09:00:00
-        end_time:
-          type: string
-          format: time
-          example: 11:30:00
-        seating_capacity:
-          minimum: 1
-          type: integer
-          example: 10
-        videoprojector_needed:
-          type: boolean
-          default: false
-        computers_required:
-          type: boolean
-          default: false
-        air_quality_preference:
-          type: string
-          default: normal
-          enum:
-          - high
-          - normal
-        noise_level:
-          type: string
-          default: normal
-          enum:
-          - silent
-          - normal
-        lighting:
-          type: string
-          default: normal
-          enum:
-          - bright
-          - normal
     Room:
       type: object
       properties:
@@ -133,128 +163,50 @@ components:
           $ref: "#/components/schemas/Room_features"
       example:
         room_id: room-101
-        score: 8.7
-        features:
-          seating_capacity: 30
-          co2: 0.8008281904610115
-          pm2_5: 6.027456183070403
-          noise_level: 5.637376656633329
-          pm10: 1.4658129805029452
-          humidity: 7.061401241503109
-          has_videoprojector: true
-          voc: 5.962133916683182
-          lighting: 2.3021358869347655
-          has_computers: true
         rank: 1
-    BookingRequest:
-      required:
-      - date
-      - end_time
-      - room_id
-      - start_time
-      - user_name
-      type: object
-      properties:
-        room_id:
-          type: string
-          example: room-101
-        user_name:
-          type: string
-          example: abc123xyz
-        date:
-          type: string
-          format: date
-          example: 2023-12-25
-        start_time:
-          type: string
-          format: time
-          example: 09:00:00
-        end_time:
-          type: string
-          format: time
-          example: 11:30:00
-    BookingConfirmation:
-      type: object
-      properties:
-        booking_id:
-          type: string
-          example: booking-789
-        status:
-          type: string
-          example: confirmed
-        details:
-          $ref: "#/components/schemas/Room"
-      example:
-        booking_id: booking-789
-        details:
-          room_id: room-101
-          score: 8.7
-          features:
-            seating_capacity: 30
-            co2: 0.8008281904610115
-            pm2_5: 6.027456183070403
-            noise_level: 5.637376656633329
-            pm10: 1.4658129805029452
-            humidity: 7.061401241503109
-            has_videoprojector: true
-            voc: 5.962133916683182
-            lighting: 2.3021358869347655
-            has_computers: true
-          rank: 1
-        status: confirmed
-    BookingRejection:
-      type: object
-      properties:
-        booking_id:
-          type: string
-          example: booking-789
-        status:
-          type: string
-          example: rejected
-        rejection_reason:
-          type: string
-          example: Room not available
-        details:
-          $ref: "#/components/schemas/Room"
+        score: 8.7
     Room_features:
       type: object
       properties:
         seating_capacity:
           type: integer
           example: 30
-        has_videoprojector:
+        projector:
           type: boolean
-        has_computers:
+        blackboard:
           type: boolean
-        co2:
-          type: number
-        pm2_5:
-          type: number
-        pm10:
-          type: number
-        voc:
-          type: number
+        microphone:
+          type: boolean
+        pc:
+          type: boolean
+        whiteboard:
+          type: boolean
+        air_quality_preference:
+          type: string
+          example: normal
+          enum:
+          - high
+          - normal
         noise_level:
-          type: number
+          type: string
+          example: normal
+          enum:
+          - silent
+          - normal
         lighting:
-          type: number
-        humidity:
-          type: number
+          type: string
+          example: normal
+          enum:
+          - bright
+          - normal
       example:
         seating_capacity: 30
-        co2: 0.8008281904610115
-        pm2_5: 6.027456183070403
-        noise_level: 5.637376656633329
-        pm10: 1.4658129805029452
-        humidity: 7.061401241503109
-        has_videoprojector: true
-        voc: 5.962133916683182
-        lighting: 2.3021358869347655
-        has_computers: true
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      x-bearerInfoFunc: swagger_server.controllers.authorization_controller.check_BearerAuth
+        projector: true
+        blackboard: true
+        microphone: true
+        pc: true
+        whiteboard: true
+        air_quality_preference: normal
+        noise_level: normal
+        lighting: normal
 

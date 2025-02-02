@@ -14,65 +14,60 @@ class RoomFeatures(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, seating_capacity: int=None, has_videoprojector: bool=None, has_computers: bool=None, co2: float=None, pm2_5: float=None, pm10: float=None, voc: float=None, noise_level: float=None, lighting: float=None, humidity: float=None):  # noqa: E501
+    def __init__(self, seating_capacity: int=None, projector: bool=None, blackboard: bool=None, microphone: bool=None, pc: bool=None, whiteboard: bool=None, air_quality_preference: str=None, noise_level: str=None, lighting: str=None):  # noqa: E501
         """RoomFeatures - a model defined in Swagger
 
         :param seating_capacity: The seating_capacity of this RoomFeatures.  # noqa: E501
         :type seating_capacity: int
-        :param has_videoprojector: The has_videoprojector of this RoomFeatures.  # noqa: E501
-        :type has_videoprojector: bool
-        :param has_computers: The has_computers of this RoomFeatures.  # noqa: E501
-        :type has_computers: bool
-        :param co2: The co2 of this RoomFeatures.  # noqa: E501
-        :type co2: float
-        :param pm2_5: The pm2_5 of this RoomFeatures.  # noqa: E501
-        :type pm2_5: float
-        :param pm10: The pm10 of this RoomFeatures.  # noqa: E501
-        :type pm10: float
-        :param voc: The voc of this RoomFeatures.  # noqa: E501
-        :type voc: float
+        :param projector: The projector of this RoomFeatures.  # noqa: E501
+        :type projector: bool
+        :param blackboard: The blackboard of this RoomFeatures.  # noqa: E501
+        :type blackboard: bool
+        :param microphone: The microphone of this RoomFeatures.  # noqa: E501
+        :type microphone: bool
+        :param pc: The pc of this RoomFeatures.  # noqa: E501
+        :type pc: bool
+        :param whiteboard: The whiteboard of this RoomFeatures.  # noqa: E501
+        :type whiteboard: bool
+        :param air_quality_preference: The air_quality_preference of this RoomFeatures.  # noqa: E501
+        :type air_quality_preference: str
         :param noise_level: The noise_level of this RoomFeatures.  # noqa: E501
-        :type noise_level: float
+        :type noise_level: str
         :param lighting: The lighting of this RoomFeatures.  # noqa: E501
-        :type lighting: float
-        :param humidity: The humidity of this RoomFeatures.  # noqa: E501
-        :type humidity: float
+        :type lighting: str
         """
         self.swagger_types = {
             'seating_capacity': int,
-            'has_videoprojector': bool,
-            'has_computers': bool,
-            'co2': float,
-            'pm2_5': float,
-            'pm10': float,
-            'voc': float,
-            'noise_level': float,
-            'lighting': float,
-            'humidity': float
+            'projector': bool,
+            'blackboard': bool,
+            'microphone': bool,
+            'pc': bool,
+            'whiteboard': bool,
+            'air_quality_preference': str,
+            'noise_level': str,
+            'lighting': str
         }
 
         self.attribute_map = {
             'seating_capacity': 'seating_capacity',
-            'has_videoprojector': 'has_videoprojector',
-            'has_computers': 'has_computers',
-            'co2': 'co2',
-            'pm2_5': 'pm2_5',
-            'pm10': 'pm10',
-            'voc': 'voc',
+            'projector': 'projector',
+            'blackboard': 'blackboard',
+            'microphone': 'microphone',
+            'pc': 'pc',
+            'whiteboard': 'whiteboard',
+            'air_quality_preference': 'air_quality_preference',
             'noise_level': 'noise_level',
-            'lighting': 'lighting',
-            'humidity': 'humidity'
+            'lighting': 'lighting'
         }
         self._seating_capacity = seating_capacity
-        self._has_videoprojector = has_videoprojector
-        self._has_computers = has_computers
-        self._co2 = co2
-        self._pm2_5 = pm2_5
-        self._pm10 = pm10
-        self._voc = voc
+        self._projector = projector
+        self._blackboard = blackboard
+        self._microphone = microphone
+        self._pc = pc
+        self._whiteboard = whiteboard
+        self._air_quality_preference = air_quality_preference
         self._noise_level = noise_level
         self._lighting = lighting
-        self._humidity = humidity
 
     @classmethod
     def from_dict(cls, dikt) -> 'RoomFeatures':
@@ -107,190 +102,187 @@ class RoomFeatures(Model):
         self._seating_capacity = seating_capacity
 
     @property
-    def has_videoprojector(self) -> bool:
-        """Gets the has_videoprojector of this RoomFeatures.
+    def projector(self) -> bool:
+        """Gets the projector of this RoomFeatures.
 
 
-        :return: The has_videoprojector of this RoomFeatures.
+        :return: The projector of this RoomFeatures.
         :rtype: bool
         """
-        return self._has_videoprojector
+        return self._projector
 
-    @has_videoprojector.setter
-    def has_videoprojector(self, has_videoprojector: bool):
-        """Sets the has_videoprojector of this RoomFeatures.
+    @projector.setter
+    def projector(self, projector: bool):
+        """Sets the projector of this RoomFeatures.
 
 
-        :param has_videoprojector: The has_videoprojector of this RoomFeatures.
-        :type has_videoprojector: bool
+        :param projector: The projector of this RoomFeatures.
+        :type projector: bool
         """
 
-        self._has_videoprojector = has_videoprojector
+        self._projector = projector
 
     @property
-    def has_computers(self) -> bool:
-        """Gets the has_computers of this RoomFeatures.
+    def blackboard(self) -> bool:
+        """Gets the blackboard of this RoomFeatures.
 
 
-        :return: The has_computers of this RoomFeatures.
+        :return: The blackboard of this RoomFeatures.
         :rtype: bool
         """
-        return self._has_computers
+        return self._blackboard
 
-    @has_computers.setter
-    def has_computers(self, has_computers: bool):
-        """Sets the has_computers of this RoomFeatures.
+    @blackboard.setter
+    def blackboard(self, blackboard: bool):
+        """Sets the blackboard of this RoomFeatures.
 
 
-        :param has_computers: The has_computers of this RoomFeatures.
-        :type has_computers: bool
+        :param blackboard: The blackboard of this RoomFeatures.
+        :type blackboard: bool
         """
 
-        self._has_computers = has_computers
+        self._blackboard = blackboard
 
     @property
-    def co2(self) -> float:
-        """Gets the co2 of this RoomFeatures.
+    def microphone(self) -> bool:
+        """Gets the microphone of this RoomFeatures.
 
 
-        :return: The co2 of this RoomFeatures.
-        :rtype: float
+        :return: The microphone of this RoomFeatures.
+        :rtype: bool
         """
-        return self._co2
+        return self._microphone
 
-    @co2.setter
-    def co2(self, co2: float):
-        """Sets the co2 of this RoomFeatures.
+    @microphone.setter
+    def microphone(self, microphone: bool):
+        """Sets the microphone of this RoomFeatures.
 
 
-        :param co2: The co2 of this RoomFeatures.
-        :type co2: float
+        :param microphone: The microphone of this RoomFeatures.
+        :type microphone: bool
         """
 
-        self._co2 = co2
+        self._microphone = microphone
 
     @property
-    def pm2_5(self) -> float:
-        """Gets the pm2_5 of this RoomFeatures.
+    def pc(self) -> bool:
+        """Gets the pc of this RoomFeatures.
 
 
-        :return: The pm2_5 of this RoomFeatures.
-        :rtype: float
+        :return: The pc of this RoomFeatures.
+        :rtype: bool
         """
-        return self._pm2_5
+        return self._pc
 
-    @pm2_5.setter
-    def pm2_5(self, pm2_5: float):
-        """Sets the pm2_5 of this RoomFeatures.
+    @pc.setter
+    def pc(self, pc: bool):
+        """Sets the pc of this RoomFeatures.
 
 
-        :param pm2_5: The pm2_5 of this RoomFeatures.
-        :type pm2_5: float
+        :param pc: The pc of this RoomFeatures.
+        :type pc: bool
         """
 
-        self._pm2_5 = pm2_5
+        self._pc = pc
 
     @property
-    def pm10(self) -> float:
-        """Gets the pm10 of this RoomFeatures.
+    def whiteboard(self) -> bool:
+        """Gets the whiteboard of this RoomFeatures.
 
 
-        :return: The pm10 of this RoomFeatures.
-        :rtype: float
+        :return: The whiteboard of this RoomFeatures.
+        :rtype: bool
         """
-        return self._pm10
+        return self._whiteboard
 
-    @pm10.setter
-    def pm10(self, pm10: float):
-        """Sets the pm10 of this RoomFeatures.
+    @whiteboard.setter
+    def whiteboard(self, whiteboard: bool):
+        """Sets the whiteboard of this RoomFeatures.
 
 
-        :param pm10: The pm10 of this RoomFeatures.
-        :type pm10: float
+        :param whiteboard: The whiteboard of this RoomFeatures.
+        :type whiteboard: bool
         """
 
-        self._pm10 = pm10
+        self._whiteboard = whiteboard
 
     @property
-    def voc(self) -> float:
-        """Gets the voc of this RoomFeatures.
+    def air_quality_preference(self) -> str:
+        """Gets the air_quality_preference of this RoomFeatures.
 
 
-        :return: The voc of this RoomFeatures.
-        :rtype: float
+        :return: The air_quality_preference of this RoomFeatures.
+        :rtype: str
         """
-        return self._voc
+        return self._air_quality_preference
 
-    @voc.setter
-    def voc(self, voc: float):
-        """Sets the voc of this RoomFeatures.
+    @air_quality_preference.setter
+    def air_quality_preference(self, air_quality_preference: str):
+        """Sets the air_quality_preference of this RoomFeatures.
 
 
-        :param voc: The voc of this RoomFeatures.
-        :type voc: float
+        :param air_quality_preference: The air_quality_preference of this RoomFeatures.
+        :type air_quality_preference: str
         """
+        allowed_values = ["high", "normal"]  # noqa: E501
+        if air_quality_preference not in allowed_values:
+            raise ValueError(
+                "Invalid value for `air_quality_preference` ({0}), must be one of {1}"
+                .format(air_quality_preference, allowed_values)
+            )
 
-        self._voc = voc
+        self._air_quality_preference = air_quality_preference
 
     @property
-    def noise_level(self) -> float:
+    def noise_level(self) -> str:
         """Gets the noise_level of this RoomFeatures.
 
 
         :return: The noise_level of this RoomFeatures.
-        :rtype: float
+        :rtype: str
         """
         return self._noise_level
 
     @noise_level.setter
-    def noise_level(self, noise_level: float):
+    def noise_level(self, noise_level: str):
         """Sets the noise_level of this RoomFeatures.
 
 
         :param noise_level: The noise_level of this RoomFeatures.
-        :type noise_level: float
+        :type noise_level: str
         """
+        allowed_values = ["silent", "normal"]  # noqa: E501
+        if noise_level not in allowed_values:
+            raise ValueError(
+                "Invalid value for `noise_level` ({0}), must be one of {1}"
+                .format(noise_level, allowed_values)
+            )
 
         self._noise_level = noise_level
 
     @property
-    def lighting(self) -> float:
+    def lighting(self) -> str:
         """Gets the lighting of this RoomFeatures.
 
 
         :return: The lighting of this RoomFeatures.
-        :rtype: float
+        :rtype: str
         """
         return self._lighting
 
     @lighting.setter
-    def lighting(self, lighting: float):
+    def lighting(self, lighting: str):
         """Sets the lighting of this RoomFeatures.
 
 
         :param lighting: The lighting of this RoomFeatures.
-        :type lighting: float
+        :type lighting: str
         """
+        allowed_values = ["bright", "normal"]  # noqa: E501
+        if lighting not in allowed_values:
+            raise ValueError(
+                "Invalid value for `lighting` ({0}), must be one of {1}"
+                .format(lighting, allowed_values)
+            )
 
         self._lighting = lighting
-
-    @property
-    def humidity(self) -> float:
-        """Gets the humidity of this RoomFeatures.
-
-
-        :return: The humidity of this RoomFeatures.
-        :rtype: float
-        """
-        return self._humidity
-
-    @humidity.setter
-    def humidity(self, humidity: float):
-        """Sets the humidity of this RoomFeatures.
-
-
-        :param humidity: The humidity of this RoomFeatures.
-        :type humidity: float
-        """
-
-        self._humidity = humidity
