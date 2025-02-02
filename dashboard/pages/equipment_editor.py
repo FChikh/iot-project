@@ -16,16 +16,13 @@ Use the provided widgets to update the equipment values:
 - **Other types:** use text inputs.
 """)
 
-# ------------------------------------------------------------------------------
-# Main area: List each room and allow updating its equipment via a REST API call
-# ------------------------------------------------------------------------------
 
 # Get the list of active rooms from your simulators endpoint.
 try:
-    simulators_resp = requests.get(f"{API_BASE}/simulators")
+    simulators_resp = requests.get(f"{API_BASE}/rooms")
     if simulators_resp.ok:
         simulators_data = simulators_resp.json()
-        rooms = simulators_data.get("active_simulators", [])
+        rooms = simulators_data.get("rooms", [])
     else:
         st.error("Failed to fetch rooms data from API.")
         rooms = []
@@ -51,7 +48,7 @@ if rooms:
             continue
         st.subheader(f"Room: {room}")
         with st.form(key=f"form_{room}"):
-            updated_equipment = []  # will hold equipment dicts with updated values
+            updated_equipment = []
             # Display each equipment item (sorted by name) with the appropriate widget.
             for eq in sorted(eq_list, key=lambda x: x["name"]):
                 eq_name = eq["name"]
@@ -64,7 +61,7 @@ if rooms:
                     new_val = st.checkbox(f"{eq_name} (Boolean)", value=current_val, key=widget_key)
                     updated_equipment.append({
                         "name": eq_name,
-                        "value": new_val,
+                        "value": str(new_val),
                         "type": "boolean"
                     })
                 elif eq_type == "integer":
@@ -75,7 +72,7 @@ if rooms:
                     new_val = st.number_input(f"{eq_name} (Integer)", value=current_val, step=1, key=widget_key)
                     updated_equipment.append({
                         "name": eq_name,
-                        "value": int(new_val),
+                        "value": str(new_val),
                         "type": "integer"
                     })
                 else:
@@ -101,10 +98,8 @@ if rooms:
 else:
     st.info("No rooms found.")
 
-# ------------------------------------------------------------------------------
-# Sidebar: Add a New Room with Default Equipment
-# ------------------------------------------------------------------------------
 
+# Add equipment for new room
 with st.sidebar.expander("Add Room Equipment"):
     new_room = st.text_input("Room Identifier", "")
     if st.button("Add Room"):
@@ -126,10 +121,7 @@ with st.sidebar.expander("Add Room Equipment"):
         else:
             st.error("Room identifier cannot be empty.")
 
-# ------------------------------------------------------------------------------
-# Sidebar: Remove Room Equipment
-# ------------------------------------------------------------------------------
-
+# Remove equipment for existing room
 with st.sidebar.expander("Remove Room Equipment"):
     if rooms:
         remove_room = st.selectbox("Select Room to Remove", sorted(rooms))

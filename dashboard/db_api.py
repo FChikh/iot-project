@@ -11,7 +11,7 @@ from flask import Flask, request, jsonify
 from simulator import simulator, connect_publisher_mqtt, run_publisher
 from simulator import global_config, active_simulators, simulator_threads
 
-from db import add_equipment_for_room, update_equipment_for_room, remove_equipment_for_room, get_equipment_for_room
+from db import add_equipment_for_room, update_equipment_for_room, remove_equipment_for_room, get_equipment_for_room, get_rooms
 from db import add_simulator, update_simulator, remove_simulator
 
 
@@ -134,9 +134,7 @@ def initialize_simulators_from_config(rooms):
             logger.info(f"Simulator for {room_name} initialized.")
 
 
-# --------------------------
-# REST API using Flask
-# --------------------------
+# REST API Endpoints
 app = Flask(__name__)
 
 
@@ -191,10 +189,17 @@ def delete_simulator(room):
         return jsonify(response), status
     return jsonify({"message": message}), status
 
+@app.route("/rooms", methods=["GET"])
+def list_rooms():
+    try:
+        equipment_data = get_rooms()
+        if equipment_data is None:
+            return jsonify({"error": f"Rooms not found."}), 404
+        return jsonify(equipment_data), 200
+    except Exception as e:
+        # Log error already done in helper; return error message.
+        return jsonify({"error": str(e)}), 500
 
-# --------------------------
-# Equipment REST API Endpoints (by room)
-# --------------------------
 
 @app.route("/equipment/<room>", methods=["GET"])
 def get_equipment_route(room):
@@ -213,8 +218,8 @@ def get_equipment_route(room):
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/equipment/<room>", methods=["POST"])
-def create_equipment_route(room):
+@app.route("/equipment/", methods=["POST"])
+def create_equipment_route():
     """
     Create equipment records for the given room.
     Expects a JSON payload of the form:
@@ -236,7 +241,8 @@ def create_equipment_route(room):
     }
     """
     data = request.get_json()
-    eq_list = data.get("equipment")
+    room = data.get("room")
+    eq_list = default_equipment
     if not eq_list or not isinstance(eq_list, list):
         return jsonify({"error": "Missing or invalid 'equipment' list in request."}), 400
 
@@ -276,31 +282,6 @@ def update_equipment_route(room):
 
     success, message = update_equipment_for_room(room, eq_list)
     status = 200 if success else 400
-    if status == 200:
-        # Optionally, return the updated equipment list.
-        db_session = SessionLocal()
-        try:
-            room_record = db_session.query(
-                Room).filter(Room.name == room).first()
-            equipment_list = db_session.query(Equipment).filter(
-                Equipment.room_id == room_record.id
-            ).all()
-            result = []
-            for eq in equipment_list:
-                result.append({
-                    "id": eq.id,
-                    "name": eq.name,
-                    "value": eq.value,
-                    "type": eq.type
-                })
-            response = {"room": room, "equipment": result}
-        except Exception as e:
-            logger.error(
-                f"Error retrieving updated equipment for room {room}: {e}")
-            response = {"message": message}
-        finally:
-            db_session.close()
-        return jsonify(response), status
     return jsonify({"message": message}), status
 
 
@@ -319,15 +300,12 @@ def delete_equipment_route(room):
 
 
 
-
 def run_api():
     # Run the Flask app on port 9999 (adjust host/port as needed)
     app.run(host="0.0.0.0", port=9999)
 
 
-# --------------------------
-# Main execution
-# --------------------------
+# Connect to the MQTT broker and start the publisher thread
 connect_publisher_mqtt()
 publisher_thread = threading.Thread(target=run_publisher, daemon=True)
 publisher_thread.start()

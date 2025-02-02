@@ -9,6 +9,13 @@ Prerequisites:
     GF_SECURITY_ADMIN_USER={your grafana username}
     GF_SECURITY_ADMIN_PASSWORD={your grafana password}
     INFLUXDB_TOKEN={your token to access all the influx db's of your account}
+    MQTT_BROKER=mosquitto
+
+    POSTGRES_USER={your username for postgres}
+    POSTGRES_PASSWORD={your password for postgres}
+    POSTGRES_DB=rooms_db
+    POSTGRES_HOST=postgres
+    POSTGRES_PORT=5432
     ```
 
 2. create Google Calendar and enable the Google Calendar API
