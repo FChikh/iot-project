@@ -377,25 +377,6 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # Specify columns where lower values are preferable (if applicable)
     lower_better_cols = ['co2', 'noise', 'pm10', 'pm2_5' 'voc', 'temperature', 'capacity']
 
-    # Example weights array: adjust the weights as needed.
-    # The order of the attributes in the decision matrix is as follows:
-    # 
-    # 1. co2
-    # 2. noise
-    # 3. pm2_5
-    # 4. pm10
-    # 5. light
-    # 6. humidity
-    # 7. voc
-    # 8. temperature
-    # 9. projector
-    # 10. capacity
-    # 11. blackboard
-    # 12. microphone
-    # 13. pc
-    # 14. smartboard
-    # 15. whiteboard
-
     co2_weight = 3 if air_quality_preference.lower() == "high" else 2
     noise_weight = 6 if noise_level.lower() == "silent" else 4
     pm2_5_weight = 4 if air_quality_preference.lower() == "high" else 2
