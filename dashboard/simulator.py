@@ -4,6 +4,7 @@ import json
 import logging
 import paho.mqtt.client as mqtt
 import os
+from numpy import cos, pi
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,19 @@ def connect_publisher_mqtt():
 
 def run_publisher():
     publisher_client.loop_start()
+    
 
+def sigma_3(range):
+    """
+    Calculate the standard deviation for a range.
+    """
+    return (range[1] - range[0]) / 6
+
+def mean(range):
+    """
+    Calculate the mean value of a range.
+    """
+    return (range[0] + range[1]) / 2
 
 def simulator(room, config_ref, stop_event):
     """
@@ -45,36 +58,36 @@ def simulator(room, config_ref, stop_event):
         # Example simulation for several sensor names.
         if 'temp' in ranges:
             temp = round(random.gauss(
-                (ranges['temp'][0] + ranges['temp'][1]) / 2, 0.5), 2)
-            temp += 1.5 if 7 <= hour <= 19 else -1
-
+                mean(ranges['temp']), sigma_3(ranges['temp'])), 2)
+            temp += -1.5 * cos((hour - 1) / 12 * pi)
+            
         if 'hum' in ranges:
             hum = round(random.gauss(
-                (ranges['hum'][0] + ranges['hum'][1]) / 2, 1), 2)
-            hum += 3 if 0 <= hour < 7 or 22 <= hour <= 23 else -1
+                mean(ranges['hum']), sigma_3(ranges['hum'])), 2)
+            hum += 3 * cos((hour - 4) / 12 * pi)
 
         if 'light' in ranges:
             light = round(random.gauss(
-                (ranges['light'][0] + ranges['light'][1]) / 2, 30), 2)
-            light += 400 if 7 <= hour <= 19 else -300
+                mean(ranges['light']), sigma_3(ranges['light'])), 2)
+            light += -150 * cos((hour - 1) / 12 * pi)
 
         if 'co2' in ranges:
             co2 = round(random.gauss(
-                (ranges['co2'][0] + ranges['co2'][1]) / 2, 5), 2)
-            co2 += 50 if 8 <= hour <= 20 else -30
+                mean(ranges['co2']), sigma_3(ranges['co2'])), 2)
+            co2 += -50 * cos((hour - 1) / 12 * pi)
 
         if 'air_quality_pm2_5' in ranges:
             air_quality_pm2_5 = round(random.gauss(
-                (ranges['air_quality_pm2_5'][0] + ranges['air_quality_pm2_5'][1]) / 2, 1), 2)
-
+                mean(ranges['air_quality_pm2_5']), sigma_3(ranges['air_quality_pm2_5'])), 2)
+            
         if 'air_quality_pm10' in ranges:
             air_quality_pm10 = round(random.gauss(
-                (ranges['air_quality_pm10'][0] + ranges['air_quality_pm10'][1]) / 2, 2), 2)
-
+                mean(ranges['air_quality_pm10']), sigma_3(ranges['air_quality_pm10'])), 2)
+            
         if 'sound' in ranges:
             sound = round(random.gauss(
-                (ranges['sound'][0] + ranges['sound'][1]) / 2, 5), 2)
-            sound += 10 if 7 <= hour <= 22 else -10
+                mean(ranges['sound']), sigma_3(ranges['sound'])), 2)
+            sound += -10 * cos((hour - 1) / 12 * pi)
 
         if 'voc' in ranges:
             voc = round(random.gauss(

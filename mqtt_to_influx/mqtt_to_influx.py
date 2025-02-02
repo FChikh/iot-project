@@ -67,7 +67,7 @@ mqtt_client = mqtt.Client()
 mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
 
 
-# Subscribe to topics for each sensor type
+# Subscribe to topics for sensors
 mqtt_client.subscribe("+/sensors/#")
 
 mqtt_client.on_message = on_message
