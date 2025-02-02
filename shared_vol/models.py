@@ -15,7 +15,7 @@ class Room(Base):
 class Sensor(Base):
     __tablename__ = 'sensors'
     
-    __table_args__ = (UniqueConstraint('room_id', 'name', name='_room_id_name_uc'),)
+    __table_args__ = (UniqueConstraint('room_id', 'name', name='_room_id_name_sensor_uc'),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     room_id = Column(Integer, ForeignKey('rooms.id', ondelete="CASCADE"))
@@ -32,7 +32,7 @@ class Sensor(Base):
 class Equipment(Base):
     __tablename__ = 'equipment'
     
-    __table_args__ = (UniqueConstraint('room_id', 'name', name='_room_id_name_uc'),)
+    __table_args__ = (UniqueConstraint('room_id', 'name', name='_room_id_name_equip_uc'),)
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     room_id = Column(Integer, ForeignKey('rooms.id', ondelete="CASCADE"))

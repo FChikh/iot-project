@@ -28,8 +28,6 @@ db_url = URL.create(
 
 engine = create_engine(db_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base.metadata.create_all(bind=engine)
-
 
 
 # Helper functions for simulator management (with DB updates)
