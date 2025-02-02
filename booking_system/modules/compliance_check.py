@@ -235,6 +235,7 @@ def check_compliance_voc(df: pd.DataFrame, tolerance: float = 1.0):
         'compliant': compliant
     }
 
+
 def check_compliance_temperature(df: pd.DataFrame, tolerance: float = 20.0):
     """
     Evaluates whether indoor temperature meets EU comfort and health guidelines.
