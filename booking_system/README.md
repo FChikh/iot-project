@@ -42,11 +42,56 @@ Each sensor type has a dedicated function to:
 - **`build_topsis_matrix`**:
   1. Compiles both sensor attributes and equipment data for each room (after validating seating capacity and environmental compliance) into a unified decision matrix.
   2. REST API Integration: A GET request is sent to the REST API endpoint (documented via Swagger) to trigger the ranking process. This endpoint calls functions like `get_ranking` that build the decision matrix and apply the TOPSIS algorithm.
-- **`topsis_decision_logic`**:
-  1. **Normalization and Weighting**: The decision matrix is normalized, and each attribute is weighted.
-     - Weights are chosen such that equipment data (e.g., seating capacity, projector, PC) have higher importance relative to sensor data. This reflects the idea that equipment features directly impact room functionality.
-  2. **Ideal Solutions Calculation**: The algorithm determines the positive ideal solution (PIS) and negative ideal solution (NIS), based on the user preferences. For criteria where lower values are preferable (such as CO₂ or noise levels), the ideal best is defined as the minimum value.
-  3. **Closeness Coefficient Calculation**: Each room’s distance from the ideal solution is computed to derive a closeness coefficient, which is used to rank the rooms.
+- **Detailed TOPSIS Theory (as Implemented in `topsis_decision_logic`): The TOPSIS method used in the system works as follows:
+
+1. **Preference Adjustment (Z-Score Transformation):**
+   - **Objective:** Transform raw sensor data by comparing each attribute value against the user’s preferred value.
+   - **Method:**  
+     For each attribute with a user preference:
+     \[
+     \text{adjusted value} = -\left|\frac{x - \text{user\_pref}}{\sigma}\right|
+     \]
+     - Here, \(x\) is the room's actual sensor reading, \(\text{user\_pref}\) is the target value, and \(\sigma\) is the standard deviation of the attribute across all rooms.
+     - This transformation ensures that values closer to the user’s preference yield a higher (less negative) score.
+
+2. **Normalization:**
+   - **Objective:** Ensure that all attributes are on the same scale regardless of their original units or ranges.
+   - **Method:**  
+     Normalize each column (attribute) using the Euclidean norm:
+     \[
+     V_{ij} = \frac{X_{ij}}{\sqrt{\sum X_{ij}^2}}
+     \]
+     This scales the data so that each attribute has values between 0 and 1, making them directly comparable.
+
+3. **Weighting:**
+   - **Objective:** Reflect the relative importance of each attribute.
+   - **Method:**  
+     Multiply each normalized attribute by its corresponding weight. If no weights are provided, equal weight is assumed for all attributes.
+
+4. **Determination of Ideal and Negative-Ideal Solutions:**
+   - **Objective:** Establish reference points against which each room is evaluated.
+   - **Method:**  
+     - **Positive Ideal Solution (PIS)**: The best possible attribute values. For attributes where higher is better, this is the maximum value; for attributes where lower is better (like CO₂ or noise), it is the minimum value.
+     - **Negative Ideal Solution (NIS)**: The worst possible attribute values. For higher-is-better attributes, this is the minimum value; for lower-is-better attributes, it is the maximum value.
+    
+
+5. **Calculation of Euclidean Distances:**
+   - **Objective:** Measure the distance of each room’s performance from the ideal and negative-ideal solutions.
+   - **Method:**  
+     Calculate the Euclidean distance to both the PIS and NIS:
+     \[
+     D_i^+ = \sqrt{\sum (V_{ij} - A^+_j)^2} \quad \text{and} \quad D_i^- = \sqrt{\sum (V_{ij} - A^-_j)^2}
+     \]
+
+6. **Closeness Coefficient and Ranking:**
+   - **Objective:** Quantify how close each room is to the ideal solution.
+   - **Method:**  
+     Compute the closeness coefficient:
+     \[
+     C_i = \frac{D_i^-}{D_i^+ + D_i^-}
+     \]
+     Rooms are then ranked based on \(C_i\) in descending order, where a higher value indicates a better match to the user’s requirements.
+
 
 ### C. Booking Interface
 
@@ -67,7 +112,7 @@ Several Multi-Criteria Decision Making (MCDM) methods are available (such as AHP
 ## 4. Motivation Behind the Weight Selection
 The weights in the TOPSIS algorithm were carefully chosen based on the following priorities:
 
-- **Higher Importance of Equipment Data**:
+- **Higher Importance of Equipment Data if selected**:
   - Equipment features such as projector availability, PC, smartboard, and other amenities were given **higher weights**. This is because the physical and functional aspects of a room are critical to its suitability for booking. Seating capacity got a high weight, so that rooms with higher capacities than needed are ranked lower.
 
 - **Sensor Data Considerations**:
