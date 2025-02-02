@@ -15,7 +15,7 @@ class TestRoomRankingController(BaseTestCase):
     def test_rank_rooms(self):
         """Test case for rank_rooms
 
-        Get ranked list of available rooms
+        Get a ranked list of available rooms based on preferences
         """
         query_string = [('_date', '2013-10-20'),
                         ('start_time', 'start_time_example'),
