@@ -37,6 +37,8 @@ Each sensor type has a dedicated function to:
 5. **Humidity**: EN ISO 773
   - Minimum Humidity: 30%
   - Maximum Humidity: 70%
+6. **VOC**: [German Umweltbundesamt](https://www.umweltbundesamt.de/sites/default/files/medien/4031/dokumente/agbb_evaluation_scheme_2024.pdf)
+  - VOC Limit: 400 ppb
 6. **Temperature**: According to German ASR (Arbeitsstätten Regeln), an office workspace should have a minimum temperature of 19°C and a maximum temperature of 26°C (without ventilation/AC).
   - Minimum Temperature 19°C
   - Maximum Temperature 26°C
