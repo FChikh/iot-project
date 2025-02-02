@@ -1,3 +1,4 @@
+# global_config.py
 import os
 import json
 import logging
@@ -9,17 +10,22 @@ import re
 from flask import Flask, request, jsonify
 import paho.mqtt.client as mqtt
 
+# Import SQLAlchemy session and models.
+from db import SessionLocal
+# Equipment remains available if needed
+from models import Room, Sensor, Equipment
+
 # --------------------------
 # Global state and MQTT setup
 # --------------------------
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Shared state
-global_config = {}           # holds configuration for each room
-active_simulators = set()    # names of active simulators
-simulator_threads = {}       # info for each simulator thread
+# Shared state (in‑memory configuration for simulators)
+# holds configuration for each room: { room_name: { sensor_name: [min, max], ... } }
+global_config = {}
+active_simulators = set()    # set of room names that have an active simulator
+simulator_threads = {}       # mapping of room name to thread info
 
 # MQTT publisher setup
 MQTT_BROKER = os.getenv('MQTT_BROKER', 'mosquitto')
@@ -38,15 +44,22 @@ def connect_publisher_mqtt():
 
 def run_publisher():
     publisher_client.loop_start()
-    
+
+# --------------------------
+# Simulator function
+# --------------------------
+
 
 def simulator(room, config_ref, stop_event):
+    """
+    Simulate sensor values for a given room using configuration from config_ref.
+    """
     while not stop_event.is_set():
         current_time = time.localtime()
         hour = current_time.tm_hour
         ranges = config_ref['ranges']
 
-        # Simulate sensor values using Gaussian distributions and time-dependent shifts.
+        # Example simulation for several sensor names.
         temp = round(random.gauss(
             (ranges['temp'][0] + ranges['temp'][1]) / 2, 2), 2)
         temp += 2 if 7 <= hour <= 19 else -1
@@ -101,39 +114,48 @@ def simulator(room, config_ref, stop_event):
             logger.error(f"Failed to publish simulated data for {room}: {e}")
 
         time.sleep(10)
-    
 
-def load_config_from_file(config_file="config.json"):
+# --------------------------
+# Database-backed configuration functions
+# --------------------------
+
+
+def load_config_from_db():
     """
-    Load room configurations from a JSON file.
-    
-    :param config_file: The path to the JSON configuration file.
+    Query the database for rooms and their sensor configurations.
+    Returns a list of dictionaries with keys: "name" and "sensors".
+    The "sensors" value is a dict mapping sensor name to [min, max].
     """
+    db_session = SessionLocal()
+    config_list = []
     try:
-        with open(config_file, "r") as file:
-            config_data = json.load(file)
-            logger.info("Configuration loaded successfully.")
-            return config_data.get("rooms", [])
+        rooms = db_session.query(Room).all()
+        for room in rooms:
+            sensor_ranges = {}
+            sensors = db_session.query(Sensor).filter(
+                Sensor.room_id == room.id).all()
+            for sensor in sensors:
+                sensor_ranges[sensor.name] = [
+                    sensor.min_value, sensor.max_value]
+            config_list.append({"name": room.name, "sensors": sensor_ranges})
+        logger.info("Loaded configuration from database.")
+        return config_list
     except Exception as e:
-        logger.error(f"Failed to load configuration: {e}")
-        st.error(f"Failed to load configuration: {e}")
+        logger.error(f"Failed to load configuration from DB: {e}")
         return []
+    finally:
+        db_session.close()
 
 
 def initialize_simulators_from_config(rooms):
     """
-    For each room in the config, store its sensor ranges in the global configuration and
+    For each room configuration from the DB, update the global config and
     initialize a simulator thread if not already running.
-    
-    :param rooms: A list of room configurations.
     """
     for room_config in rooms:
         room_name = room_config["name"]
-        sensor_ranges = {}
-        for sensor in room_config["sensors"]:
-            sensor_ranges[sensor["name"]] = sensor["range"]
-
-        # Store the configuration in the shared global_config dictionary.
+        # Already a dict: { sensor_name: [min, max], ... }
+        sensor_ranges = room_config["sensors"]
         if room_name not in global_config:
             global_config[room_name] = sensor_ranges.copy()
 
@@ -150,32 +172,49 @@ def initialize_simulators_from_config(rooms):
             active_simulators.add(room_name)
             logger.info(f"Simulator for {room_name} initialized.")
 
-
-connect_publisher_mqtt()
-publisher_thread = threading.Thread(target=run_publisher, daemon=True)
-publisher_thread.start()
-config_file_path = os.getenv('SIMULATOR_CONFIG_FILE', 'config.json')
-rooms_config = load_config_from_file(config_file_path)
-initialize_simulators_from_config(rooms_config)
-
 # --------------------------
-# Simulator function
-# --------------------------
-
-
-
-
-# --------------------------
-# Helper functions for simulators
+# Helper functions for simulator management (with DB updates)
 # --------------------------
 
 
 def add_simulator(room, sensor_ranges):
+    """
+    Add a simulator for the given room by:
+      1. Inserting a new Room and corresponding Sensor rows into the DB.
+      2. Updating the in-memory global_config and starting a simulator thread.
+    """
     if room in active_simulators:
         return False, "Simulator already active."
-    # Save configuration
+
+    # Update in-memory configuration.
     global_config[room] = sensor_ranges.copy()
-    # Create a thread info record
+
+    # Insert into the DB.
+    db_session = SessionLocal()
+    try:
+        # Check if the room already exists.
+        existing_room = db_session.query(
+            Room).filter(Room.name == room).first()
+        if existing_room:
+            return False, f"Room {room} already exists in DB."
+        new_room = Room(name=room)
+        db_session.add(new_room)
+        db_session.flush()  # Get new_room.id
+
+        # Add sensor configuration rows.
+        for sensor_name, range_vals in sensor_ranges.items():
+            new_sensor = Sensor(room_id=new_room.id, name=sensor_name,
+                                min_value=range_vals[0], max_value=range_vals[1])
+            db_session.add(new_sensor)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"DB error adding simulator for {room}: {e}")
+        return False, f"DB error adding simulator: {e}"
+    finally:
+        db_session.close()
+
+    # Start simulator thread.
     stop_event = threading.Event()
     simulator_threads[room] = {
         'ranges': sensor_ranges.copy(),
@@ -190,9 +229,55 @@ def add_simulator(room, sensor_ranges):
     return True, f"Simulator for {room} added."
 
 
-def remove_simulator(room):
+def update_simulator(room, new_ranges):
+    """
+    Update the simulator configuration both in memory and in the DB.
+    """
     if room not in active_simulators:
         return False, "Simulator not active."
+
+    global_config[room] = new_ranges.copy()
+    if room in simulator_threads:
+        simulator_threads[room]['ranges'] = new_ranges.copy()
+
+    # Update the DB.
+    db_session = SessionLocal()
+    try:
+        room_record = db_session.query(Room).filter(Room.name == room).first()
+        if not room_record:
+            return False, f"Room {room} not found in DB."
+        # For each sensor in new_ranges, update if exists; otherwise, add it.
+        for sensor_name, range_vals in new_ranges.items():
+            sensor_record = db_session.query(Sensor).filter(
+                Sensor.room_id == room_record.id,
+                Sensor.name == sensor_name
+            ).first()
+            if sensor_record:
+                sensor_record.min_value = range_vals[0]
+                sensor_record.max_value = range_vals[1]
+            else:
+                new_sensor = Sensor(room_id=room_record.id, name=sensor_name,
+                                    min_value=range_vals[0], max_value=range_vals[1])
+                db_session.add(new_sensor)
+        db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"DB error updating simulator for {room}: {e}")
+        return False, f"DB error updating simulator: {e}"
+    finally:
+        db_session.close()
+
+    logger.info(f"Simulator for {room} updated.")
+    return True, f"Simulator for {room} updated."
+
+
+def remove_simulator(room):
+    """
+    Remove the simulator from memory and delete the corresponding Room (and cascade delete Sensors) from the DB.
+    """
+    if room not in active_simulators:
+        return False, "Simulator not active."
+
     if room in simulator_threads:
         simulator_threads[room]['stop_event'].set()
         simulator_threads[room]['thread'].join(timeout=2)
@@ -200,24 +285,28 @@ def remove_simulator(room):
     active_simulators.discard(room)
     if room in global_config:
         del global_config[room]
+
+    # Remove from the DB.
+    db_session = SessionLocal()
+    try:
+        room_record = db_session.query(Room).filter(Room.name == room).first()
+        if room_record:
+            db_session.delete(room_record)
+            db_session.commit()
+    except Exception as e:
+        db_session.rollback()
+        logger.error(f"DB error removing simulator for {room}: {e}")
+        return False, f"DB error removing simulator: {e}"
+    finally:
+        db_session.close()
+
     logger.info(f"Simulator for {room} removed.")
     return True, f"Simulator for {room} removed."
 
 
-def update_simulator(room, new_ranges):
-    if room not in active_simulators:
-        return False, "Simulator not active."
-    global_config[room] = new_ranges.copy()
-    if room in simulator_threads:
-        simulator_threads[room]['ranges'] = new_ranges.copy()
-    logger.info(f"Simulator for {room} updated.")
-    return True, f"Simulator for {room} updated."
-
 # --------------------------
 # REST API using Flask
 # --------------------------
-
-
 app = Flask(__name__)
 
 
@@ -274,9 +363,20 @@ def delete_simulator(room):
 
 
 def run_api():
-    # Run the Flask app on port 5000 (adjust host/port as needed)
+    # Run the Flask app on port 9999 (adjust host/port as needed)
     app.run(host="0.0.0.0", port=9999)
 
+
+# --------------------------
+# Main execution
+# --------------------------
+connect_publisher_mqtt()
+publisher_thread = threading.Thread(target=run_publisher, daemon=True)
+publisher_thread.start()
+
+# Load configuration from the database and initialize simulators.
+rooms_config = load_config_from_db()
+initialize_simulators_from_config(rooms_config)
 
 if __name__ == "__main__":
     # Start the Flask API server (blocking call)
