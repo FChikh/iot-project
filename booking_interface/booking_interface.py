@@ -121,7 +121,8 @@ def generate_time_intervals(start_hour: int = 7, end_hour: int = 23) -> list:
     intervals = []
     for hour in range(start_hour, end_hour + 1):
         intervals.append(f"{hour:02}:00:00")
-        intervals.append(f"{hour:02}:30:00")
+        if end_hour != 24:
+            intervals.append(f"{hour:02}:30:00")
     return intervals
 
 
@@ -167,7 +168,7 @@ with st.container():
     date = st.date_input("Select a date for your booking:", min_value=datetime.today())
 
     # Generate time intervals from 07:00:00 to 23:30:00.
-    time_intervals = generate_time_intervals(start_hour=7, end_hour=23)
+    time_intervals = generate_time_intervals(start_hour=7, end_hour=19)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -187,13 +188,17 @@ with st.container():
     with col3:
         projector = st.checkbox("Projector")
         pc = st.checkbox("Computer Classroom")
-        air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
-        noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
+        microphone = st.checkbox("Microphone")
     with col4:
         blackboard = st.checkbox("Blackboard")
         whiteboard = st.checkbox("Whiteboard")
         smartboard = st.checkbox("Smartboard")
-        microphone = st.checkbox("Microphone")
+    
+    col5, col6 = st.columns(2)
+    with col5:
+        air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
+        noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
+    with col6:
         lighting_preference = st.radio("Lighting:", options=["Normal", "Bright"])
 
 
@@ -275,22 +280,21 @@ if st.session_state.availability_data is not None:
                     features = [
                         ("Projector", room['projector']),
                         ("Computer Classroom", room['pc']),
-                        ("Teacher PC", room['pc']),
                         ("Blackboard", room['blackboard']),
                         ("Whiteboard", room['whiteboard']),
                         ("Smartboard", room['smartboard']),
                         ("Microphone", room['microphone'])
                     ]
                     with feature_cols[0]:
-                        for feature, value in features[:4]:
+                        for feature, value in features[:3]:
                             st.write(f"{'✅' if value else '❌'} {feature}")
                     with feature_cols[1]:
-                        for feature, value in features[4:]:
+                        for feature, value in features[3:]:
                             st.write(f"{'✅' if value else '❌'} {feature}")
 
                     # Display environmental conditions.
                     st.markdown("**Environmental Conditions:**")
-                    brightness = "Bright" if room['light'] >= 800 else "Dark" if room['light'] < 500 else "Normal"
+                    brightness = "Bright" if room['light'] >= 1000 else "Dark" if room['light'] < 500 else "Normal"
                     if room['co2'] < 600 and room['pm2_5'] < 5 and room['pm10'] < 10 and room['voc'] < 100:
                         air_quality = "High"
                     elif room['co2'] < 1000 and room['pm2_5'] < 25 and room['pm10'] < 50 and room['voc'] < 300:
