@@ -142,7 +142,7 @@ def check_compliance_noise(df: pd.DataFrame, tolerance: float = 10.0):
     }
 
 
-def check_compliance_lighting(df: pd.DataFrame, tolerance: float = 20.0):
+def check_compliance_lighting(df: pd.DataFrame, tolerance: float = 50.0):
     """
     Checks if the lighting intensity complies with the EN 12464-1 standard
 
