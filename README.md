@@ -1,6 +1,20 @@
 # iot-project
+This project focuses on optimizing room selection by ranking rooms based on sensor data, user preferences, and compliance with EU regulations. 
+It includes a decision-making system, a sensor simulation interface, a dashboard for monitoring, and a booking system.
 
-Prerequisites:
+Developed by Fedor Chikhachev, Vladyslav Siulhin, Thuc Keving Nguyen, and Tarik Tornes, 
+this project provides a comprehensive solution for managing and utilizing room resources efficiently.
+
+## Key-features
+- Decision System: Ranks rooms by analyzing sensor data, user preferences, and regulatory compliance.
+- Sensor Simulation: Simulates various room sensors for testing and validation.
+- Dashboard: Displays real-time metrics and insights for administrators.
+- Booking System: Manages room reservations through integration with Google Calendar.
+- Management: Enables admin to observe and manage data effectively.
+
+This system is designed to support both administrators in monitoring room conditions and users in finding/booking suitable rooms.
+
+## Prerequisites
 1. create .env file containing the following environment variables
     ```shell
     MQTT_BROKER=mosquitto
@@ -24,6 +38,7 @@ Prerequisites:
 5. create `env` folder and input the json file representing the credential of your service account on the Google Calendar API. The json credentials file need to be named `creds.json`
 
 
+## Running the System
 
 Building project:
 ```shell
