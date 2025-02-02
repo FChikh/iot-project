@@ -30,7 +30,7 @@ def emulate_arduino(port, room):
             ser.write((json.dumps(data) + "\n").encode('utf-8'))
             print(f"Emulator {room} sent: {data}")
 
-            time.sleep(0.5)  # 500ms delay
+            time.sleep(5)  # 500ms delay
     except KeyboardInterrupt:
         print(f"Emulator {room} disconnected.")
     finally:

@@ -51,6 +51,7 @@ services:
     container_name: dashboard
     depends_on:
       - mosquitto
+      - postgres
     ports:
       - "8501:8501"
     environment:
