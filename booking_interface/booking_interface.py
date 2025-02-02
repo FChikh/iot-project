@@ -16,7 +16,7 @@ def fetch_api_data(url: str, retries: int = 5, backoff_factor: float = 1.0):
     """
     for attempt in range(retries):
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=60)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -295,7 +295,7 @@ if st.session_state.availability_data is not None:
 
                     # Display environmental conditions.
                     st.markdown("**Environmental Conditions:**")
-                    brightness = "Bright" if room['light'] >= 1000 else "Dark" if room['light'] < 500 else "Normal"
+                    brightness = "Bright" if room['light'] >= 900 else "Normal"
                     if room['co2'] < 600 and room['pm2_5'] < 5 and room['pm10'] < 10 and room['voc'] < 100:
                         air_quality = "High"
                     else:

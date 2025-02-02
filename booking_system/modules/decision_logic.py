@@ -305,10 +305,10 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
         voc = 100
 
     # Set noise preference
-    noise = 15 if noise_level.lower() == "silent" else 30
+    noise = 0 if noise_level.lower() == "silent" else 30
 
     # Set lighting preference
-    light = 800 if lighting.lower() == "bright" else 500
+    light = 1000 if lighting.lower() == "bright" else 500
 
     user_prefs = {
         'co2': co2,
@@ -396,7 +396,48 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # 14. smartboard
     # 15. whiteboard
 
-    weights = [2, 4, 2, 2, 4, 2, 1, 3, 3, 3, 3, 3, 3, 3, 3]
+    co2_weight = 3 if air_quality_preference.lower() == "high" else 2
+    noise_weight = 6 if noise_level.lower() == "silent" else 4
+    pm2_5_weight = 4 if air_quality_preference.lower() == "high" else 2
+    pm10_weight = 4 if air_quality_preference.lower() == "high" else 2
+    light_weight = 6 if lighting.lower() == "bright" else 4
+    humidity_weight = 2
+    voc_weight = 2 if air_quality_preference.lower() == "high" else 1
+    temperature_weight = 3
+
+    if projector:
+        projector_weight = 4
+    else:
+        projector_weight = 0.5
+
+    capacity_weight = 3
+    
+    if blackboard:
+        blackboard_weight = 4
+    else:
+        blackboard_weight = 0.5
+    
+    if microphone:
+        microphone_weight = 4
+    else:
+        microphone_weight = 0.5
+    
+    if pc:
+        pc_weight = 4
+    else:
+        pc_weight = 0.5
+
+    if smartboard:
+        smartboard_weight = 4
+    else:
+        smartboard_weight = 0.5
+
+    if whiteboard:
+        whiteboard_weight = 4
+    else:
+        whiteboard_weight = 0.5
+
+    weights = [co2_weight, noise_weight, pm2_5_weight, pm10_weight, light_weight, humidity_weight, voc_weight, temperature_weight, projector_weight, capacity_weight, blackboard_weight, microphone_weight, pc_weight, smartboard_weight, whiteboard_weight]
 
     # Create the user preferences based on input parameters
     user_prefs = create_user_prefs(seating_capacity, projector, blackboard, smartboard,
