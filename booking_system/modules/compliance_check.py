@@ -241,8 +241,7 @@ def check_compliance_temperature(df: pd.DataFrame, tolerance: float = 20.0):
     Evaluates whether indoor temperature meets EU comfort and health guidelines.
 
     EU & WHO recommendations:
-    - Comfortable range: 20°C to 26°C (for general indoor spaces).
-    - WHO recommends a minimum of 18°C for indoor living spaces and at least 20°C for vulnerable groups.
+    - Comfortable range according to German ASR: 19°C to 26°C (for workplace indoor spaces).
 
     Parameters:
         df (pd.DataFrame): DataFrame with 'timestamp' and 'value' (temperature in °C).
@@ -251,7 +250,7 @@ def check_compliance_temperature(df: pd.DataFrame, tolerance: float = 20.0):
     Returns:
         dict: Summary of compliance.
     """
-    recommended_min = 20
+    recommended_min = 19
     recommended_max = 26
 
     avg_temperature = df['value'].mean()
