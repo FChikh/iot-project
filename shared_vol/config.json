@@ -9,7 +9,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [30, 40]
+                    "range": [55, 58]
                 },
                 {
                     "name": "light",
@@ -83,7 +83,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [45, 55]
+                    "range": [48, 51]
                 },
                 {
                     "name": "light",
@@ -157,7 +157,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [40, 45]
+                    "range": [41, 44]
                 },
                 {
                     "name": "light",
@@ -231,7 +231,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [35, 40]
+                    "range": [35, 39]
                 },
                 {
                     "name": "light",
@@ -305,7 +305,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [45, 50]
+                    "range": [45, 47]
                 },
                 {
                     "name": "light",
@@ -379,7 +379,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [40, 45]
+                    "range": [42, 45]
                 },
                 {
                     "name": "light",
@@ -453,7 +453,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [35, 40]
+                    "range": [37, 40]
                 },
                 {
                     "name": "light",
@@ -527,7 +527,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [50, 57]
+                    "range": [54, 57]
                 },
                 {
                     "name": "light",
@@ -675,7 +675,7 @@
                 },
                 {
                     "name": "hum",
-                    "range": [43, 49]
+                    "range": [43, 47]
                 },
                 {
                     "name": "light",
