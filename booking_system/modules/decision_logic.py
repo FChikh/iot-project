@@ -343,7 +343,6 @@ def get_ranking(date, start_time, end_time, seating_capacity, projector, blackbo
             print(f"Column {column} not found in TOPSIS results. Skipping.")
     
     print("TOPSIS Ranking:\n", topsis)
-    topsis_json = topsis.reset_index().rename(columns={"index": "room_id"}).to_json(orient="records", indent=4)
-    return topsis_json
-
-print(get_ranking("2025-01-24", "08:30:00", "10:30:00", 30, True, True, False, True, False, False, False, "High", "Normal", "Normal"))
+    topsis_dict = topsis.reset_index().rename(columns={"index": "room_id"}).to_dict(orient='records')
+    print(type(topsis_dict))
+    return topsis_dict
