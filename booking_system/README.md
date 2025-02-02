@@ -48,9 +48,9 @@ Each sensor type has a dedicated function to:
    - **Objective:** Transform raw sensor data by comparing each attribute value against the user’s preferred value.
    - **Method:**  
      For each attribute with a user preference:
-     \[
+     ```math
      \text{adjusted value} = -\left|\frac{x - \text{user\_pref}}{\sigma}\right|
-     \]
+     ```
      - Here, \(x\) is the room's actual sensor reading, \(\text{user\_pref}\) is the target value, and \(\sigma\) is the standard deviation of the attribute across all rooms.
      - This transformation ensures that values closer to the user’s preference yield a higher (less negative) score.
 
@@ -58,9 +58,9 @@ Each sensor type has a dedicated function to:
    - **Objective:** Ensure that all attributes are on the same scale regardless of their original units or ranges.
    - **Method:**  
      Normalize each column (attribute) using the Euclidean norm:
-     \[
+     ```math
      V_{ij} = \frac{X_{ij}}{\sqrt{\sum X_{ij}^2}}
-     \]
+     ```
      This scales the data so that each attribute has values between 0 and 1, making them directly comparable.
 
 3. **Weighting:**
@@ -79,17 +79,17 @@ Each sensor type has a dedicated function to:
    - **Objective:** Measure the distance of each room’s performance from the ideal and negative-ideal solutions.
    - **Method:**  
      Calculate the Euclidean distance to both the PIS and NIS:
-     \[
+     ```math
      D_i^+ = \sqrt{\sum (V_{ij} - A^+_j)^2} \quad \text{and} \quad D_i^- = \sqrt{\sum (V_{ij} - A^-_j)^2}
-     \]
+     ```
 
 6. **Closeness Coefficient and Ranking:**
    - **Objective:** Quantify how close each room is to the ideal solution.
    - **Method:**  
      Compute the closeness coefficient:
-     \[
+     ```math
      C_i = \frac{D_i^-}{D_i^+ + D_i^-}
-     \]
+     ```
      Rooms are then ranked based on \(C_i\) in descending order, where a higher value indicates a better match to the user’s requirements.
 
 
