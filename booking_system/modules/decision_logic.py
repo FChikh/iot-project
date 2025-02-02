@@ -372,7 +372,7 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
         return []
 
     # Specify columns where lower values are preferable (if applicable)
-    lower_better_cols = ['co2', 'noise', 'voc', 'temperature', 'capacity', 'light']
+    lower_better_cols = ['co2', 'noise', 'voc', 'temperature', 'capacity']
 
     # Example weights array: adjust the weights as needed.
     # The order of the attributes in the decision matrix is as follows:
@@ -393,7 +393,7 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # 14. smartboard
     # 15. whiteboard
 
-    weights = [1, 1, 1, 0.5, 1, 1, 1, 0.5, 3, 4, 3, 3, 3, 3, 3]
+    weights = [2, 4, 2, 2, 3, 2, 1, 3, 4, 4, 4, 4, 4, 4, 4]
 
     # Create the user preferences based on input parameters
     user_prefs = create_user_prefs(seating_capacity, projector, blackboard, smartboard,
