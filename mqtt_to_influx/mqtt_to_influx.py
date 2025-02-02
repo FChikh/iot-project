@@ -5,7 +5,8 @@ import os
 import json
 
 # Environment configuration
-MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
+MQTT_BROKER = os.getenv("MQTT_BROKER", "mosquitto")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 INFLUXDB_HOST = os.getenv("INFLUXDB_HOST", "localhost")
 INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "iot_data")
 INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "iot_project")
@@ -63,7 +64,7 @@ def on_message(client, userdata, message):
 
 # Set up MQTT client
 mqtt_client = mqtt.Client()
-mqtt_client.connect(MQTT_BROKER)
+mqtt_client.connect(MQTT_BROKER, MQTT_PORT)
 
 
 # Subscribe to topics for each sensor type
