@@ -1,7 +1,7 @@
 from flask import jsonify
 from sqlalchemy.orm import sessionmaker
-from shared_vol.db import engine  # Assuming you have a db.py file for engine setup
-from shared_vol.models import Room, Equipment  # Import the new models
+from ..db import engine  # Assuming you have a db.py file for engine setup
+from ..models import Room, Equipment  # Import the new models
 
 # Create a session factory
 Session = sessionmaker(bind=engine)
