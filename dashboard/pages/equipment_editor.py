@@ -4,6 +4,9 @@ import streamlit as st
 from sqlalchemy.exc import SQLAlchemyError
 from db import SessionLocal
 from models import Room, Equipment
+import requests
+
+API_BASE = "http://localhost:9999"  # Adjust if your API is hosted elsewhere
 
 st.title("Room Equipment Editor")
 st.markdown("""
@@ -65,3 +68,31 @@ except Exception as e:
     st.error(f"Error fetching devices: {e}")
 finally:
     session.close()
+    
+# --------------------------
+# Remove a simulator
+# --------------------------
+with st.sidebar.expander("Remove Simulator"):
+    try:
+        resp = requests.get(f"{API_BASE}/simulators")
+        if resp.ok:
+            data = resp.json()
+            simulators = data.get("active_simulators", [])
+        else:
+            simulators = []
+    except Exception:
+        simulators = []
+
+    if simulators:
+        remove_room = st.selectbox("Select Room to Remove", sorted(simulators))
+        if st.button("Remove Simulator"):
+            try:
+                resp = requests.delete(f"{API_BASE}/simulators/{remove_room}")
+                if resp.ok:
+                    st.success(f"Removed simulator for {remove_room}")
+                else:
+                    st.error(f"Failed to remove simulator: {resp.json().get('message')}")
+            except Exception as e:
+                st.error(f"Error removing simulator: {e}")
+    else:
+        st.write("No simulators to remove.")
