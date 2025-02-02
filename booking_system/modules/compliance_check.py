@@ -50,7 +50,7 @@ def check_compliance_co2(df: pd.DataFrame, tolerance: float = 5.0):
 
 def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 5.0):
     """
-    Checks if the PM2.5 measurements meet EU air quality regulations based on 24-hour rolling averages.
+    Checks if the PM2.5 measurements meet EU air quality regulations based on a 24-hour rolling average.
     EU Regulation:
     - PM2.5: 24-hour average should not exceed 25 µg/m^3.
 
@@ -61,14 +61,14 @@ def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 5.0):
     Returns:
         dict: A summary of compliance.
     """
-
     pm25_limit = 25
 
     df_pm25['timestamp'] = df_pm25['timestamp'].apply(parse_timestamp)
     df_pm25 = df_pm25.sort_values('timestamp')
 
-    # Rolling 24-hour average
-    df_pm25['pm2_5_rolling'] = df_pm25['value'].rolling(window=24).mean()
+    df_pm25 = df_pm25.set_index('timestamp')
+
+    df_pm25['pm2_5_rolling'] = df_pm25['value'].rolling('24h').mean()
 
     pm25_non_compliant = calculate_percentage(df_pm25['pm2_5_rolling'] > pm25_limit)
 
@@ -84,7 +84,7 @@ def check_compliance_pm25(df_pm25: pd.DataFrame, tolerance: float = 5.0):
 
 def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 5.0):
     """
-    Checks if the PM10 measurements meet EU air quality regulations based on 24-hour rolling averages.
+    Checks if the PM10 measurements meet EU air quality regulations based on a 24-hour rolling average.
     EU Regulation:
     - PM10: 24-hour average should not exceed 50 µg/m^3.
 
@@ -95,13 +95,14 @@ def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 5.0):
     Returns:
         dict: A summary of compliance.
     """
-
     pm10_limit = 50
 
     df_pm10['timestamp'] = df_pm10['timestamp'].apply(parse_timestamp)
     df_pm10 = df_pm10.sort_values('timestamp')
+    
+    df_pm10 = df_pm10.set_index('timestamp')
 
-    df_pm10['pm10_rolling'] = df_pm10['value'].rolling(window=24).mean()
+    df_pm10['pm10_rolling'] = df_pm10['value'].rolling('24h').mean()
 
     pm10_non_compliant = calculate_percentage(df_pm10['pm10_rolling'] > pm10_limit)
 
@@ -113,6 +114,7 @@ def check_compliance_pm10(df_pm10: pd.DataFrame, tolerance: float = 5.0):
         'pm10_non_compliant': pm10_non_compliant,
         'compliant': compliant
     }
+
 
 
 def check_compliance_noise(df: pd.DataFrame, tolerance: float = 10.0):
