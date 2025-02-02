@@ -393,7 +393,7 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # 14. smartboard
     # 15. whiteboard
 
-    weights = [1, 0.5, 1, 0.5, 0.5, 1, 1, 0.5, 3, 4, 3, 3, 3, 3, 3]
+    weights = [1, 1, 1, 0.5, 1, 1, 1, 0.5, 3, 4, 3, 3, 3, 3, 3]
 
     # Create the user preferences based on input parameters
     user_prefs = create_user_prefs(seating_capacity, projector, blackboard, smartboard,
