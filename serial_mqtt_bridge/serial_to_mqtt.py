@@ -4,8 +4,10 @@ import serial
 import serial_asyncio
 import serial.tools.list_ports
 import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 import logging
 import os
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,19 +25,6 @@ RECONNECT_INTERVAL = 5  # Seconds between reconnection attempts
 active_tasks = {}
 active_ports = {}
 
-# Initialize MQTT client
-client = mqtt.Client()
-
-def connect_mqtt():
-    try:
-        client.connect(MQTT_BROKER, MQTT_PORT, 60)
-        logger.info(f"Connected to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}")
-    except Exception as e:
-        logger.error(f"Failed to connect to MQTT broker at {MQTT_BROKER}:{MQTT_PORT}: {e}")
-        # Schedule reconnection
-        asyncio.get_event_loop().call_later(RECONNECT_INTERVAL, connect_mqtt)
-
-connect_mqtt()
 
 async def read_from_serial(port):
     room = None
@@ -64,11 +53,26 @@ async def read_from_serial(port):
                         continue
 
                     # Publish to MQTT topics with room identifier
-                    temp_topic = f"{room}/temp"
-                    light_topic = f"{room}/light"
+                    temp_topic = f"{room}/sensors/temp"
+                    light_topic = f"{room}/sensors/light"
+                    
 
-                    client.publish(temp_topic, temp)
-                    client.publish(light_topic, light)
+                    # Generate timestamp (ISO 8601)
+                    timestamp = time.strftime(
+                        "%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                    msg_temp = publish.single(temp_topic, payload=
+                        json.dumps({"value": temp, "timestamp": timestamp}), hostname=MQTT_BROKER, port=MQTT_PORT, qos=1)
+                    msg_light = publish.single(light_topic, payload=
+                        json.dumps({"value": light, "timestamp": timestamp}), hostname=MQTT_BROKER, port=MQTT_PORT, qos=1)
+
+                    # ans_t = client.publish(temp_topic, json.dumps(
+                    #     {"value": temp, "timestamp": timestamp}), qos=2)
+                    
+                    # ans_l = client.publish(light_topic, json.dumps(
+                    #     {"value": light, "timestamp": timestamp}), qos=2)
+                    
+                    print(msg_temp)
+                    print(msg_light)
                     logger.info(f"Published to {temp_topic}: {temp}")
                     logger.info(f"Published to {light_topic}: {light}")
 
@@ -87,16 +91,13 @@ async def read_from_serial(port):
 
     # Clean up after disconnect
     active_ports.pop(port, None)
+    active_tasks.pop(port, None)
     if room:
         # Optionally, log room disconnection
         logger.info(f"Disconnected from {room} on port {port}")
     else:
         logger.info(f"Disconnected from port {port} with unknown room")
 
-    logger.info(f"Reconnecting to {port} in {RECONNECT_INTERVAL} seconds...")
-    await asyncio.sleep(RECONNECT_INTERVAL)
-    # Attempt to reconnect by restarting the read_from_serial coroutine
-    asyncio.create_task(read_from_serial(port))
 
 async def monitor_devices():
     while True:
@@ -104,15 +105,20 @@ async def monitor_devices():
         # Scan for connected Arduinos
         ports = serial.tools.list_ports.comports()
         logger.info(f'Ports: {[port.device for port in ports]}')
+        logger.info(f"Active ports: {active_ports.keys()}")
+        logger.info(f"Active tasks: {active_tasks.keys()}")
         connected_ports = set()
         for p in ports:
-            if ('Arduino' in p.description or 
-                'ttyACM' in p.device or 
-                'usbmodem' in p.device or 
-                'usbserial' in p.device):
+            if ('Arduino' in p.description or
+                'ttyACM' in p.device or
+                'usbmodem' in p.device or
+                    'usbserial' in p.device):
+                
                 port = p.device
                 connected_ports.add(port)
+                
                 if port not in active_ports and port not in active_tasks:
+                    logger.info(f"Port {port} connected")
                     # Start reading from the new serial port
                     task = asyncio.create_task(read_from_serial(port))
                     active_tasks[port] = task
@@ -128,6 +134,7 @@ async def monitor_devices():
 
         await asyncio.sleep(SCAN_INTERVAL)
 
+
 async def main():
     await monitor_devices()
 
@@ -136,4 +143,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         logger.info("Exiting...")
-        client.disconnect()
