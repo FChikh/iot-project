@@ -313,13 +313,13 @@ if st.session_state.availability_data is not None:
                         ("Blackboard", room['blackboard']),
                         ("Whiteboard", room['whiteboard']),
                         ("Smartboard", room['smartboard']),
-                        ("Microphone", room['microphone'])
+                        ("Microphone", room['microphone']),
                     ]
                     with feature_cols[0]:
                         for feature, value in features[:3]:
                             st.write(f"{'✅' if value else '❌'} {feature}")
                     with feature_cols[1]:
-                        for feature, value in features[3:5]:
+                        for feature, value in features[3:]:
                             st.write(f"{'✅' if value else '❌'} {feature}")
 
 
