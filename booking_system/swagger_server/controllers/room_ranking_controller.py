@@ -53,8 +53,25 @@ def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboa
 
     :rtype: List[Room]
     """
-    ranking = get_ranking(date=date, start_time=start_time, end_time=end_time, seating_capacity=seating_capacity, projector=projector,
-                blackboard=blackboard, smartboard=smartboard, microphone=microphone, pc=pc,
-                whiteboard=whiteboard, air_quality_preference=air_quality_preference, noise_level=noise_level, lighting=lighting, temperature_preference=temperature,
-                euqipment_weight=equipment_weight, air_quality_weight=air_quality_weight, temperature_weight=temperature_weight, noise_weight=noise_weight, light_weight=light_weight)
+    ranking = get_ranking(
+        date=date,
+        start_time=start_time,
+        end_time=end_time,
+        seating_capacity=seating_capacity,
+        projector=projector,
+        blackboard=blackboard,
+        smartboard=smartboard,
+        microphone=microphone,
+        pc=pc,
+        whiteboard=whiteboard,
+        air_quality_preference=air_quality_preference,
+        noise_level=noise_level,
+        lighting=lighting,
+        temperature_preference=temperature,
+        equipment_weight=equipment_weight,
+        air_quality_weight=air_quality_weight,
+        temperature_weight=temperature_weight,
+        noise_weight=noise_weight,
+        light_weight=light_weight
+    )
     return jsonify(ranking)
