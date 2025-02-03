@@ -457,9 +457,6 @@ def get_ranking(
     whiteboard_weight = equipment_weight if whiteboard else 0
 
     # Weights for the decision matrix must align with the ordering of columns in the matrix.
-    # The assumed order is: 
-    # ['co2', 'temperature', 'noise', 'light', 'humidity', 'voc', 'pm2_5', 'pm10', 
-    #  'projector', 'capacity', 'blackboard', 'microphone', 'pc', 'smartboard', 'whiteboard']
     weights = [
         air_quality_weight,      # co2
         temperature_weight,      # temperature
