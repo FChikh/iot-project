@@ -7,13 +7,13 @@ from modules.decision_logic import get_ranking
 from flask import jsonify
 
 
-def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, pc, whiteboard, air_quality_preference, noise_level, lighting):  # noqa: E501
-    """Get ranked list of available rooms
+def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, pc, whiteboard, air_quality_preference, noise_level, lighting, temperature, equipment_weight, air_quality_weight, temperature_weight, noise_weight, light_weight):  # noqa: E501
+    """Get a ranked list of available rooms based on preferences
 
      # noqa: E501
 
-    :param date: 
-    :type date: str
+    :param _date: 
+    :type _date: str
     :param start_time: 
     :type start_time: str
     :param end_time: 
@@ -38,8 +38,23 @@ def rank_rooms(date, start_time, end_time, seating_capacity, projector, blackboa
     :type noise_level: str
     :param lighting: 
     :type lighting: str
+    :param temperature: 
+    :type temperature: str
+    :param equipment_weight: 
+    :type equipment_weight: int
+    :param air_quality_weight: 
+    :type air_quality_weight: int
+    :param temperature_weight: 
+    :type temperature_weight: int
+    :param noise_weight: 
+    :type noise_weight: int
+    :param light_weight: 
+    :type light_weight: int
 
     :rtype: List[Room]
     """
-    ranking = get_ranking(date, start_time, end_time, seating_capacity, projector, blackboard, smartboard, microphone, pc, whiteboard, air_quality_preference, noise_level, lighting)
+    ranking = get_ranking(date=date, start_time=start_time, end_time=end_time, seating_capacity=seating_capacity, projector=projector,
+                blackboard=blackboard, smartboard=smartboard, microphone=microphone, pc=pc,
+                whiteboard=whiteboard, air_quality_preference=air_quality_preference, noise_level=noise_level, lighting=lighting, temperature_preference=temperature,
+                euqipment_weight=equipment_weight, air_quality_weight=air_quality_weight, temperature_weight=temperature_weight, noise_weight=noise_weight, light_weight=light_weight)
     return jsonify(ranking)

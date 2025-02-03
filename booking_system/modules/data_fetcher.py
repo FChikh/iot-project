@@ -16,7 +16,7 @@ def fetch_api_data(url: str, retries: int = 5, backoff_factor: float = 1.0):
     """
     for attempt in range(retries):
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:

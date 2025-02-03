@@ -29,7 +29,13 @@ class TestRoomRankingController(BaseTestCase):
                         ('whiteboard', false),
                         ('air_quality_preference', 'normal'),
                         ('noise_level', 'normal'),
-                        ('lighting', 'normal')]
+                        ('lighting', 'normal'),
+                        ('temperature', 'moderate'),
+                        ('equipment_weight', 1),
+                        ('air_quality_weight', 1),
+                        ('temperature_weight', 1),
+                        ('noise_weight', 1),
+                        ('light_weight', 1)]
         response = self.client.open(
             '/rank-rooms',
             method='GET',
