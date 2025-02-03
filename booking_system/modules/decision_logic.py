@@ -25,62 +25,78 @@ from modules.compliance_check import (
 )
 
 
-def topsis_decision_logic(
-    room_data: pd.DataFrame, 
-    user_pref: Dict[str, Any], 
-    weights: Optional[List[float]] = None, 
-    lower_better_cols: List[str] = []
-) -> pd.DataFrame:
+def topsis_decision_logic(room_data: pd.DataFrame, user_pref: dict, weights=None, lower_better_cols=[]) -> pd.DataFrame:
     """
     Perform TOPSIS (Technique for Order Preference by Similarity to Ideal Solution)
     to rank rooms based on user preferences.
-
     Parameters:
         room_data (pd.DataFrame): DataFrame containing attributes of each room.
         user_pref (dict): Dictionary of user preferences for each attribute.
         weights (list or None): List of weights for each attribute. If None, all attributes are equally weighted.
         lower_better_cols (list): List of columns where lower values are better.
-
     Returns:
         pd.DataFrame: DataFrame with closeness coefficients and ranks for each room.
     """
     try:
+        # Validate input
         if room_data.empty:
             return pd.DataFrame()
 
-        # Step 1: Normalize the decision matrix using vectorized operations
-        # (adding a small constant to avoid division by zero)
-        norm = np.linalg.norm(room_data, axis=0)
-        normalized = room_data / (norm + 1e-9)
+        # Adjust the decision matrix based on user preferences using z-score
+        adjusted_df = room_data.copy()
+        for col in user_pref:
+            if col in room_data.columns:
+                mean, std = room_data[col].mean(), room_data[col].std()
+                adjusted_df[col] = -abs((room_data[col] - user_pref[col]) / (std + 1e-9))
+            else:
+                adjusted_df[col] = room_data[col]
 
-        # Step 2: Apply weights (if not provided, use equal weights)
+        # Normalize the decision matrix
+        norm = np.sqrt((adjusted_df ** 2).sum(axis=0))
+        normalized = adjusted_df / norm
+
+        # Apply weights (if not provided, use equal weighting)
         if weights is None:
-            weights = [1] * normalized.shape[1]
-        weights = np.array(weights) / np.sum(weights)  # Normalize weights
+            weights = np.ones(len(room_data.columns))
+        weights = np.array(weights) / np.sum(weights)
         weighted = normalized * weights
 
-        # Step 3: Identify ideal best and worst values
-        ideal_best = weighted.max(axis=0)
-        ideal_worst = weighted.min(axis=0)
+        # Handle single-room scenario
+        if len(room_data) == 1:
+            result = room_data.copy()
+            result['score'] = 1.0
+            result['rank'] = 1
+            return result
 
-        # Adjust for attributes where lower values are better
-        for col in lower_better_cols:
-            if col in room_data.columns:
-                ideal_best[col], ideal_worst[col] = ideal_worst[col], ideal_best[col]
+        # Determine the positive ideal solution (PIS) and negative ideal solution (NIS)
+        # Adjusting the logic for columns where lower values are better.
+        ideal_best = {}
+        ideal_worst = {}
+        for col in weighted.columns:
+            if col in lower_better_cols:
+                ideal_best[col] = weighted[col].min()  # lower is better
+                ideal_worst[col] = weighted[col].max()
+            else:
+                ideal_best[col] = weighted[col].max()  # higher is better
+                ideal_worst[col] = weighted[col].min()
 
-        # Step 4: Calculate Euclidean distances to ideal best & worst
-        dist_pis = np.sqrt(((weighted - ideal_best) ** 2).sum(axis=1))
-        dist_nis = np.sqrt(((weighted - ideal_worst) ** 2).sum(axis=1))
+        # Convert the ideal values to a Series for vectorized computation
+        ideal_best_series = pd.Series(ideal_best)
+        ideal_worst_series = pd.Series(ideal_worst)
 
-        # Step 5: Compute the TOPSIS closeness coefficient
-        closeness = dist_nis / (dist_pis + dist_nis + 1e-9)  # Avoid zero division
+        # Calculate Euclidean distances from the PIS and NIS
+        dist_pis = np.sqrt(((weighted - ideal_best_series) ** 2).sum(axis=1))
+        dist_nis = np.sqrt(((weighted - ideal_worst_series) ** 2).sum(axis=1))
 
-        # Step 6: Assign ranks based on closeness scores
+        # Calculate the closeness coefficient
+        closeness = dist_nis / (dist_pis + dist_nis)
+
+        # Prepare and return the final results with scores and rankings
         result = room_data.copy()
-        result["score"] = closeness
-        result["rank"] = closeness.rank(ascending=False).astype(int)
+        result['score'] = closeness
+        result['rank'] = closeness.rank(ascending=False)
+        return result.sort_values('rank')
 
-        return result.sort_values("rank")
     except Exception as e:
         print(f"TOPSIS error: {str(e)}")
         return pd.DataFrame()
@@ -332,11 +348,11 @@ def create_user_prefs(
 
     # Set temperature based on preference
     if temperature_preference.lower() == "warm":
-        temperature = 27
+        temperature = 30
     elif temperature_preference.lower() == "moderate":
-        temperature = 23
+        temperature = 25
     else:
-        temperature = 17
+        temperature = 10
 
     user_prefs = {
         "co2": co2,
