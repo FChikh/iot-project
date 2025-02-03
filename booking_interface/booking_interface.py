@@ -326,7 +326,7 @@ if st.session_state.availability_data is not None:
                     # Display environmental conditions.
                     st.markdown("**Environmental Conditions:**")
                     brightness = "Bright" if room['light'] >= 900 else "Normal"
-                    if room['co2'] < 600 and room['pm2_5'] < 5 and room['pm10'] < 10 and room['voc'] < 100:
+                    if room['co2'] < 600 and room['pm2_5'] < 10 and room['pm10'] < 20 and room['voc'] < 200:
                         air_quality = "High"
                     else:
                         air_quality = "Normal"

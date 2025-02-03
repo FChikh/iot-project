@@ -294,10 +294,10 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
     """
     # Set environmental preferences based on air quality
     if air_quality_preference.lower() == "high":
-        co2 = 350
-        pm2_5 = 5
-        pm10 = 10
-        voc = 50
+        co2 = 0
+        pm2_5 = 0
+        pm10 = 0
+        voc = 0
     else:
         co2 = 400
         pm2_5 = 10
@@ -308,7 +308,7 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
     noise = 0 if noise_level.lower() == "silent" else 30
 
     # Set lighting preference
-    light = 1000 if lighting.lower() == "bright" else 500
+    light = 1500 if lighting.lower() == "bright" else 500
 
     temperature = 26 if temperature_preference.lower() == "warm" else 23 if temperature_preference.lower() == "moderate" else 19
 
@@ -384,7 +384,7 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     co2_weight = air_quality_weight
     pm2_5_weight = air_quality_weight
     pm10_weight = air_quality_weight
-    voc_weight = 0.75*air_quality_weight
+    voc_weight = air_quality_weight
     humidity_weight = 1
 
     if projector:
