@@ -34,8 +34,11 @@ def fetch_api_data(url: str, retries: int = 5, backoff_factor: float = 1.0):
 def fetch_room_ranking(date: str, start_time: str, end_time: str, seating_capacity: int, 
                     pc: bool, projector: bool, blackboard: bool, 
                        smartboard: bool, whiteboard: bool, microphone: bool, 
-                       air_quality_preference: str, noise_level_preference: str, 
-                       lighting_preference: str):
+                       temperature_preference: str, air_quality_preference: str, 
+                       noise_level_preference: str, lighting_preference: str,
+                       equipment_weight: int, temperature_weight: int,
+                       air_quality_weight: int, noise_weight: int,
+                       lighting_weight: int):
     """
     Build the API URL with query parameters and fetch the ranked list of available rooms.
     
@@ -51,6 +54,12 @@ def fetch_room_ranking(date: str, start_time: str, end_time: str, seating_capaci
         f"&air_quality_preference={air_quality_preference.lower()}"
         f"&noise_level={noise_level_preference.lower()}"
         f"&lighting={lighting_preference.lower()}"
+        f"&temperature={temperature_preference.lower()}"
+        f"&equipment_weight={equipment_weight}"
+        f"&temperature_weight={temperature_weight}"
+        f"&air_quality_weight={air_quality_weight}"
+        f"&noise_weight={noise_weight}"
+        f"&light_weight={lighting_weight}"
     )
     return fetch_api_data(api_url)
 
@@ -196,10 +205,24 @@ with st.container():
     
     col5, col6 = st.columns(2)
     with col5:
+        temperature_preference = st.radio("Temperature:", options=["Cool", "Moderate", "Warm"])
         air_quality_preference = st.radio("Air Quality:", options=["Normal", "High"])
-        noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
     with col6:
+        noise_level_preference = st.radio("Noise level:", options=["Normal", "Silent"])
         lighting_preference = st.radio("Lighting:", options=["Normal", "Bright"])
+    
+    st.subheader("Preference Weights (1-9)")
+    col7, col8, col9, col10, col11 = st.columns(5)
+    with col7:
+        equipment_weight = st.slider("Equipment", 1, 9, 1)
+    with col8:
+        temperature_weight = st.slider("Temperature", 1, 9, 1)
+    with col9:
+        air_quality_weight = st.slider("Air Quality", 1, 9, 1)
+    with col10:
+        noise_weight = st.slider("Noise", 1, 9, 1)
+    with col11:
+        lighting_weight = st.slider("Lighting", 1, 9, 1)
 
 
 ##############################
@@ -209,8 +232,9 @@ with st.container():
 new_search_key = (
     str(date), start_time, end_time, seating_capacity,
     projector, pc, blackboard, smartboard,
-    whiteboard, microphone, air_quality_preference,
-    noise_level_preference, lighting_preference
+    whiteboard, microphone, temperature_preference,
+    air_quality_preference, noise_level_preference, lighting_preference,
+    equipment_weight, temperature_weight, air_quality_weight, noise_weight, lighting_weight
 )
 
 # Update search state if search parameters change.
@@ -241,9 +265,15 @@ if st.button("Check Availability"):
                 smartboard=smartboard,
                 whiteboard=whiteboard,
                 microphone=microphone,
+                temperature_preference=temperature_preference,
                 air_quality_preference=air_quality_preference,
                 noise_level_preference=noise_level_preference,
-                lighting_preference=lighting_preference
+                lighting_preference=lighting_preference,
+                equipment_weight=equipment_weight,
+                temperature_weight=temperature_weight,
+                air_quality_weight=air_quality_weight,
+                noise_weight=noise_weight,
+                lighting_weight=lighting_weight
             )
         st.session_state.availability_data = data  # Save the fetched ranking data.
         st.session_state.message = None  # Clear any previous messages.

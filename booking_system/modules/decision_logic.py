@@ -287,8 +287,8 @@ def check_availability(date: str, start_time: str, end_time: str, rooms_and_equi
 
 
 def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, smartboard: bool,
-                      microphone: bool, pc: bool, whiteboard: bool,
-                      air_quality_preference: str, noise_level: str, lighting: str) -> dict:
+                      microphone: bool, pc: bool, whiteboard: bool, air_quality_preference: str, 
+                      noise_level: str, lighting: str, temperature_preference: str) -> dict:
     """
     Creates a dictionary of user preferences based on provided parameters.
     """
@@ -310,6 +310,8 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
     # Set lighting preference
     light = 1000 if lighting.lower() == "bright" else 500
 
+    temperature = 26 if temperature_preference.lower() == "warm" else 23 if temperature_preference.lower() == "moderate" else 19
+
     user_prefs = {
         'co2': co2,
         'noise': noise,
@@ -318,7 +320,7 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
         'light': light,
         'humidity': 50,
         'voc': voc,
-        'temperature': 21,
+        'temperature': temperature,
         'projector': 1 if projector else 0,
         'capacity': seating_capacity,
         'blackboard': 1 if blackboard else 0,
@@ -332,7 +334,9 @@ def create_user_prefs(seating_capacity: int, projector: bool, blackboard: bool, 
 
 def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int, projector: bool,
                 blackboard: bool, smartboard: bool, microphone: bool, pc: bool,
-                whiteboard: bool, air_quality_preference: str, noise_level: str, lighting: str) -> list:
+                whiteboard: bool, air_quality_preference: str, noise_level: str, lighting: str,
+                temperature_preference:str, euqipment_weight: int, 
+                air_quality_weight:int, temperature_weight:int, noise_weight:int, light_weight:int) -> list:
     """
     Determines the ranking of available and compliant rooms based on user preferences and TOPSIS.
 
@@ -375,55 +379,53 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
         return []
 
     # Specify columns where lower values are preferable (if applicable)
-    lower_better_cols = ['co2', 'noise', 'pm10', 'pm2_5' 'voc', 'temperature', 'capacity']
+    lower_better_cols = ['co2', 'noise', 'pm10', 'pm2_5' 'voc', 'capacity']
 
-    co2_weight = 3 if air_quality_preference.lower() == "high" else 2
-    noise_weight = 6 if noise_level.lower() == "silent" else 4
-    pm2_5_weight = 4 if air_quality_preference.lower() == "high" else 2
-    pm10_weight = 4 if air_quality_preference.lower() == "high" else 2
-    light_weight = 6 if lighting.lower() == "bright" else 4
-    humidity_weight = 2
-    voc_weight = 2 if air_quality_preference.lower() == "high" else 1
-    temperature_weight = 3
+    co2_weight = air_quality_weight
+    pm2_5_weight = air_quality_weight
+    pm10_weight = air_quality_weight
+    voc_weight = 0.75*air_quality_weight
+    humidity_weight = 1
 
     if projector:
-        projector_weight = 4
+        projector_weight = euqipment_weight
     else:
-        projector_weight = 0.5
+        projector_weight = 0
 
     capacity_weight = 3
     
     if blackboard:
-        blackboard_weight = 4
+        blackboard_weight = euqipment_weight
     else:
-        blackboard_weight = 0.5
+        blackboard_weight = 0
     
     if microphone:
-        microphone_weight = 4
+        microphone_weight = euqipment_weight
     else:
-        microphone_weight = 0.5
+        microphone_weight = 0
     
     if pc:
-        pc_weight = 4
+        pc_weight = euqipment_weight
     else:
-        pc_weight = 0.5
+        pc_weight = 0
 
     if smartboard:
-        smartboard_weight = 4
+        smartboard_weight = euqipment_weight
     else:
-        smartboard_weight = 0.5
+        smartboard_weight = 0
 
     if whiteboard:
-        whiteboard_weight = 4
+        whiteboard_weight = euqipment_weight
     else:
-        whiteboard_weight = 0.5
+        whiteboard_weight = 0
 
     weights = [co2_weight, noise_weight, pm2_5_weight, pm10_weight, light_weight, humidity_weight, voc_weight, temperature_weight, projector_weight, capacity_weight, blackboard_weight, microphone_weight, pc_weight, smartboard_weight, whiteboard_weight]
 
+    print(weights)
     # Create the user preferences based on input parameters
     user_prefs = create_user_prefs(seating_capacity, projector, blackboard, smartboard,
                                    microphone, pc, whiteboard,
-                                   air_quality_preference, noise_level, lighting)
+                                   air_quality_preference, noise_level, lighting, temperature_preference)
 
     # Run TOPSIS decision logic to rank rooms
     topsis_result = topsis_decision_logic(room_data=decision_matrix, user_pref=user_prefs,
@@ -444,4 +446,3 @@ def get_ranking(date: str, start_time: str, end_time: str, seating_capacity: int
     # Convert results to a list of dictionaries
     topsis_dict = topsis_result.reset_index().rename(columns={"index": "room_id"}).to_dict(orient='records')
     return topsis_dict
-

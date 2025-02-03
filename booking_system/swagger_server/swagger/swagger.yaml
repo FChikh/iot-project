@@ -130,6 +130,68 @@ paths:
           enum:
           - bright
           - normal
+      - name: temperature
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          default: moderate
+          enum:
+          - cool
+          - moderate
+          - warm
+      - name: equipment_weight
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          example: 1
+          default: 1
+      - name: air_quality_weight
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          example: 1
+          default: 1
+      - name: temperature_weight
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          example: 1
+          default: 1
+      - name: noise_weight
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          example: 1
+          default: 1
+      - name: light_weight
+        in: query
+        required: true
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          example: 1
+          default: 1
       responses:
         "200":
           description: Successfully returned ranked rooms
@@ -159,54 +221,8 @@ components:
           type: number
           format: float
           example: 8.7
-        features:
-          $ref: "#/components/schemas/Room_features"
       example:
         room_id: room-101
         rank: 1
         score: 8.7
-    Room_features:
-      type: object
-      properties:
-        seating_capacity:
-          type: integer
-          example: 30
-        projector:
-          type: boolean
-        blackboard:
-          type: boolean
-        microphone:
-          type: boolean
-        pc:
-          type: boolean
-        whiteboard:
-          type: boolean
-        air_quality_preference:
-          type: string
-          example: normal
-          enum:
-          - high
-          - normal
-        noise_level:
-          type: string
-          example: normal
-          enum:
-          - silent
-          - normal
-        lighting:
-          type: string
-          example: normal
-          enum:
-          - bright
-          - normal
-      example:
-        seating_capacity: 30
-        projector: true
-        blackboard: true
-        microphone: true
-        pc: true
-        whiteboard: true
-        air_quality_preference: normal
-        noise_level: normal
-        lighting: normal
 

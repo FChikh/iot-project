@@ -6,7 +6,6 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from swagger_server.models.base_model_ import Model
-from swagger_server.models.room_features import RoomFeatures  # noqa: F401,E501
 from swagger_server import util
 
 
@@ -15,7 +14,7 @@ class Room(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, room_id: str=None, rank: int=None, score: float=None, features: RoomFeatures=None):  # noqa: E501
+    def __init__(self, room_id: str=None, rank: int=None, score: float=None):  # noqa: E501
         """Room - a model defined in Swagger
 
         :param room_id: The room_id of this Room.  # noqa: E501
@@ -24,26 +23,21 @@ class Room(Model):
         :type rank: int
         :param score: The score of this Room.  # noqa: E501
         :type score: float
-        :param features: The features of this Room.  # noqa: E501
-        :type features: RoomFeatures
         """
         self.swagger_types = {
             'room_id': str,
             'rank': int,
-            'score': float,
-            'features': RoomFeatures
+            'score': float
         }
 
         self.attribute_map = {
             'room_id': 'room_id',
             'rank': 'rank',
-            'score': 'score',
-            'features': 'features'
+            'score': 'score'
         }
         self._room_id = room_id
         self._rank = rank
         self._score = score
-        self._features = features
 
     @classmethod
     def from_dict(cls, dikt) -> 'Room':
@@ -118,24 +112,3 @@ class Room(Model):
         """
 
         self._score = score
-
-    @property
-    def features(self) -> RoomFeatures:
-        """Gets the features of this Room.
-
-
-        :return: The features of this Room.
-        :rtype: RoomFeatures
-        """
-        return self._features
-
-    @features.setter
-    def features(self, features: RoomFeatures):
-        """Sets the features of this Room.
-
-
-        :param features: The features of this Room.
-        :type features: RoomFeatures
-        """
-
-        self._features = features
