@@ -1,9 +1,10 @@
-# iot-project
+# IoT-Based Decision Support System for Room Selection
 This project focuses on optimizing room selection by ranking rooms based on sensor data, user preferences, and compliance with EU regulations. 
 It includes a decision-making system, a sensor simulation interface, a dashboard for monitoring, and a booking system.
 
-Developed by Fedor Chikhachev, Vladyslav Siulhin, Thuc Keving Nguyen, and Tarik Tornes, 
-this project provides a comprehensive solution for managing and utilizing room resources efficiently.
+Presentation is available here, the report can be found here.
+
+Developed by [Fedor Chikhachev](https://github.com/FChikh), [Vladyslav Siulhin](https://github.com/SiulhinVlad), [Thuc Kevin Nguyen](https://github.com/Thuctac), and [Tarik Tornes](https://github.com/TarikTornes), this project provides a comprehensive solution for managing and utilizing room resources efficiently.
 
 ## Key-features
 - Decision System: Ranks rooms by analyzing sensor data, user preferences, and regulatory compliance.
@@ -49,4 +50,5 @@ To run:
 ```shell
 docker-compose up
 ```
+
 
