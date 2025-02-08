@@ -2,7 +2,7 @@
 This project focuses on optimizing room selection by ranking rooms based on sensor data, user preferences, and compliance with EU regulations. 
 It includes a decision-making system, a sensor simulation interface, a dashboard for monitoring, and a booking system.
 
-Presentation is available here, the report can be found here.
+Presentation is available [here](iot-project-slides.pdf), technical report can be found [here](report.pdf).
 
 Developed by [Fedor Chikhachev](https://github.com/FChikh), [Vladyslav Siulhin](https://github.com/SiulhinVlad), [Thuc Kevin Nguyen](https://github.com/Thuctac), and [Tarik Tornes](https://github.com/TarikTornes), this project provides a comprehensive solution for managing and utilizing room resources efficiently.
 
